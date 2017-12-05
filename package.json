@@ -1,0 +1,28 @@
+{
+  "name": "zigate-nodejs",
+  "version": "1.0.0",
+  "description": "a nodejs module for zigate USB key",
+  "main": "index.js",
+  "dependencies": {
+    "serialport": "^6.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nouknouk/zigate-nodejs.git"
+  },
+  "keywords": [
+    "zigate",
+    "zigbee",
+    "usb"
+  ],
+  "author": "nouknouk@gmail.com",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/nouknouk/zigate-nodejs/issues"
+  },
+  "homepage": "https://github.com/nouknouk/zigate-nodejs#readme"
+}
