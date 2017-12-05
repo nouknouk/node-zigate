@@ -1,0 +1,29 @@
+var clusters = [];
+
+clusters[0x0000]= "General: Basic";
+clusters[0x0001]= "General: Power Config";
+clusters[0x0002]= "General: Temperature Config";
+clusters[0x0003]= "General: Identify";
+clusters[0x0004]= "General: Groups";
+clusters[0x0005]= "General: Scenes";
+clusters[0x0006]= "General: On/Off";
+clusters[0x0007]= "General: On/Off Config";
+clusters[0x0008]= "General: Level Control";
+clusters[0x0009]= "General: Alarms";
+clusters[0x000A]= "General: Time";
+clusters[0x000F]= "General: Binary Input Basic";
+clusters[0x0020]= "General: Poll Control";
+clusters[0x0019]= "General: OTA";
+clusters[0x0101]= "General: Door Lock";
+clusters[0x0201]= "HVAC: Thermostat";
+clusters[0x0202]= "HVAC: Fan Control";
+clusters[0x0300]= "Lighting: Color Control";
+clusters[0x0400]= "Measurement: Illuminance";
+clusters[0x0402]= "Measurement: Temperature";
+clusters[0x0406]= "Measurement: Occupancy Sensing";
+clusters[0x0500]= "Security & Safety: IAS Zone";
+clusters[0x0702]= "Smart Energy: Metering";
+clusters[0x0B05]= "Misc: Diagnostics";
+clusters[0x1000]= "ZLL: Commissioning";
+
+module.exports = clusters;

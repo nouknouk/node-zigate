@@ -2,7 +2,7 @@
   "name": "zigate-nodejs",
   "version": "1.0.0",
   "description": "a nodejs module for zigate USB key",
-  "main": "index.js",
+  "main": "src/zigate.js",
   "dependencies": {
     "serialport": "^6.0.4"
   },
