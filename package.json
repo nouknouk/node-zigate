@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nouknouk/zigate-nodejs.git"
+    "url": "git+https://github.com/nouknouk/node-zigate.git"
   },
   "keywords": [
     "zigate",
@@ -22,7 +22,7 @@
   "author": "nouknouk@gmail.com",
   "license": "LGPL-3.0",
   "bugs": {
-    "url": "https://github.com/nouknouk/zigate-nodejs/issues"
+    "url": "https://github.com/nouknouk/node-zigate/issues"
   },
-  "homepage": "https://github.com/nouknouk/zigate-nodejs#readme"
+  "homepage": "https://github.com/nouknouk/node-zigate#readme"
 }
