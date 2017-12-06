@@ -18,7 +18,7 @@ ResponseBuilder.prototype.loadResponses = function(repDir) {
 					throw e;
 			}
 			this.responses.push(rep);
-			console.log("[Zigate] response type '" + id + "' loaded.");
+			//console.log("[Zigate] response type '" + id + "' loaded.");
 	});	
 };
 

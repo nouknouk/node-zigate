@@ -27,6 +27,7 @@ myZikey.on('open', function(err) {
   }
   else {
     console.log("connection to Zigate well established.");
+    myZikey.send("get_version");
   }
 });
 

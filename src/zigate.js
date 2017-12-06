@@ -64,15 +64,16 @@ Zigate.prototype.open = function(path, callback) {
         this.parser.on('data', this.onFrameReceived);
 
         this.serial.on('error', (err) => { this.onError(err, /*autoclose*/ false); });
-        this.serial.on('open', () => { this.emit('open'); });
         this.serial.on('close', () => { this.emit('close'); });
-				if (callback) callback();
+
+	if (callback) callback();
+	this.emit('open');
       }
-			else {
-				this.serial = null;
+      else {
+	this.serial = null;
         this.onError(err);
-				if (callback) process.nextTick(callback, err);
-			}
+	if (callback) process.nextTick(callback, err);
+      }
     });
   }
   else {

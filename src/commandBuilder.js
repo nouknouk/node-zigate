@@ -18,7 +18,7 @@ CommandBuilder.prototype.loadCommands = function(cmdDir) {
 					throw e;
 			}
 			this.commands.push(cmd);
-			console.log("[Zigate] command type '" + id + "' loaded.");
+			//console.log("[Zigate] command type '" + id + "' loaded.");
 	});
 };
 
