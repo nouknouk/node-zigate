@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 
 var ResponseBuilder = function() {
 	this.responses = [];
