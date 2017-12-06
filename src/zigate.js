@@ -44,10 +44,10 @@ var Zigate = function(options) {
   this.serial = null;
 	this.commands = new CommandBuilder();
 	this.commands.loadCommands(options.commandPath);
-	
+
 	this.responses = new ResponseBuilder();
 	this.responses.loadResponses(options.responsePath);
-	
+
   Object.defineProperty(this, 'isOpen', { get: () => { return this.serial && this.serial.isOpen; } });
 	if (options.path && this.options.autoOpen) {
 		this.open(options.path);
@@ -71,7 +71,7 @@ Zigate.prototype.open = function(path, callback) {
 			else {
 				this.serial = null;
         this.onError(err);
-				if (callback) callback(err);
+				if (callback) process.nextTick(callback, err);
 			}
     });
   }
@@ -107,11 +107,11 @@ Zigate.prototype.close = function(callback) {
 			else {
         this.emit('error', err);
 			}
-			if (callback) callback();
+			if (callback) callback(err);
     });
   }
   else {
-		if (callback) callback();
+		if (callback) process.nextTick(callback, error);
   }
 };
 
@@ -152,7 +152,7 @@ Zigate.prototype.onFrameReceived = function(data) {
 		console.log("[Zigate] raw data:      ", data.toString('hex').replace(/../g, "$& "));
 		data = this.unescape(data);
 		console.log("[Zigate] unescaped data: "+data.toString('hex').replace(/../g, "$& ") );
-		
+
     if (!data[0] === FRAME_START) {
       this.onError(new Error("[Zigate] corrupted frame received: invalid 'frame_start' character: ",data[0]," instead of "+FRAME_START+". Skipping. ", data), /*autoclose*/ false);
     }
@@ -162,7 +162,7 @@ Zigate.prototype.onFrameReceived = function(data) {
 		if (data[data.length-1] !== FRAME_STOP) {
       this.onError(new Error("[Zigate] corrupted frame received: invalid 'frame_stop' character:  ("+data[data.length-1]+") instead of "+FRAME_STOP+". Skipping. ",  data), /*autoclose*/ false);
 		}
-		
+
 		let type = data.readUInt16BE(1);
 		let length = data.readUInt16BE(3);
 		let checksum = data.readUInt16BE(5);
@@ -172,7 +172,7 @@ Zigate.prototype.onFrameReceived = function(data) {
 		if (payload.length !== length) {
       this.onError(new Error("[Zigate] corrupted frame received: inconsistent frame length attribute ("+length+") vs. payload length ("+payload.length+"). ",  data), /*autoclose*/ false);
 		}
-		
+
 		var data = {
 				type: type,
 				checksum: checksum,
@@ -180,7 +180,7 @@ Zigate.prototype.onFrameReceived = function(data) {
 		};
 		console.log("[Zigate] frame parsed: "+JSON.stringify(data));
 		this.emit('data', data);
-		
+
 		var response = this.responses.parse(type, payload);
 		if (response) {
 			console.log("[Zigate] response built: "+JSON.stringify(response));
@@ -194,10 +194,10 @@ Zigate.prototype.onFrameReceived = function(data) {
 
 Zigate.prototype.send = function(name, options) {
 	if (!this.isOpen) throw new Error("Zigate not connected yet.");
-	
+
 	var command = this.commands.build(name, options);
 
-	
+
 	var data = Buffer.alloc(command.payload.length+5);
 	data.writeUInt16BE(command.type, 0);
 	data.writeUInt16BE(command.payload.length, 2);
@@ -213,7 +213,7 @@ Zigate.prototype.send = function(name, options) {
 		checksum ^= b;
 	}
 	data.writeUInt8(checksum, 4);
-	
+
   console.log("[Zigate] sending frame: 01 "+data.toString('hex').replace(/../g, "$& ")+ "03");
   console.log("[Zigate] sending escaped frame: 01 "+this.escape(data).toString('hex').replace(/../g, "$& ")+"03");
 
@@ -236,7 +236,7 @@ Zigate.list = function(callback) {
 		}
     if (callback) callback(err,ports);
   });
-	
+
   /* ports example (linux):
   [
     { comName: '/dev/ttyACM0',
@@ -250,14 +250,14 @@ Zigate.list = function(callback) {
     {
       ...
     }
-  ] 
+  ]
 	*/
 };
 
 
 Zigate.prototype.onError = function(err, autoclose) {
 		console.error("[Zigate] ERROR: ", err);
-    this.emit('error', err);
+    process.nextTick(this.emit.bind(this,'error', err));
     if (autoclose && this.serial && this.serial.isOpen) {
       this.serial.close();
     }
