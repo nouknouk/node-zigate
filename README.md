@@ -1,20 +1,43 @@
 # node-zigate
 
-Nothing to see yet ; just a placeholder for now.
-To be constructed.
+__This project is still under active development ; not very usable yet.__
 
+for developpers which want to have a look, better clone the latest dev/v*.** branch
 
-## Notes: 
+## installation:
 
-### for testing with npm module 'serialport':
+For the moment, no npm repository ; fetch directly from git, branch dev/v0.01
 
-* install globally as root with following flags:
+```npm install git+https://git@github.com/nouknouk/node-zigate.git#dev/v0.01```
+
+This module depends on node module 'serialport', which is based on a native addon (compiled by node-gyp). 
+Therefore, some build tools must be present on your machine, to make the installation successfull.
+
+## usage:
+
 ```
-sudo npm install serialport --unsafe-perm --build-from-source
-```
+let Zigate = require('node-zigate');
 
-* use CLI tools installed:
-```
-/usr/bin/serialport-list
-```
+let myZikey = new Zigate();
+myZikey.open('/dev/ttyUSB0');
 
+myZikey.on('open', function(err) {
+  if (err) {
+    console.error("connection failed: ",err);
+  }
+  else {
+    console.log("connection to Zigate well established.");
+  }
+});
+
+myZikey.on('close', function() {
+  console.error("connectino to Zigate terminated.");
+});
+
+myZikey.on('error', function(err) {
+  console.error("error: ",err);
+});
+
+myZikey.on('response', function(response) {
+  console.log("response received: ", JSON.stringify(response));
+});
