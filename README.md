@@ -41,4 +41,3 @@ myZikey.on('error', function(err) {
 myZikey.on('response', function(response) {
   console.log("response received: ", JSON.stringify(response));
 });
-
