@@ -27,6 +27,38 @@ const FRAME_ESCAPE= 0x02;
 
 */
 
+var unescapeData = function(data) {
+		var decodedLength = 0;
+		var decodedData = Buffer.alloc(data.length);
+		var i=0;
+		while (i<data.length) {
+			if (data[i] === FRAME_ESCAPE && ((i+1)<data.length)) {
+				decodedData[decodedLength++] = data[++i] ^ FRAME_ESCAPE_XOR;
+			}
+			else {
+				decodedData[decodedLength++] = data[i];
+			}
+			i++;
+		}
+		return decodedData.slice(0, decodedLength);
+};
+
+var escapeData = function(data) {
+		var encodedLength = 0;
+		var encodedData = Buffer.alloc(data.length*2);
+		for (const b of data) {
+			if (b <= FRAME_ESCAPE_XOR) {
+				encodedData[encodedLength++] = FRAME_ESCAPE;
+				encodedData[encodedLength++] = b ^ FRAME_ESCAPE_XOR;
+			}
+			else {
+				encodedData[encodedLength++] = b;
+			}
+		}
+		return encodedData.slice(0, encodedLength);
+};
+
+
 var Zigate = function(options) {
   options = options || {};
   this.options = {
@@ -117,41 +149,9 @@ Zigate.prototype.close = function(callback) {
 };
 
 
-Zigate.prototype.unescape = function(data) {
-		var decodedLength = 0;
-		var decodedData = Buffer.alloc(data.length);
-		var i=0;
-		while (i<data.length) {
-			if (data[i] === FRAME_ESCAPE && ((i+1)<data.length)) {
-				decodedData[decodedLength++] = data[++i] ^ FRAME_ESCAPE_XOR;
-			}
-			else {
-				decodedData[decodedLength++] = data[i];
-			}
-			i++;
-		}
-		return decodedData.slice(0, decodedLength);
-};
-
-Zigate.prototype.escape = function(data) {
-		var encodedLength = 0;
-		var encodedData = Buffer.alloc(data.length*2);
-		for (const b of data) {
-			if (b <= FRAME_ESCAPE_XOR) {
-				encodedData[encodedLength++] = FRAME_ESCAPE;
-				encodedData[encodedLength++] = b ^ FRAME_ESCAPE_XOR;
-			}
-			else {
-				encodedData[encodedLength++] = b;
-			}
-		}
-		return encodedData.slice(0, encodedLength);
-};
-
-
 Zigate.prototype.onFrameReceived = function(data) {
 		console.log("[Zigate] raw data:      ", data.toString('hex').replace(/../g, "$& "));
-		data = this.unescape(data);
+		data = unescapeData(data);
 		console.log("[Zigate] unescaped data: "+data.toString('hex').replace(/../g, "$& ") );
 
     if (!data[0] === FRAME_START) {
@@ -185,10 +185,11 @@ Zigate.prototype.onFrameReceived = function(data) {
 		var response = this.responses.parse(typeid, payload);
 		if (response) {
 			console.log("[Zigate] response built: "+JSON.stringify(response));
+			this.emit('response_'+response.type.name, response);
 			this.emit('response', response);
 		}
 		else {
-			this.onError(new Error("[Zigate] unrecognized response received (type="+data.type+")."), /*autoclose*/ false);
+			this.onError(new Error("[Zigate] unrecognized response received (type="+data.typeid+"): "+data.payload.toString('hex').replace(/../g, "$& ")), /*autoclose*/ false);
 		}
 };
 
@@ -215,12 +216,12 @@ Zigate.prototype.send = function(name, options) {
 	data.writeUInt8(checksum, 4);
 
   console.log("[Zigate] sending frame: 01 "+data.toString('hex').replace(/../g, "$& ")+ "03");
-  console.log("[Zigate] sending escaped frame: 01 "+this.escape(data).toString('hex').replace(/../g, "$& ")+"03");
+  console.log("[Zigate] sending escaped frame: 01 "+escapeData(data).toString('hex').replace(/../g, "$& ")+"03");
 
   this.serial.write([FRAME_START]);
-  this.serial.write(this.escape(data));
+  this.serial.write(escapeData(data));
   this.serial.write([FRAME_STOP]);
-
+	this.emit('command_'+command.type.name, command);
 };
 
 Zigate.list = function(callback) {

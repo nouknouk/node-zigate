@@ -2,7 +2,7 @@ module.exports = {
 	id: 0x8010,
 	name: "simple_descriptor_response",
 	parse: function(payload, rep) {
-		rep.sequence = payload.readUInt8(0);
+		rep.srcSequence = payload.readUInt8(0);
 		rep.status = payload.readUInt8(1);
 		rep.networkAddress = payload.readUInt16BE(2);
 		rep.length = payload.readUInt8(4);

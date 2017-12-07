@@ -18,7 +18,7 @@ module.exports = {
 	name: "status",
 	parse: function(payload, rep) {
 		rep.status = payload.readUInt8(0);
-		rep.sequence = payload.readUInt8(1);
+		rep.srcSequence = payload.readUInt8(1);
 		rep.packetType = payload.readUInt16BE(2);
 		rep.packetTypename = TYPE_TO_NAME[payload.readUInt16BE(2)];
 		rep.error = (payload.length > 4) ? payload.slice(4, payload.length).toString('utf8') : null;
