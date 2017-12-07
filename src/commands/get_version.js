@@ -1,13 +1,8 @@
 module.exports = {
-	typeid: 0x0010,
-	typename: "get_version", 
-	build: function(options) {
-		var cmd = {
-			type: this.typeid,
-			payload: Buffer.alloc(0),
-		};
-		
+	id: 0x0010,
+	name: "get_version",
+	build: function(options, cmd) {
+		cmd.payload = Buffer.alloc(0);
 		return cmd;
 	},
 };
-

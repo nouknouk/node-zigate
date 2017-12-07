@@ -164,7 +164,7 @@ Zigate.prototype.onFrameReceived = function(data) {
       this.onError(new Error("[Zigate] corrupted frame received: invalid 'frame_stop' character:  ("+data[data.length-1]+") instead of "+FRAME_STOP+". Skipping. ",  data), /*autoclose*/ false);
 		}
 
-		let type = data.readUInt16BE(1);
+		let typeid = data.readUInt16BE(1);
 		let length = data.readUInt16BE(3);
 		let checksum = data.readUInt16BE(5);
 		let payload = data.slice(6, data.length-1);
@@ -175,14 +175,14 @@ Zigate.prototype.onFrameReceived = function(data) {
 		}
 
 		var data = {
-				type: type,
+				typeid: typeid,
 				checksum: checksum,
 				payload: payload,
 		};
 		console.log("[Zigate] frame parsed: "+JSON.stringify(data));
 		this.emit('data', data);
 
-		var response = this.responses.parse(type, payload);
+		var response = this.responses.parse(typeid, payload);
 		if (response) {
 			console.log("[Zigate] response built: "+JSON.stringify(response));
 			this.emit('response', response);
@@ -192,7 +192,6 @@ Zigate.prototype.onFrameReceived = function(data) {
 		}
 };
 
-
 Zigate.prototype.send = function(name, options) {
 	if (!this.isOpen) throw new Error("Zigate not connected yet.");
 
@@ -200,12 +199,12 @@ Zigate.prototype.send = function(name, options) {
 
 
 	var data = Buffer.alloc(command.payload.length+5);
-	data.writeUInt16BE(command.type, 0);
+	data.writeUInt16BE(command.type.id, 0);
 	data.writeUInt16BE(command.payload.length, 2);
 
 	var checksum = 0x00
-	checksum ^= command.type >> 8;
-	checksum ^= command.type %256;
+	checksum ^= command.type.id >> 8;
+	checksum ^= command.type.id %256;
 	checksum ^= command.payload.length >> 8;
 	checksum ^= command.payload.length %256;
 	var i = 5;

@@ -35,11 +35,15 @@ CommandBuilder.prototype.build = function(nameOrOptions, options) {
 			throw new Error('CommandBuilder.build(): invalid parameters');
 		}
 
-		var cmdType = this.commands.find((c) => { return c.typename === options.name; });
+		var cmdType = this.commands.find((t) => { return t.name === options.name; });
 		if (!cmdType) throw new Error("invalid command type name '"+options.name+"'.");
 
-		var cmd = cmdType.build(options);
-		cmd.payload = cmd.payload || Buffer.alloc(0);
+		var cmd = {
+			type: cmdType,
+			options: options,
+			payload: Buffer.alloc(0),
+		};
+		cmdType.build(options, cmd);
 
 		return cmd;
 };

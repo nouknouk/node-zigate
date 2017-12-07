@@ -1,10 +1,7 @@
 module.exports = {
-	typeid: 0x8010,
-	typename: "simple_descriptor_response",
-	parse: function(payload) {
-		var rep = {
-			type: this.typeid,
-		};
+	id: 0x8010,
+	name: "simple_descriptor_response",
+	parse: function(payload, rep) {
 		rep.sequence = payload.readUInt8(0);
 		rep.status = payload.readUInt8(1);
 		rep.networkAddress = payload.readUInt16BE(2);
@@ -29,7 +26,5 @@ module.exports = {
 		rep.outBitsField = payload.readUInt8(outEnd);
 		rep.deviceVersion = payload.readUInt8(outEnd+1) >> 4;
 		rep.reserved = payload.readUInt8(outEnd+1) & 0x0F;
-
-		return rep;
 	},
 };

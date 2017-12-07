@@ -1,10 +1,7 @@
 module.exports = {
-	typeid: 0x8014,
-	typename: "device_announce",
-	parse: function(payload) {
-		var rep = {
-			type: this.typeid,
-		};
+	id: 0x8014,
+	name: "device_announce",
+	parse: function(payload, rep) {
 		rep.shortAddress = payload.readUInt16BE(0);
 		rep.ieeeAddressHI = payload.readUInt16BE(2);
 		rep.ieeeAddressLO = payload.readUInt16BE(4);
@@ -16,7 +13,5 @@ module.exports = {
 		rep.reserved = !!(rep.mac & 0x48);
 		rep.securityCapability = !!(rep.mac & 0x64);
 		rep.allocateAddress = !!(rep.mac & 0x128);
-
-		return rep;
 	},
 };

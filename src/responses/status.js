@@ -14,18 +14,13 @@ const TYPE_TO_NAME = {
 for (var i=128; i<=244; ++i) TYPE_TO_NAME[i] = "failed (ZigBee event codes)";
 
 module.exports = {
-	typeid: 0x8000,
-	typename: "status", 
-	parse: function(payload) {
-		var rep = {
-			type: this.typeid,
-		};
+	id: 0x8000,
+	name: "status",
+	parse: function(payload, rep) {
 		rep.status = payload.readUInt8(0);
 		rep.sequence = payload.readUInt8(1);
 		rep.packetType = payload.readUInt16BE(2);
 		rep.packetTypename = TYPE_TO_NAME[payload.readUInt16BE(2)];
 		rep.error = (payload.length > 4) ? payload.slice(4, payload.length).toString('utf8') : null;
-		return rep;
 	},
 };
-
