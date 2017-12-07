@@ -1,5 +1,5 @@
 module.exports = {
-	id: 0x8010,
+	id: 0x8043,
 	name: "simple_descriptor_response",
 	parse: function(payload, rep) {
 		rep.srcSequence = payload.readUInt8(0);

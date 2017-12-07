@@ -10,7 +10,6 @@ const TYPE_TO_NAME = {
 	5: "Stack already started (no new configuration accepted)",
 	/* 128 – 244 = Failed (ZigBee event codes)" */
 };
-
 for (var i=128; i<=244; ++i) TYPE_TO_NAME[i] = "failed (ZigBee event codes)";
 
 module.exports = {
@@ -18,6 +17,7 @@ module.exports = {
 	name: "status",
 	parse: function(payload, rep) {
 		rep.status = payload.readUInt8(0);
+		rep.satusText = TYPE_TO_NAME[rep.status];
 		rep.srcSequence = payload.readUInt8(1);
 		rep.packetType = payload.readUInt16BE(2);
 		rep.packetTypename = TYPE_TO_NAME[payload.readUInt16BE(2)];

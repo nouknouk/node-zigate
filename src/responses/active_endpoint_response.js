@@ -1,5 +1,5 @@
 module.exports = {
-	id: 0x8010,
+	id: 0x8045,
 	name: "active_endpoint_response",
 	parse: function(payload, rep) {
 		rep.sequence = payload.readUInt8(0);

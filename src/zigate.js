@@ -89,24 +89,40 @@ util.inherits(Zigate, EventEmitter);
 
 Zigate.prototype.open = function(path, callback) {
   if (!this.serial) {
-    this.path = path;
-    this.serial = new SerialPort(this.path, this.options, (err) => {
-      if (!err) {
-        this.parser = this.serial.pipe(new SerialPort.parsers.Delimiter({ delimiter: [FRAME_STOP] }));
-        this.parser.on('data', this.onFrameReceived);
+		if (path) {
+	    this.path = path;
+	    this.serial = new SerialPort(this.path, this.options, (err) => {
+	      if (!err) {
+	        this.parser = this.serial.pipe(new SerialPort.parsers.Delimiter({ delimiter: [FRAME_STOP] }));
+	        this.parser.on('data', (data) => { this.onFrameReceived(data); });
+	        this.serial.on('error', (err) => { this.onError(err, /*autoclose*/ false); });
+	        this.serial.on('close', () => { this.onPortClose(); });
 
-        this.serial.on('error', (err) => { this.onError(err, /*autoclose*/ false); });
-        this.serial.on('close', () => { this.emit('close'); });
-
-	if (callback) callback();
-	this.emit('open');
-      }
-      else {
-	this.serial = null;
-        this.onError(err);
-	if (callback) process.nextTick(callback, err);
-      }
-    });
+					console.log("[Zigate] successfully connected to device '"+this.path+"'.");
+					if (callback) callback();
+					this.emit('open');
+	      }
+	      else {
+					this.serial = null;
+	        this.onError(err);
+					if (callback) process.nextTick(callback, err);
+	      }
+	    });
+		}
+		else {
+			// no path provided ; try to guess the COM port
+			Zigate.list((err, ports) => {
+				var port = ports && ports.find((p)=>{ return p.vendorId === '067b' && p.productId === '2303' });
+				if (err || !port || !port.comName) {
+					console.error("[Zigate] detection of Zigate key failed.");
+					if (callback) callback(new Error("[Zigate] open: no path provided and autodetection failed: "+err));
+				}
+				else {
+					console.log("[Zigate] successfully guessed Zigate port '"+port.comName+"' ; starting connexion.");
+					this.open(port.comName, callback);
+				}
+			});
+		}
   }
   else {
     // Zigate instance was already connected to same port ; no-op.
@@ -132,10 +148,7 @@ Zigate.prototype.close = function(callback) {
     console.log("[Zigate] closing connexion to '"+this.path+"'...");
     this.serial.close((err) => {
       if (!err) {
-        this.emit('close');
-        this.serial = null;
-        this.parser = null;
-        this.path = null;
+				this.onPortClose();
       }
 			else {
         this.emit('error', err);
@@ -144,60 +157,58 @@ Zigate.prototype.close = function(callback) {
     });
   }
   else {
-		if (callback) process.nextTick(callback, error);
+		console.log("[Zigate] closing connexion failed: not opened yet");
+		if (callback) process.nextTick(callback, new Error("closing connexion failed: not opened yet"));
   }
 };
 
 
 Zigate.prototype.onFrameReceived = function(data) {
-		console.log("[Zigate] raw data:      ", data.toString('hex').replace(/../g, "$& "));
+	try {
+		//console.log("[Zigate] Frame received ; raw data:      ", data.toString('hex').replace(/../g, "$& "));
+		var escaped = data;
 		data = unescapeData(data);
-		console.log("[Zigate] unescaped data: "+data.toString('hex').replace(/../g, "$& ") );
+		console.log("[Zigate] received frame: "+data.toString('hex').replace(/../g, "$& ") );
 
-    if (!data[0] === FRAME_START) {
-      this.onError(new Error("[Zigate] corrupted frame received: invalid 'frame_start' character: ",data[0]," instead of "+FRAME_START+". Skipping. ", data), /*autoclose*/ false);
-    }
-		if (data.length < 8) {
-      this.onError(new Error("[Zigate] corrupted frame received: less than 8 bytes long ("+data.length+" bytes). ",  data), /*autoclose*/ false);
-		}
-		if (data[data.length-1] !== FRAME_STOP) {
-      this.onError(new Error("[Zigate] corrupted frame received: invalid 'frame_stop' character:  ("+data[data.length-1]+") instead of "+FRAME_STOP+". Skipping. ",  data), /*autoclose*/ false);
-		}
+	  if (!data[0] === FRAME_START) this.onError(new Error("[Zigate] corrupted frame received: invalid 'frame_start' character: ",data[0]," instead of "+FRAME_START+". Skipping. ", data), /*autoclose*/ false);
+	  if (data.length < 6) this.onError(new Error("[Zigate] corrupted frame received: less than 8 bytes long ("+data.length+" bytes). ",  data), /*autoclose*/ false);
+		// if (data[data.length-1] !== FRAME_STOP) this.onError(new Error("[Zigate] corrupted frame received: invalid 'frame_stop' character:  ("+data[data.length-1]+") instead of "+FRAME_STOP+". Skipping. ",  data), /*autoClose*/ false);
 
 		let typeid = data.readUInt16BE(1);
 		let length = data.readUInt16BE(3);
 		let checksum = data.readUInt16BE(5);
-		let payload = data.slice(6, data.length-1);
-		let rssi = data[data.length-2];
+		let payload = data.slice(6, 6+length);
+		let rssi = 6+length === data.length ? null : data[data.length-1];
 
-		if (payload.length !== length) {
-      this.onError(new Error("[Zigate] corrupted frame received: inconsistent frame length attribute ("+length+") vs. payload length ("+payload.length+"). ",  data), /*autoclose*/ false);
-		}
+		if (payload.length !== length) this.onError(new Error("[Zigate] corrupted frame received: inconsistent frame length attribute ("+length+") vs. payload length ("+payload.length+"). ",  data), /*autoclose*/ false);
 
 		var data = {
-				typeid: typeid,
-				checksum: checksum,
-				payload: payload,
+			typeid: typeid,
+			checksum: checksum,
+			payload: payload,
+			rssi: rssi,
 		};
-		console.log("[Zigate] frame parsed: "+JSON.stringify(data));
 		this.emit('data', data);
 
 		var response = this.responses.parse(typeid, payload);
 		if (response) {
-			console.log("[Zigate] response built: "+JSON.stringify(response));
+			console.log("[Zigate] response received: "+JSON.stringify(response));
 			this.emit('response_'+response.type.name, response);
 			this.emit('response', response);
 		}
 		else {
 			this.onError(new Error("[Zigate] unrecognized response received (type="+data.typeid+"): "+data.payload.toString('hex').replace(/../g, "$& ")), /*autoclose*/ false);
 		}
+	} catch (e) {
+				console.error("[Zigate] EXCEPTION in 'onFrameReceived': ", e);
+				console.error("[Zigate] raw data: "+escaped.toString('hex').replace(/../g, "$& "));
+	}
 };
 
 Zigate.prototype.send = function(name, options) {
 	if (!this.isOpen) throw new Error("Zigate not connected yet.");
 
 	var command = this.commands.build(name, options);
-
 
 	var data = Buffer.alloc(command.payload.length+5);
 	data.writeUInt16BE(command.type.id, 0);
@@ -216,7 +227,7 @@ Zigate.prototype.send = function(name, options) {
 	data.writeUInt8(checksum, 4);
 
   console.log("[Zigate] sending frame: 01 "+data.toString('hex').replace(/../g, "$& ")+ "03");
-  console.log("[Zigate] sending escaped frame: 01 "+escapeData(data).toString('hex').replace(/../g, "$& ")+"03");
+  // console.log("[Zigate] sending escaped frame: 01 "+escapeData(data).toString('hex').replace(/../g, "$& ")+"03");
 
   this.serial.write([FRAME_START]);
   this.serial.write(escapeData(data));
@@ -255,13 +266,22 @@ Zigate.list = function(callback) {
 	*/
 };
 
+Zigate.prototype.onPortClose = function() {
+	if (this.serial) {
+		console.log("[Zigate] connexion to zigate has been closed.");
+		this.emit('close');
+		this.serial = null;
+		this.parser = null;
+		this.path = null;
+	}
+};
 
 Zigate.prototype.onError = function(err, autoclose) {
-		console.error("[Zigate] ERROR: ", err);
-    process.nextTick(this.emit.bind(this,'error', err));
-    if (autoclose && this.serial && this.serial.isOpen) {
-      this.serial.close();
-    }
+	console.error("[Zigate] ERROR: ", err);
+  process.nextTick(this.emit.bind(this,'error', err));
+  if (autoclose && this.serial && this.serial.isOpen) {
+    this.serial.close();
+  }
 };
 
 

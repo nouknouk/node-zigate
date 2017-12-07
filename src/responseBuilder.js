@@ -26,12 +26,12 @@ ResponseBuilder.prototype.parse = function(typeid,payload) {
 		var repType = this.responses.find((t) => { return t.id === typeid; });
 		if (!repType) throw new Error("invalid response typeid '"+typeid+"'.");
 
-		var rep = {
-			type: repType,
-			payload: payload,
-		};
-		repType.parse(payload, rep);
+		var rep = Object.defineProperties({}, {
+			type:    {value:repType, enumerable: true},
+			payload: {value: payload},
+		});
 
+		repType.parse(payload, rep);
 		return rep;
 };
 

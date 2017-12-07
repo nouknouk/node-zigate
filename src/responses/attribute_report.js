@@ -63,36 +63,34 @@ module.exports = {
 		rep.attributeType = payload.readUInt8(9);
 		rep.attributeTypeName = ATTRIBUTE_TYPE_NAME[rep.attributeType];
 		rep.attributeSize = payload.readUInt16BE(10);
-		rep.attributeRawData = Buffer.alloc(rep.attributeSize);
-		for (var i=0; i<rep.attributeSize; ++i) {
-			rep.attributeRawData[i] = payload.readUInt8(12+i);
-		}
-		
+
+		var rawData = rep.attributeSize.slice(12, 12+rep.attributeSize);
 		switch (rep.attributeType) {
 			case 0x00: // null
 				rep.value = null;
 				break;
 			case 0x10: // boolean
-				rep.value = rep.attributeRawData.readUIntBE(rep.attributeRawData.length) ? true : false;
+				rep.value = rawData.readUIntBE(rawData.length) ? true : false;
 				break;
 			case 0x18: // bitmap8
+				rep.value = rawData;
 				break;
 			case 0x20: // uint8
 			case 0x21: // uint16
 			case 0x22: // uint32
 			case 0x25: // uint48
-				rep.value = rep.attributeRawData.readUIntBE(rep.attributeRawData.length);
+				rep.value = rawData.readUIntBE(rawData.length);
 				break;
 			case 0x28: // int8
 			case 0x29: // int16
 			case 0x2a: // int32
-				rep.value = rep.attributeRawData.readIntBE(rep.attributeRawData.length);
+				rep.value = rawData.readIntBE(rawData.length);
 				break;
 			case 0x30: // enum
-				rep.value = rep.attributeRawData.readUIntBE(rep.attributeRawData.length);
+				rep.value = rawData.readUIntBE(rawData.length);
 				break;
 			case 0x42: // string
-				rep.value = rep.attributeRawData.toString();
+				rep.value = rawData.toString();
 				break;
 		}
 	},
