@@ -1,4 +1,12 @@
-const port='/dev/ttyUSB0';
+if (process.argv.length < 2 || !process.argv[2] || process.argv[2]==='-h' || process.argv[2]==='--help' ) {
+  console.log("You must provide the path to the serial port of the Zigate key.")
+  console.log("Examples:");
+  console.log("    node test /dev/ttyUSB0     (linux)");
+  console.log("    node test COM3             (windows)");
+  process.exit(0);
+}
+
+const port=process.argv[2];
 
 let Zigate = require(__dirname+'/..');
 
@@ -32,4 +40,5 @@ myZikey.on('response', function(response) {
 });
 
 
+console.log("opening connexion to port '"+port+"'...");
 myZikey.open(port);
