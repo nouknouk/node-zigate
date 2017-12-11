@@ -1,37 +1,38 @@
+
+// port is not mandatory: node-zigate may guess automatically (or not) the right port if none provided
 const port=process.argv.length >= 3 ? process.argv[2] : null;
 
 let Zigate = require(__dirname+'/..');
 
-let myZikey = new Zigate();
-
-myZikey.on('open', function(err) {
-  if (err) {
-    console.error("[test] connexion failed: ",err);
-  }
-  else {
-    console.log("[test] connexion to Zigate well established.");
-
-    myZikey.send("get_version");
-    console.log("[test] command 'get_version' sent ; awaiting response...");
-  }
-});
+let myZikey = new Zigate.Driver();
 
 myZikey.on('close', function() {
-  console.error("[test] connexion to Zigate closed. Exiting.");
-  process.exit(0);
+  console.error("connection to Zigate closed.");
 });
 
 myZikey.on('error', function(err) {
-  console.error("[test] error: ",err);
+  console.error("error: ",err);
 });
 
 myZikey.on('response', function(response) {
-  console.log("[test] response '"+response.type.name+"' received: ", JSON.stringify(response));
-  myZikey.close();
-  console.log("[test] closing connexion...");
+  console.log("response '"+response.type.name+"' received: ", response);
+  if (response.type.name === 'version_list') {
+    console.log("closing connexion...");
+    myZikey.close().then(()=> {
+      console.log("connexion closed. Exiting");
+      process.exit(0);
+    });
+  }
 });
 
-
-if (port) console.log("[test] opening connexion to port '"+port+"'...");
-else console.log("[test] attempt to guess the Zigate port before connecting...");
-myZikey.open(port);
+if (port) {
+  console.log("opening connexion to port '"+port+"'...");
+}
+else {
+  console.log("No port provided ; will guess the Zigate port automatically before connecting.");
+}
+myZikey.open(port).then(()=> {
+  console.log("connection to Zigate well established.");
+  myZikey.send("get_version");
+  console.log("command 'get_version' sent ; awaiting response...");
+});
