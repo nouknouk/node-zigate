@@ -3,6 +3,6 @@ module.exports = {
 	name: "leave_indication",
 	parse: function(reader, rep) {
 		rep.ieeeAddress = reader.nextBuffer(8).toString('hex');
-		rep.rejoinStatus = reader.nextUInt8();
+		rep.rejoin = !!(reader.nextUInt8());
 	},
 };

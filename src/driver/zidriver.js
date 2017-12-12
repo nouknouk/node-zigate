@@ -35,7 +35,7 @@ class ZiDriver extends EventEmitter {
 	constructor(options) {
 		options = options || {};
 		super();
-		
+
 	  this.serialOptions = {
 	    baudRate: options.baudRate || 115200,
 	    dataBits: options.dataBits || 8,
@@ -48,7 +48,7 @@ class ZiDriver extends EventEmitter {
 	  this.parser = null;
 	  this.serial = null;
 		this.logger = typeof(options.logger) === 'object' ? options.logger : ZIDRIVER_LOGGERS[options.logger  || 'nolog'];
-		
+
 		CommandBuilder.LOGS = this.logger;
 		this.commands = new CommandBuilder();
 		this.commands.loadCommands(options.commandPath || __dirname+'/commands');
@@ -178,6 +178,10 @@ class ZiDriver extends EventEmitter {
 				this.logger.log("[ZiDriver] response received: "+JSON.stringify(response));
 				this.emit('response_'+response.type.name, response);
 				this.emit('response', response);
+				if (typeid === 0x8000) {
+					// special handling for 'status' response messages.
+					this.emit('status_'+response.requestType, response);
+				}
 				return true;
 			}
 			else {
@@ -331,7 +335,7 @@ class ZiDriver extends EventEmitter {
 		}
 		return encodedData.slice(0, encodedLength);
 	}
-	
+
 }
 
 module.exports = ZiDriver;

@@ -160,6 +160,7 @@ class ZiManager extends EventEmitter {
 
   onDriverResponse(rep) {
     switch (rep.type.name) {
+			/*
       case 'object_cluster_list':
 				// {"type":{"id":32771,"name":"object_cluster_list"},"typeHex":"0x8003","srcEndpoint":1,"profileId":260,"clusters":[0,1,3,4,5,6,8,25,257,4096,768,513,516]}
         var device = this.getOrCreateDevice(rep.srcEndpoint); //// <<<<<<==================== to fix !!!!!!!!!! ====================
@@ -180,6 +181,7 @@ class ZiManager extends EventEmitter {
 				var cluster = endpoint.getOrCreateCluster(rep.clusterId);
         cluster.addCommands(rep.commands);
         break;
+			*/
 			case 'attribute_report':
 				// {"type":{"id":33026,"name":"attribute_report"},"typeHex":"0x8102","srcSequence":0,"srcAddress":17685,"srcEndpoint":1,"clusterId":0,"attributeId":5,"attributeStatus":0,"attributeType":66,"attributeTypeName":"string","attributeSize":12,"value":"lumi.weather","rssi":201}
 				var device = this.getOrCreateDevice(rep.srcAddress);
@@ -189,9 +191,9 @@ class ZiManager extends EventEmitter {
 				attribute.setValue(rep.value);
 				break;
 			case 'leave_indication':
-				// {"type":{"id":32840,"name":"leave_indication"},"typeHex":"0x8048","ieeeAddress":"00158d0001b95482","rejoinStatus":0,"rssi":201}
+				// {"leave_indication", 0x8048, ieeeAddress, rejoin, rssi}
 				var device = null;
-				for (var id in this.devices) {
+				for (let id in this.devices) {
 					if (this.devices[id].ieeeAddress === rep.ieeeAddress) {
 						device = this.devices[id];
 						break;
@@ -202,11 +204,11 @@ class ZiManager extends EventEmitter {
 					this.logger.log(""+device+": removed.");
 				}
 				else {
-					this.logger.warn(""+this.devices[id]+": leave_indication received but device not registered.");
+					this.logger.warn("Leave_indication received from '"+rep.ieeeAddress+"' but device not registered.");
 				}
 				break;
 			case 'device_announce':
-				// {"type":{"id":77,"name":"device_announce"},"typeHex":"0x4d","shortAddress":17685,"ieeeAddress":"00158d0001b95482","mac":128,"alternatePanCoordinator":false,"deviceType":false,"powerSource":false,"receiverOnWhenIdle":false,"reserved":false,"securityCapability":false,"allocateAddress":false,"rssi":201}
+				// {"device_announce",0x4d, shortAddress, ieeeAddress, mac, alternatePanCoordinator, deviceType, powerSource, receiverOnWhenIdle, securityCapability, allocateAddress, rssi}
 				var device = this.getDevice(rep.shortAddress);
 				if (!this.getDevice(rep.shortAddress)) {
 					device = this.getOrCreateDevice(rep.shortAddress);
@@ -226,13 +228,16 @@ class ZiManager extends EventEmitter {
 				}
 				break;
 			case 'active_endpoint_response':
+				// {"active_endpoint_response",0x8045, sequence, status, srcAddress, endpoints, rssi}
 				// we get the list of endpoints for this new device.
 				// usually received after a 'gatherDeviceInformations_level0_start' which sent an 'active_endpoint_request'
 				this.gatherDeviceInformations_level1_endpoints(rep);
 				break;
 			case 'simple_descriptor_response':
+				// {"simple_descriptor_response",srcSequence, status, srcAddress, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
+
 				// we get the list of clusters for this new device.
-				// usually received after a 'gatherDeviceInformations_level1_endpoints' 
+				// usually received after a 'gatherDeviceInformations_level1_endpoints'
 				// which sent a 'simple_descriptor_request' following 'active_endpoint_response'(s)
 				this.gatherDeviceInformations_level2_clusters(rep);
 				break;
@@ -248,18 +253,20 @@ class ZiManager extends EventEmitter {
 			device = new ZiDevice(deviceId);
       this.devices[deviceId] = device;
 			this.logger.log(""+device+": created.");
-			this.gatherDeviceInformations_level0_start(deviceId)
+			this.gatherDeviceInformations_level0_start(device)
     }
     return device;
   }
-	
-	gatherDeviceInformations_level0_start(deviceId) {
+
+	gatherDeviceInformations_level0_start(device) {
 		// 1) send    active_endpoint_request {target: shortAddress}
-		this.driver.send('active_endpoint_request', { target: deviceId });
+		this.logger.log("new "+device+" announced ; gathering its endpoints...");
+		this.driver.send('active_endpoint_request', { target: device.id });
 	}
 	gatherDeviceInformations_level1_endpoints(rep) {
-		// 2) parse   active_endpoint_response = { status, srcAddress, endpoints[] }
-		var device = this.devices[srcAddress];
+		// {"type":{"id":32837,"name":"active_endpoint_response","typeHex":"8045"},"sequence":31,"status":0,"srcAddress":29398,"endpoints":[1],"rssi":222}
+		var device = this.devices[rep.srcAddress];
+		this.logger.log(""+device+" endpoints retrieved ; gathering clusters...");
 		// 3) for each (enpoint) - send   simple_descriptor_request {target: srcAddress, endpoint}
 		rep.endpoints.forEach((endpointId) => {
 			var endpoint = device.getOrCreateEndpoint(endpointId);
@@ -267,15 +274,20 @@ class ZiManager extends EventEmitter {
 		});
 	}
 	gatherDeviceInformations_level2_clusters(rep) {
-		// 4) for each (enpoint) - parse  simple_descriptor_response {endpoint, inClusters, outClusters, profileId, deviceId, deviceVersion, etc...}
-		var device = this.devices[srcAddress];
+		// {"simple_descriptor_response",srcSequence, status, srcAddress, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
+		// 4) for each (enpoint) - parse  simple_descriptor_response {srcAddress, endpoint, inClusters, outClusters, profileId, deviceId, deviceVersion, etc...}
+		var device = this.devices[rep.srcAddress];
+		if (!device) throw new Error("simple_descriptor_response received, but device '"+rep.srcAddress+"' not found.");
 
 		var endpoint = device.getOrCreateEndpoint(rep.endpoint);
 		endpoint.deviceId = rep.deviceId;
 		endpoint.deviceVersion = rep.deviceVersion;
-		
+
+		this.logger.log(""+device+""+endpoint+" clusters retrieved ; gathering attributes...");
+
 		rep.inClusters.forEach((clusterId) => {
 			var cluster = endpoint.getOrCreateCluster(clusterId);
+			
 		});
 		rep.outClusters.forEach((clusterId) => {
 			var cluster = endpoint.getOrCreateCluster(clusterId);
