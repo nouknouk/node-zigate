@@ -57,7 +57,6 @@ class ZiDriver extends EventEmitter {
 		this.responses = new ResponseBuilder();
 		this.responses.loadResponses(options.responsePath || __dirname+'/responses');
 
-
 		if (this.port) {
 			this.open(options.port);
 		}
@@ -200,6 +199,8 @@ class ZiDriver extends EventEmitter {
 			if (!this.isOpen) throw new Error("Zigate not connected yet.");
 
 			var command = this.commands.build(name, options);
+			command.promise = p;
+			command.timestamp = new Date();
 
 			var raw_out = Buffer.alloc(command.payload.length+5);
 			raw_out.writeUInt16BE(command.type.id, 0);

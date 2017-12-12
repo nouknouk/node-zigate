@@ -200,7 +200,7 @@ class ZiManager extends EventEmitter {
 					}
 				}
 				if (device) {
-					delete this.devices[id];
+					delete this.devices[device.id];
 					this.logger.log(""+device+": removed.");
 				}
 				else {
