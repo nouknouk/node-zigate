@@ -1,11 +1,17 @@
 # node-zigate
 
+The project aims to provide low & high level APIs for managing the Zigate USB TTL key (cf. zigate.fr) in node.js
+
 __This project is still under active development ; not very usable yet.__
+
 It's mostly for developpers which want to have a look / contribute.
 
 ## introduction:
 
 This project is composed of two main parts, representing two level of abstraction of the Zigate key:
+* The Zigate.Driver is a 'lower level' abstraction of the Zigate key
+* The Zigate.Manager, and higher abstraction on top of the Zigate.Driver class ; it would provide additionnal features.
+
 
 ### The Zigate.Driver class:
 
@@ -46,8 +52,8 @@ myZikey.on('close', function(err) => {
 ```
 
 #### send commands:
-A command is composed of a name (like 'geet_version', 'reset', 'permit_join_request'), and zero or more parameters.
-Look for the list of commands available & their parameters in subfolder 'src/driver/commands/'
+A command is composed of a name (like `'get_version'`, `'reset'`, `'permit_join_request'`), and zero or more parameters.
+Look for the list of commands available & their parameters in subfolder `src/driver/commands/`
 ```
 // send a command:
 myZikey.send('my_command_name', {
@@ -83,8 +89,8 @@ myZikey.on('response_yyy', function(rep) => {
 
 ### The Zigate.Manager class:
 
-Zigate.Manager is an 'higher level' abstraction of the Zigate key: it handles communication with it by using the Driver class and (will) provide(s) additionnal features:
-* (PARTIALLY AVAILABLE) expose the availables devices, their endpoints / clusters / attributes and actions on them (get/set attribute's values, ...)
+Zigate.Manager is an 'higher level' abstraction of the Zigate key: it handles communication with it by using the Driver class and (would) provide additionnal features:
+* (TODO) expose the availables devices, their endpoints / clusters / attributes and actions on them (get/set attribute's values, ...)
 * (TODO) metadata related to clusters/attributes (names, type of data, ...
 * (TODO) better API to start/stop inclusion mode
 * (TODO) automatic discovering & retrieval of clusters & attributes after an association of a new Zigbee device
