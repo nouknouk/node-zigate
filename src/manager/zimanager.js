@@ -141,6 +141,40 @@ class ZiManager extends EventEmitter {
       return Promise.reject(err);
     }
 	}
+	endpointsOf(deviceId) {
+		this.driver.send('active_endpoint_request', { target: deviceId });
+		var cbfn = (rep) => {
+			this.logger.warn("--------- endpoints -----------");
+			this.logger.warn("device ("+deviceId+"): "+rep.endpoints.length+" available endpoints: "+JSON.stringify(rep.endpoints));
+			this.logger.warn("-------------------------------");
+		};
+		
+		this.driver.once('response_active_endpoint_response', cbfn);
+	}
+	clustersOf(deviceId, endpointId) {
+		this.driver.send('simple_descriptor_request', {target: deviceId, endpoint:endpointId});
+		var cbfn = (rep) => {
+			this.logger.warn("---------- clusters ----------");
+			this.logger.warn("device ("+rep.srcAddress+"), endpoint ("+rep.endpoint+"): in="+JSON.stringify(rep.inClusters)+" ; out="+JSON.stringify(rep.outClusters));
+			this.logger.warn("------------------------------");
+		};
+		this.driver.once('response_simple_descriptor_response', cbfn);
+	}
+	
+	attributesOf(deviceId, endpointId, clusterId) {
+		
+		this.driver.send('attribute_discovery_request',{
+				target:deviceId, srcEndpoint:endpointId, dstEndpoint:endpointId, cluster:clusterId, startAttribute:0, 
+				clientToServer:true, manufacturerSpecific:false, maxCount:100
+		});
+		
+		var cbfn = (rep) => {
+			this.logger.warn("------- attribute_discovery ---------");
+			this.logger.warn("attribute="+rep.attributeId+" ("+rep.attributeTypeName+")");
+			this.logger.warn("-------------------------------------");
+		};
+		this.driver.once('response_attribute_discovery_response', cbfn);
+	}
   onDriverOpen() {
     this.devices = {};
     this.emit('started')
@@ -266,7 +300,11 @@ class ZiManager extends EventEmitter {
 	gatherDeviceInformations_level1_endpoints(rep) {
 		// {"type":{"id":32837,"name":"active_endpoint_response","typeHex":"8045"},"sequence":31,"status":0,"srcAddress":29398,"endpoints":[1],"rssi":222}
 		var device = this.devices[rep.srcAddress];
-		this.logger.log(""+device+" endpoints retrieved ; gathering clusters...");
+		if (!device) {
+			this.logger.error("gatherDeviceInformations_level1_endpoints - device("+rep.srcAddress+") not registered yet.");
+			return;
+		}
+		this.logger.log("endpoints of "+device+" retrieved: "+JSON.stringify(rep.endpoints)+" ; gathering clusters...");
 		// 3) for each (enpoint) - send   simple_descriptor_request {target: srcAddress, endpoint}
 		rep.endpoints.forEach((endpointId) => {
 			var endpoint = device.getOrCreateEndpoint(endpointId);
@@ -277,13 +315,16 @@ class ZiManager extends EventEmitter {
 		// {"simple_descriptor_response",srcSequence, status, srcAddress, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
 		// 4) for each (enpoint) - parse  simple_descriptor_response {srcAddress, endpoint, inClusters, outClusters, profileId, deviceId, deviceVersion, etc...}
 		var device = this.devices[rep.srcAddress];
-		if (!device) throw new Error("simple_descriptor_response received, but device '"+rep.srcAddress+"' not found.");
+		if (!device) {
+			this.logger.error("simple_descriptor_response received, but device '"+rep.srcAddress+"' not found.");
+			return;
+		}
 
 		var endpoint = device.getOrCreateEndpoint(rep.endpoint);
 		endpoint.deviceId = rep.deviceId;
 		endpoint.deviceVersion = rep.deviceVersion;
 
-		this.logger.log(""+device+""+endpoint+" clusters retrieved ; gathering attributes...");
+		this.logger.log(""+device+""+endpoint+" clusters retrieved in="+rep.inClusters+" ; out="+rep.outClusters+" ; gathering attributes...");
 
 		rep.inClusters.forEach((clusterId) => {
 			var cluster = endpoint.getOrCreateCluster(clusterId);

@@ -1,5 +1,7 @@
 const path = require('path');
 const fs = require('fs');
+const Enum = require('./constants.js');
+const colors = require('colors');
 
 class CommandBuilder {
 	constructor() {
@@ -19,7 +21,7 @@ class CommandBuilder {
 						throw e;
 				}
 				this.commands.push(cmd);
-				//console.log("[Zigate] command type '" + id + "' loaded.");
+				Enum.COMMANDS.__add([cmd.id, cmd.name, cmd.description]);
 		});
 	}
 
@@ -36,17 +38,25 @@ class CommandBuilder {
 				throw new Error('CommandBuilder.build(): invalid parameters');
 			}
 
-			var cmdType = this.commands.find((t) => { return t.name === options.name; });
-			if (!cmdType) throw new Error("invalid command type name '"+options.name+"'.");
+			var cmdFactory = this.commands.find((t) => { return t.name === options.name; });
+			var cmdType = Enum.COMMANDS(options.name);
+			if (!cmdFactory || !cmdType) throw new Error("invalid command type name '"+options.name+"'.");
 
-			var cmd = {
-				type: cmdType,
-				typeHex: cmdType.id.toString(16),
-				options: options,
-				payload: Buffer.alloc(0),
-			};
-			cmdType.build(options, cmd);
-
+			var cmd = Object.defineProperties({}, {
+				type:    {value: cmdType, enumerable: true},
+				payload: {value: Buffer.alloc(0)},
+				options: {value: options},
+				inspect: {value: function(depth, options) { 
+					var str = (""+this.type+"").red;
+					for (var k in this) {
+						if (k!=='type' && k!=='payload' && k !== 'reader' && typeof(this[k]) !== 'function')
+							str += ", " + (""+k) + ":" + (""+this[k]).grey;
+					}
+					return str;
+				}},
+			});
+			cmdFactory.build(options, cmd);
+			
 			return cmd;
 	}
 }

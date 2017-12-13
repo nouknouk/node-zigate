@@ -2,8 +2,8 @@ module.exports = {
 	id: 0x004D,
 	name: "device_announce",
 	parse: function(reader, rep) {
-		rep.shortAddress = reader.nextUInt16BE();
-		rep.ieeeAddress = reader.nextBuffer(8).toString('hex');
+		rep.address = reader.nextUInt16BE();
+		rep.ieee = reader.nextBuffer(8).toString('hex');
 		rep.mac = reader.nextUInt8();
 		rep.alternatePanCoordinator = !!(rep.mac & 0x1);
 		rep.deviceType = !!(rep.mac & 0x2);

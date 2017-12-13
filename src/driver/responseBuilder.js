@@ -1,6 +1,9 @@
 const path = require('path');
 const fs = require('fs');
 const BufferReader = require('./buffer-reader.js');
+const Enum = require('./constants.js');
+const util = require('util');
+const colors = require('colors');
 
 class ResponseBuilder {
 	constructor(options) {
@@ -21,23 +24,32 @@ class ResponseBuilder {
 						throw e;
 				}
 				this.responses.push(rep);
-				//console.log("[Zigate] response type '" + id + "' loaded.");
+				Enum.RESPONSES.__add([rep.id, rep.name, rep.description]);
 		});
 	}
 
 	parse(typeid,payload) {
-		var repType = this.responses.find((t) => { return t.id === typeid; });
-		if (!repType) throw new Error("invalid response typeid '"+typeid+"'.");
+		var responseFactory = this.responses.find((t) => { return t.id === typeid; });
+		var repType = Enum.RESPONSES(typeid);
+		if (!responseFactory || !repType) throw new Error("invalid response typeid '"+typeid+"'.");
 
 		var reader = new BufferReader(payload);
 		
 		var rep = Object.defineProperties({}, {
-			type:    {value:repType, enumerable: true},
+			type:    {value: repType, enumerable: true},
 			payload: {value: payload},
 			reader:  {value: reader},
+			inspect: {value: function(depth, options) { 
+				var str = (""+this.type+"").green;
+				for (var k in this) {
+					if (k!=='type' && k!=='payload' && k !== 'reader' && typeof(this[k]) !== 'function')
+						str += ", "+(""+k)+":"+(""+this[k]).grey;
+				}
+				return str;
+			}},
 		});
-
-		repType.parse(reader, rep);
+		
+		responseFactory.parse(reader, rep);
 		
 		if (reader.isMore()) {
 			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+typeid+"] the "+(payload.length - reader.tell())+" last bytes of data has not been readen:");

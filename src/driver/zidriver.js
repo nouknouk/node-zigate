@@ -2,6 +2,8 @@ const EventEmitter = require('events').EventEmitter;
 const SerialPort = require('serialport');
 const CommandBuilder = require('./commandBuilder.js');
 const ResponseBuilder = require('./responseBuilder.js');
+const Enum = require('./constants.js');
+const util = require('util');
 
 const FRAME_START = 0x01;
 const FRAME_STOP = 0x03;
@@ -173,8 +175,8 @@ class ZiDriver extends EventEmitter {
 
 			var response = this.responses.parse(typeid, payload);
 			if (response) {
-				response.rssi = rssi || undefined;
-				this.logger.log("[ZiDriver] response received: "+JSON.stringify(response));
+				if (typeof(rssi) !== 'undefined') response.rssi = rssi;
+				this.logger.log("[ZiDriver] response received: ", util.inspect(response, {breakLength: 10000}));
 				this.emit('response_'+response.type.name, response);
 				this.emit('response', response);
 				if (typeid === 0x8000) {
@@ -184,7 +186,7 @@ class ZiDriver extends EventEmitter {
 				return true;
 			}
 			else {
-				this.emitError(new Error("[ZiDriver] unrecognized response received (type="+typeid+"): "+payload.toString('hex').replace(/../g, "$& ")), /*autoclose*/ false);
+				this.emitError(new Error("[ZiDriver] unrecognized response received (type="+typeid.toString(16)+"): "+payload.toString('hex').replace(/../g, "$& ")), /*autoclose*/ false);
 				return false;
 			}
 		} catch (e) {
@@ -218,7 +220,7 @@ class ZiDriver extends EventEmitter {
 			}
 			raw_out.writeUInt8(checksum, 4);
 			this.logger.log("[ZiDriver] sending frame: 01 "+raw_out.toString('hex').replace(/../g, "$& ")+ "03");
-			this.logger.log("[ZiDriver] sending command: "+JSON.stringify(command));
+			this.logger.log("[ZiDriver] sending command: ", util.inspect(command, {breakLength: 10000}));
 
 			raw_out = this.escapeData(raw_out);
 		  // this.logger.log("[ZiDriver] sending escaped frame: 01 "+escapeData(raw_out).toString('hex').replace(/../g, "$& ")+"03");
