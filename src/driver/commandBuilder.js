@@ -3,6 +3,8 @@ const fs = require('fs');
 const Enum = require('./constants.js');
 const colors = require('colors');
 
+Enum.create('COMMANDS');
+		
 class CommandBuilder {
 	constructor() {
 		this.commands = [];

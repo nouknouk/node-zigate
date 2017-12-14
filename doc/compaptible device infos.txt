@@ -1,0 +1,61 @@
+    "zcl-id": "^0.3.2",
+    "zcl-packet": "^0.2.0",
+    "ziee": "^0.3.0",
+    "zive": "^0.2.2",
+"zstack-constants": "^0.2.0"
+
+
+
+Xiaomi Mi (new version) temperature sensor Xiaomi mi aquara 
+	
+EndPoint: 0x01
+Profile ID: 0x0104 (ZigBee HA)
+Device ID: 0x5F01 (Unknown)
+Input Cluster Count: 6
+	Cluster 0: Cluster ID: 0x0000 (General: Basic)
+	Cluster 1: Cluster ID: 0x0003 (General: Identify)
+	Cluster 2: Cluster ID: 0xFFFF (Unknown)
+	Cluster 3: Cluster ID: 0x0402 (Measurement: Temperature)
+	Cluster 4: Cluster ID: 0x0403 (Unknown)
+	Cluster 5: Cluster ID: 0x0405 (Unknown)
+Output Cluster Count: 3
+	Cluster 0: Cluster ID: 0x0000 (General: Basic)
+	Cluster 1: Cluster ID: 0x0003 (General: Identify)
+	Cluster 2: Cluster ID: 0xFFFF (Unknown)
+
+Attributes:
+	Temperature	
+		Cluster ID: 0x0402 (Measurement: Temperature)
+		Attribute ID: 0x0000
+		Attribute Type: 0x29 (INT16)
+		data/100 = 22.98°C
+	Humidity
+		Cluster ID: 0x0405 (Humidity)
+		Attribute ID: 0x0000
+		Attribute Type: 0x21 (UINT16)
+		data/100 = 75.99%
+	Pressure
+		Cluster ID: 0x0403 (Pression atmosphérique)
+		Attribute ID: 0x0000
+		Attribute Type: 0x29 (INT16)
+		data = 1009mb
+		
+		Cluster ID: 0x0403 (Pression atmosphérique)
+		Attribute ID: 0x0014
+		Attribute Type: 0x28 (Unknown)
+		data = unknown
+		
+		Cluster ID: 0x0403 (Pression atmosphérique)
+		Attribute ID: 0x0010
+		Attribute Type: 0x29 (INT16)
+		data / 10 = 1009.8mb
+	
+	Battery level
+		Cluster ID: 0x0000 (General: Basic)
+		Attribute ID: 0xFF01
+		Attribute Size: 0x0025
+		Attribute Type: 0x42 (Character String)
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Xiaomi Mi (new version) 

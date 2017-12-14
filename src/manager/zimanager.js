@@ -4,6 +4,7 @@ const ZiDevice = require('./zidevice.js');
 const ZiEndpoint = require('./ziendpoint.js');
 const ZiCluster = require('./zicluster.js');
 const ZiAttribute = require('./ziattribute.js');
+const ZiCommand = require('./zicommand.js');
 
 const ZIMANAGER_LOGGERS = {
 	console: { log: console.log, warn: console.warn, error: console.error, debug: console.debug },
@@ -275,7 +276,7 @@ class ZiManager extends EventEmitter {
   getOrCreateDevice(address) {
 		var device = this.devices[address];
     if (!device) {
-			device = new ZiDevice(address);
+			device = new ZiDevice(address, this);
       this.devices[address] = device;
 			this.logger.log(""+device+": created.");
 			this.gatherDeviceInformations_level0_start(device)

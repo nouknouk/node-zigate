@@ -5,6 +5,8 @@ const Enum = require('./constants.js');
 const util = require('util');
 const colors = require('colors');
 
+Enum.create('RESPONSES');
+
 class ResponseBuilder {
 	constructor(options) {
 		this.responses = [];

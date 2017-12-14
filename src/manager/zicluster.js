@@ -1,17 +1,18 @@
-ZiAttribute = require('./ziattribute.js');
-ZiCommand = require('./zicommand.js');
+let ZiAttribute = require('./ziattribute.js');
+let ZiCommand = require('./zicommand.js');
+let Enum = require('../driver/constants.js');
 
 class ZiCluster {
     constructor(id, endpoint) {
       this.id = id;
       this.endpoint = endpoint;
-      this.clusterDef = ZiCluster.Definitions.getClusterDef(id);
+      this.type = Enum.CLUSTERS(id);
       this.attributes = {};
       this.commands = {};
 			
     }
     toString() {
-      return "[cluster_0x"+this.id.toString(16)+"," + ((this.clusterDef && this.clusterDef.name) || "unknown")+"]";
+      return (""+this.type || "[cluster_0x"+this.id.toString(16)+",notype]");
     }
 
     getOrCreateAttribute(id) {
@@ -41,7 +42,6 @@ class ZiCluster {
     }
 }
 
-ZiCluster.Definitions = require('./ziclusterDefinitions.js');
-
 ZiCluster.LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
+
 module.exports = ZiCluster;

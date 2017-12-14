@@ -3,9 +3,10 @@ const ZiEndpoint = require('./ziendpoint.js');
 var LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
 
 class ZiDevice extends EventEmitter {
-    constructor(address) {
+    constructor(address, manager) {
       super();
       this.address = address;
+			this.manager = manager;
       this.endpoints = {};
       this.clusters = {};
 			this.ieee = null;

@@ -1,7 +1,8 @@
 const util = require('util');
 const colors = require('colors');
 
-function createEnumSet(name, defArray) {
+Enum = {};
+Enum.create = function(enumsetname, definitions) {
 
 	var enumSet = function(key, fallbackValue) {
 		if (typeof(key) === 'object' && key && (typeof(key.desc)==='string')) {
@@ -29,29 +30,58 @@ function createEnumSet(name, defArray) {
 		}
 	};
 
-	enumSet.toString = function() { return '[EnumSet_'+name+']'; };
+	enumSet.toString = function() { return '[EnumSet_'+enumsetname+']'; };
 
 	enumSet.__add = function(def) {
-		var id = def[0];
-		var name = def[1];
-		var description = def[2] || '';
-
-		enumSet[id] = {
-			id: id,
-			name: name,
-			description: description,
-			toString: function() { return this.name+ ('(0x'+this.id.toString(16)+')').grey; },
-			inspect: function() { return this.toString(); },
-		};
+		var enumObj = null;
+		if (Array.isArray(def) && def.length >=2 && def.length <=3) {
+			enumObj = {
+				id: def[0],
+				name: def[1],
+				description: def[2] || '',
+			};
+		}
+		else if (def && typeof(def) === 'object' && !isNaN(parseInt(def.id)) && typeof(def.name) === 'string') {
+			enumObj = def;
+		}
+		else {
+			throw new Error("invalid enum object definition provided: "+JSON.stringify(def));
+		}
+		if (enumSet[enumObj.id]) {
+			throw new Error("cannot add new entry in enum '"+enumsetname+"': colliding identifier '"+enumObj.id+"'");
+		}
+		else if (enumSet(enumObj.name)) {
+			throw new Error("cannot add new entry in enum '"+enumsetname+"':  colliding name '"+enumObj.name+"'");
+		}
+		
+		enumObj.toString = () => { return enumObj.name+ ('(0x'+enumObj.id.toString(16)+')').grey; };
+		enumObj.inspect = () => { return enumObj.toString(); };
+		enumSet[enumObj.id] = enumObj;		
 	};
 
-	defArray.forEach(enumSet.__add);
-
+	// register (optionally) provided definitions
+	if (Array.isArray(definitions)) {
+		definitions.forEach(enumSet.__add);
+	}
+	else if (definitions && typeof(definitions) === 'object') {
+		for (let n in definitions) {
+			var e = definitions[n];
+			if ( (e && typeof(e) === 'object' && e.name)) {
+				e.id = e.id || n;
+				enumSet.__add(e);
+			}
+			else if (Array.isArray(e) && e.length >= 2) {
+				enumSet.__add(e);
+			}
+		}
+	}
+	
+	Enum[enumsetname] = enumSet;
 	return enumSet;
-}
-Enum = {};
+};
 
-Enum.STATUS = createEnumSet('STATUS', [
+
+Enum.create('STATUS', [
 	[0, "success", ],
 	[1, "invalid_params", ],
 	[2, "unhandled_command", ],
@@ -60,7 +90,7 @@ Enum.STATUS = createEnumSet('STATUS', [
 	[5, "stack_already started", "Stack already started (no new configuration accepted)"],
 ]);
 
-Enum.ZCL_STATUS = createEnumSet('ZCL_STATUS', [
+Enum.create('ZCL_STATUS', [
 	[ 0, 'success',                                  ],
 	[ 1, 'fail',                                     ],
 	[ 2, 'parameter_null',                           ],
@@ -117,23 +147,60 @@ Enum.ZCL_STATUS = createEnumSet('ZCL_STATUS', [
 	[53, 'cluster_command_not_found',                ],
 ]);
 
-Enum.ATTRIBUTE_TYPE = createEnumSet('ATTRIBUTE_TYPE', [
-	[0x00, 'null',    ],
-	[0x10, 'boolean', ],
-	[0x18, 'bitmap8', ],
-	[0x20, 'uint8',   ],
-	[0x21, 'uint16',  ],
-	[0x22, 'uint32',  ],
-	[0x25, 'uint48',  ],
-	[0x28, 'int8',    ],
-	[0x29, 'int16',   ],
-	[0x2a, 'int32',   ],
-	[0x30, 'enum',    ],
-	[0x42, 'string',  ],
+Enum.create('ATTRIBUTE_TYPE', [
+	[0x00, 'null',        ],
+	[0x08, 'data8',       ],
+	[0x09, 'data16',      ],
+	[0x0A, 'data24',      ],
+	[0x0B, 'data32',      ],
+	[0x0C, 'data40',      ],
+	[0x0D, 'data48',      ],
+	[0x0E, 'data56',      ],
+	[0x0F, 'data64',      ],
+	[0x10, 'boolean',     ],
+	[0x18, 'bitmap8',     ],
+	[0x19, 'bitmap16',    ],
+	[0x1A, 'bitmap24',    ],
+	[0x1B, 'bitmap32',    ],
+	[0x1C, 'bitmap40',    ],
+	[0x1D, 'bitmap48',    ],
+	[0x1E, 'bitmap56',    ],
+	[0x1F, 'bitmap64',    ],
+	[0x20, 'uint8',       ],
+	[0x21, 'uint16',      ],
+	[0x22, 'uint24',      ],
+	[0x23, 'uint32',      ],
+	[0x24, 'uint40',      ],
+	[0x25, 'uint48',      ],
+	[0x26, 'uint56',      ],
+	[0x27, 'uint64',      ],
+	[0x28, 'int8',        ],
+	[0x29, 'int16',       ],
+	[0x2a, 'int32',       ],
+	[0x30, 'enum8',       ],
+	[0x31, 'enum16',      ],
+	[0x38, 'semiPrec',    ],
+	[0x39, 'singlePrec',  ],
+	[0x3A, 'doublePrec',  ],
+	[0x41, 'bstring',     ], // octetStr
+	[0x42, 'string',      ], // charStr
+	[0x43, 'lbstring',    ], // longOctetStr
+	[0x44, 'lstring',     ], // longCharStr
+	[0x48, 'array',       ],
+	[0x4C, 'struct',      ],
+	[0x50, 'set',         ],
+	[0x51, 'bag',         ],
+	[0xE0, 'time',        ],
+	[0xE1, 'date',        ],
+	[0xE2, 'utc',         ],
+	[0xE9, 'attrId',      ],
+	[0xF0, 'ieee',        ],
+	[0xF1, 'seckey',      ],
+	[0xFF, 'unknown',     ],
 ]);
 
 // (teZCL_ReportAttributeStatus)
-Enum.ATTRIBUTE_STATUS = createEnumSet('ATTRIBUTE_STATUS', [
+Enum.create('ATTRIBUTE_STATUS', [
 	[0x00, 'report_ok',              'report is valid'],
 	[0x01, 'report_ep_mismatch',     'source endpoint does not match endpoint in mirror'],
 	[0x02, 'report_addr_mismatch',   'source address does not match address in mirror'],
@@ -142,7 +209,7 @@ Enum.ATTRIBUTE_STATUS = createEnumSet('ATTRIBUTE_STATUS', [
 
 
 /* teZCL_CommandStatus */
-Enum.COMMAND_STATUS = createEnumSet('COMMAND_STATUS', [
+Enum.create('COMMAND_STATUS', [
 	[0x00, 'cmds_success',                      'Command was successful'],
 	[0x01, 'cmds_failure',                      'Command was unsuccessful'],
 	[0x7e, 'cmds_not_authorized',               'Sender does not have authorisation to issue the command'],
@@ -174,7 +241,7 @@ Enum.COMMAND_STATUS = createEnumSet('COMMAND_STATUS', [
 	[0xc3, 'cmds_unsupported_cluster',          ''],
 ]);
 
-Enum.READ_WRITE_ATTRIBUTE_STATUS = createEnumSet('READ_WRITE_ATTRIBUTE_STATUS', [
+Enum.create('READ_WRITE_ATTRIBUTE_STATUS', [
 	[0x07, 'bad_length', 'zero attributes request or bad count in frame fields'],
 	[0x01, 'network_down', "Invalid Call, the network is down or the application is not joined to a network"],
 	[0x02, 'invalid_data', "Tried to read more than 15 attributes"],
@@ -183,21 +250,27 @@ Enum.READ_WRITE_ATTRIBUTE_STATUS = createEnumSet('READ_WRITE_ATTRIBUTE_STATUS', 
 	[0xFF, 'fail_unknown', 'Unknown Failure'],
 ]);
 
-Enum.PROFILES = createEnumSet('PROFILES', [
+Enum.create('PROFILES', [
  [0x0104, 'ha','ZigBee HA'],
+ [0x0105, 'ba',''],
+ [0x0107, 'hc',''],
+ [0x0108, 'ts',''],
+ [0x0109, 'se',''],
+ [0x010A, 'rs',''],
+ [0xC05E, 'll',''],
 ]);
 
-Enum.PERMIT_JOIN_STATUS = createEnumSet('PERMIT_JOIN_STATUS', [
+Enum.create('PERMIT_JOIN_STATUS', [
 	[1, 'on',   'devices are allowed to join network'],
 	[0, 'off', 'devices are not allowed join the network'],
 ]);
-Enum.RESTART_STATUS = createEnumSet('RESTART_STATUS', [
+Enum.create('RESTART_STATUS', [
 	[0, 'startup',   ''],
 	[2, 'nfn_start', ''],
 	[6, 'running',   ''],
 ]);
 
-Enum.LOG_LEVEL = createEnumSet('LOG_LEVEL', [
+Enum.create('LOG_LEVEL', [
 	[0, "emergency",   ''],
 	[1, "alert",       ''],
 	[2, "critical",    ''],
@@ -208,24 +281,24 @@ Enum.LOG_LEVEL = createEnumSet('LOG_LEVEL', [
 	[7, "debug",       ''],
 ]);
 
-Enum.DIRECTION = createEnumSet('LOG_LEVEL', [
-	[0, "srv_to_cli",  'server to client <=> read a value'],
-	[1, "cli_to_srv",  'client to server <=> write a value'],
+Enum.create('DIRECTION', [
+	[0, "srv_to_cli", 'server to client <=> read a value'],
+	[1, "cli_to_srv", 'client to server <=> write a value'],
 ]);
 
-Enum.NETWORK_JOIN_STATUS = createEnumSet('NETWORK_JOIN_STATUS', [
-	[0, 'joined_existing_network', ,''],
-	[1, 'formed_new_network',      ,''],
+Enum.create('NETWORK_JOIN_STATUS', [
+	[0, 'joined_existing_network',     ''],
+	[1, 'formed_new_network',          ''],
 ]);
 for (var i=128; i<=244; ++i) Enum.NETWORK_JOIN_STATUS.__add([i, 'failed_'+i, 'network join failed (error 0x'+i.toString(16)+')']);
 
-Enum.NODE_LOGICAL_TYPE = createEnumSet('NODE_LOGICAL_TYPE', [
+Enum.create('NODE_LOGICAL_TYPE', [
 	[0x00, 'coordinator', ''],
 	[0x01, 'router',      ''],
 	[0x02, 'end_device',  ''],
 ]);
 
-Enum.ADDRESS_MODE = createEnumSet('ADDRESS_MODE', [
+Enum.create('ADDRESS_MODE', [
     [ 0, 'bound',                        'Use one or more bound nodes/endpoints, with acknowledgements'],
     [ 1, 'group',                        'Use a pre-defined group address, with acknowledgements'],
     [ 2, 'short',                        'Use a 16-bit network address, with acknowledgements'],
@@ -239,13 +312,13 @@ Enum.ADDRESS_MODE = createEnumSet('ADDRESS_MODE', [
     [10, 'bound_non_blocking_no_ack',    'Perform a non-blocking bound transmission, with no acknowledgements '],
 ]);
 
-Enum.DEVICE_TYPE = createEnumSet('DEVICE_TYPE', [
+Enum.create('DEVICE_TYPE', [
 	[ 0, 'coordinator'    , ''],
 	[ 1, 'router'         , ''],
 	[ 2, 'legacy_router'  , ''],
 ]);
 
-Enum.DEVICE_HA_TYPE = createEnumSet('', [
+Enum.create('DEVICE_HA_TYPE', [
 	[0x0000, 'On/Off Switch'],
 	[0x0001, 'Level Control Switch'],
 	[0x0002, 'On/Off Output'],
@@ -286,49 +359,8 @@ Enum.DEVICE_HA_TYPE = createEnumSet('', [
 
 ]);
 
-Enum.CLUSTERS = createEnumSet('CLUSTERS', [
-	[0x0000, 'basic',                   ''],
-	[0x0001, 'power_config',            ''],
-	[0x0002, 'temperature_config',      ''],
-	[0x0003, 'identify',                ''],
-	[0x0004, 'groups',                  ''],
-	[0x0005, 'scenes',                  ''],
-	[0x0006, 'on_off',                  ''],
-	[0x0007, 'on_off_config',           ''],
-	[0x0008, 'level_control',           ''],
-	[0x0009, 'alarms',                  ''],
-	[0x000A, 'time',                    ''],
-	[0x000F, 'binary_input_basic',      ''],
-	[0x0020, 'poll_control',            ''],
-	[0x0019, 'ota',                     ''],
-	[0x0101, 'door_lock',               ''],
-	[0x0201, 'hvac_thermostat',         ''],
-	[0x0202, 'Hhvac_fan_control',       ''],
-	[0x0300, 'lightning_color_control', ''],
-	[0x0400, 'measurement_illuminance', ''],
-	[0x0402, 'measurement_temperature', ''],
-	[0x0403, 'measurement_pressure',    ''],
-	[0x0405, 'measurement_humidity',    ''],
-	[0x0406, 'measurement_occupancy',   ''],
-	[0x0500, 'ias_zone',                ''],
-	[0x0702, 'energy_meter',            ''],
-	[0x0B05, 'misc_diagnostics',        ''],
-	[0x1000, 'zll',                     ''],
-	[0xFF01, 'xiaomi_private_1',        ''],
-	[0xFF02, 'xiaomi_private_2',        ''],
-	[0x1234, 'xiaomi_private_3',        ''],
-]);
-/*
-for (let i=0; i<=0xffff; ++i) {
-	if (!Enum.CLUSTERS(i)) {
-		Enum.CLUSTERS.__add([i, 'unknown', 'unknown cluster 0x'+i.toString(16)])
-	}
-}
-*/
 
-Enum.COMMANDS = createEnumSet('COMMANDS', [
-]);
-Enum.RESPONSES = createEnumSet('RESPONSES', [
-]);
+Enum.create('CLUSTERS', require('./clusterDefinitions.js'));
+
 
 module.exports = Enum;

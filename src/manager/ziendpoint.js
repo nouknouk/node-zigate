@@ -1,5 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 const ZiCluster = require('./zicluster.js');
+
 var LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
 
 class ZiEndpoint extends EventEmitter {

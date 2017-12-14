@@ -39,7 +39,8 @@ module.exports = {
 			case 0x2a: // int32
 				rep.value = valueData.readIntBE(valueData.length);
 				break;
-			case 0x30: // enum
+			case 0x30: // enum8
+			case 0x31: // enum16
 				rep.value = valueData.readUIntBE(valueData.length);
 				break;
 			case 0x42: // string

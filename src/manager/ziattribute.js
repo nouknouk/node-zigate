@@ -3,13 +3,13 @@ class ZiAttribute {
   constructor(id, cluster) {
     this.id = id;
     this.cluster = cluster || null;
-    this.attributeDef = null;
-    if (this.cluster && this.cluster.clusterDef) {
-      this.attributeDef = this.cluster.clusterDef.properties[id] || null;
+    this.type = null;
+    if (this.cluster && this.cluster.type) {
+      this.type = this.cluster.type.attributes[id] || null;
     }
-    this.value = (this.attributeDef && this.attributeDef.default) || null;
+		this.value = (this.type && typeof(this.type.default) !== "undefined") ? this.type.default : null;
   }
-  toString() { return "[attr_0x"+this.id.toString(16)+","+ ((this.attributeDef && this.attributeDef.name) || "unknown")+"]"; }
+  toString() { return "[attr_0x"+this.id.toString(16)+","+ ((this.type && this.type.name) || "unknown")+"]"; }
 
   setValue(newVal) {
     this.value = newVal;
