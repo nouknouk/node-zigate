@@ -12,7 +12,7 @@ module.exports = {
 		rep.endpoint = reader.nextUInt8();
 		rep.cluster = Enum.CLUSTERS(reader.nextUInt16BE());
 		rep.id = reader.nextUInt16BE();
-		rep.status = Enum.ATTRIBUTE_STATUS(reader.nextUInt8());
+		rep.status = Enum.READ_WRITE_ATTRIBUTE_STATUS(reader.nextUInt8());
 		rep.type = Enum.ATTRIBUTE_TYPE(reader.nextUInt8(), new Error('unknown attribute type '));
 		rep.value = undefined;
 

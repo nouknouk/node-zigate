@@ -1,14 +1,16 @@
 module.exports = {
 	id: 0x8043,
-	name: "simple_descriptor_response",
+	name: "descriptor_simple",
 	parse: function(reader, rep) {
-		rep.srcSequence = reader.nextUInt8();
+		rep.sequence = reader.nextUInt8();
 		rep.status = reader.nextUInt8();
-		rep.srcAddress = reader.nextUInt16BE();
+		rep.address = reader.nextUInt16BE();
 		rep.length = reader.nextUInt8();   // ???
 		rep.endpoint = reader.nextUInt8();
-		rep.profileId = reader.nextUInt16BE();
-		rep.deviceId = reader.nextUInt16BE();
+		rep.profile = Enum.PROFILES(reader.nextUInt16BE());
+
+		var haType = reader.nextUInt16BE();
+		rep.deviceType = Enum.DEVICE_HA_TYPE(haType, { id:haType, name:'unknown_0x'+haType.toString(16) });;
 
 		var bitsField = reader.nextUInt8();
 		rep.deviceVersion = bitsField & 0x0F; // bits 0-4

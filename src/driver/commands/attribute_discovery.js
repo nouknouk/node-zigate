@@ -9,14 +9,14 @@ module.exports = {
 		cmd.address = !(isNaN(parseInt(options.address))) ? parseInt(options.address) : (()=>{throw new Error("invalid parameter 'address'.");})();
 		cmd.endpoint = options.endpoint || (()=>{throw new Error("invalid parameter 'dstEndpoint'.")})();
 		cmd.endpointSource = options.endpointSource || 0x01; // the zigbee key's endpoint itself ?
-		cmd.cluster = Enum.CLUSTERS(options.cluster, new Error("invalid parameter 'cluster'."));
+		cmd.cluster = Enum.CLUSTERS(options.cluster, {id: options.cluster, name:'unknown_0x'+options.cluster.toString(16) });
 		cmd.firstId = options.firstId || 0x0000;
 		cmd.direction = Enum.DIRECTION(options.direction, Enum.DIRECTION('srv_to_cli'));
 		cmd.manufacturer = cmd.manufacturer || false;
 		cmd.count = options.count || 0x5;
 
 		cmd.payload = Buffer.alloc(14);
-		
+
 		cmd.payload.writeUInt8(cmd.addressMode.id, 0); // short address mode
 		cmd.payload.writeUInt16BE(cmd.address, 1);
 		cmd.payload.writeUInt8(cmd.endpointSource, 3);
@@ -31,4 +31,3 @@ module.exports = {
 		return cmd;
 	},
 };
-

@@ -2,7 +2,7 @@ const util = require('util');
 const colors = require('colors');
 
 function createEnumSet(name, defArray) {
-	
+
 	var enumSet = function(key, fallbackValue) {
 		if (typeof(key) === 'object' && key && (typeof(key.desc)==='string')) {
 			return key;
@@ -28,14 +28,14 @@ function createEnumSet(name, defArray) {
 			return fallbackValue;
 		}
 	};
-	
+
 	enumSet.toString = function() { return '[EnumSet_'+name+']'; };
 
 	enumSet.__add = function(def) {
 		var id = def[0];
 		var name = def[1];
 		var description = def[2] || '';
-		
+
 		enumSet[id] = {
 			id: id,
 			name: name,
@@ -44,7 +44,7 @@ function createEnumSet(name, defArray) {
 			inspect: function() { return this.toString(); },
 		};
 	};
-	
+
 	defArray.forEach(enumSet.__add);
 
 	return enumSet;
@@ -87,24 +87,24 @@ Enum.ZCL_STATUS = createEnumSet('ZCL_STATUS', [
 	[23, 'timer_resource',                           ],
 	[24, 'attribute_is_client',                      "Attempt made by a cluster client to read a client attribute", ],
 	[25, 'attribute_is_server',                      "Attempt made by a cluster server to read a server attribute  ", ],
-	[26, 'attribute_range',                          ],     
-	[27, 'attribute_mismatch',                       ],     
+	[26, 'attribute_range',                          ],
+	[27, 'attribute_mismatch',                       ],
 	[28, 'key_establishment_more_than_one_cluster',  "Cluster that requires application-level (APS) security has been accessed using a packet that has not been encrypted with the application link key", ],
-	[29, 'insufficient_space',                       ],     
-	[30, 'no_reportable_change',                     ],     
-	[31, 'no_report_entries',                        ],     
-	[32, 'attribute_not_reportable',                 ],     
-	[33, 'attribute_id_order',                       ],     
-	[34, 'malformed_message',                        ],     
-	[35, 'manufacturer_specific',                    ],     
-	[36, 'profile_id',                               ],     
-	[37, 'invalid_value',                            ],     
-	[38, 'cert_not_found',                           ],     
-	[39, 'custom_data_null',                         ],     
-	[40, 'time_not_synchronised',                    ],     
-	[41, 'signature_verify_failed',                  ],     
-	[42, 'zreceive_fail',                            ],     
-	[43, 'key_establishment_end_point_not_found',    ],     
+	[29, 'insufficient_space',                       ],
+	[30, 'no_reportable_change',                     ],
+	[31, 'no_report_entries',                        ],
+	[32, 'attribute_not_reportable',                 ],
+	[33, 'attribute_id_order',                       ],
+	[34, 'malformed_message',                        ],
+	[35, 'manufacturer_specific',                    ],
+	[36, 'profile_id',                               ],
+	[37, 'invalid_value',                            ],
+	[38, 'cert_not_found',                           ],
+	[39, 'custom_data_null',                         ],
+	[40, 'time_not_synchronised',                    ],
+	[41, 'signature_verify_failed',                  ],
+	[42, 'zreceive_fail',                            ],
+	[43, 'key_establishment_end_point_not_found',    ],
 	[44, 'key_establishment_cluster_entry_not_found',],
 	[45, 'key_establishment_callback_error',         ],
 	[46, 'security_insufficient_for_cluster',        ],
@@ -174,13 +174,22 @@ Enum.COMMAND_STATUS = createEnumSet('COMMAND_STATUS', [
 	[0xc3, 'cmds_unsupported_cluster',          ''],
 ]);
 
+Enum.READ_WRITE_ATTRIBUTE_STATUS = createEnumSet('READ_WRITE_ATTRIBUTE_STATUS', [
+	[0x07, 'bad_length', 'zero attributes request or bad count in frame fields'],
+	[0x01, 'network_down', "Invalid Call, the network is down or the application is not joined to a network"],
+	[0x02, 'invalid_data', "Tried to read more than 15 attributes"],
+	[0x0C, 'not_enough_memory', 'Insufficient Memory, there is not enough available memory to transmit the message'],
+	[0x00, 'success', 'the message was successfully transmitted'],
+	[0xFF, 'fail_unknown', 'Unknown Failure'],
+]);
+
 Enum.PROFILES = createEnumSet('PROFILES', [
  [0x0104, 'ha','ZigBee HA'],
 ]);
 
 Enum.PERMIT_JOIN_STATUS = createEnumSet('PERMIT_JOIN_STATUS', [
-	[0, 'on',   'devices are allowed to join network'],
-	[1, 'off', 'devices are not allowed join the network'],
+	[1, 'on',   'devices are allowed to join network'],
+	[0, 'off', 'devices are not allowed join the network'],
 ]);
 Enum.RESTART_STATUS = createEnumSet('RESTART_STATUS', [
 	[0, 'startup',   ''],
@@ -236,37 +245,78 @@ Enum.DEVICE_TYPE = createEnumSet('DEVICE_TYPE', [
 	[ 2, 'legacy_router'  , ''],
 ]);
 
+Enum.DEVICE_HA_TYPE = createEnumSet('', [
+	[0x0000, 'On/Off Switch'],
+	[0x0001, 'Level Control Switch'],
+	[0x0002, 'On/Off Output'],
+	[0x0003, 'Level Controllable Output'],
+	[0x0004, 'Scene Selector'],
+	[0x0005, 'Configuration Tool'],
+	[0x0006, 'Remote Control'],
+	[0x0007, 'Combined Interface'],
+	[0x0008, 'Range Extender'],
+	[0x0009, 'Mains Power Outlet'],
+	[0x000A, 'Door Lock'],
+	[0x000B, 'Door Lock Controller'],
+	[0x000C, 'Simple Sensor'],
+	[0x0100, 'On/Off Light'],
+	[0x0101, 'Dimmable Light'],
+	[0x0102, 'Color Dimmable Light'],
+	[0x0103, 'On/Off Light Switch'],
+	[0x0104, 'Dimmer Switch'],
+	[0x0105, 'Color Dimmer Switch'],
+	[0x0106, 'Light Sensor'],
+	[0x0107, 'Occupancy Sensor'],
+	[0x0200, 'Shade'],
+	[0x0201, 'Shade Controller'],
+	[0x0202, 'Window Covering Device'],
+	[0x0203, 'Window Covering Controller'],
+	[0x0300, 'Heating/Cooling Unit'],
+	[0x0301, 'Thermostat'],
+	[0x0302, 'Temperature Sensor'],
+	[0x0303, 'Pump'],
+	[0x0304, 'Pump Controller'],
+	[0x0305, 'Pressure Sensor'],
+	[0x0306, 'Flow Sensor'],
+	[0x0400, 'IAS Control and Indicating Equipment'],
+	[0x0401, 'IAS Ancillary Control Equipment'],
+	[0x0402, 'IAS Zone'],
+	[0x0403, 'IAS Warning Device'],
+	[0x5f01, 'unknown'],
+
+]);
+
 Enum.CLUSTERS = createEnumSet('CLUSTERS', [
-	[0x0000, 'basic',                   ''], 
-	[0x0001, 'power_config',            ''], 
-	[0x0002, 'temperature_config',      ''], 
-	[0x0003, 'identify',                ''], 
-	[0x0004, 'groups',                  ''], 
-	[0x0005, 'scenes',                  ''], 
-	[0x0006, 'on_off',                  ''], 
-	[0x0007, 'on_off_config',           ''], 
-	[0x0008, 'level_control',           ''], 
-	[0x0009, 'alarms',                  ''], 
-	[0x000A, 'time',                    ''], 
-	[0x000F, 'binary_input_basic',      ''], 
-	[0x0020, 'poll_control',            ''], 
-	[0x0019, 'ota',                     ''], 
-	[0x0101, 'door_lock',               ''], 
-	[0x0201, 'hvac_thermostat',         ''], 
-	[0x0202, 'Hhvac_fan_control',       ''], 
-	[0x0300, 'lightning_color_control', ''], 
-	[0x0400, 'measurement_illuminance', ''], 
-	[0x0402, 'measurement_temperature', ''], 
-	[0x0403, 'measurement_pressure',    ''], 
-	[0x0405, 'measurement_humidity',    ''], 
-	[0x0406, 'measurement_occupancy',   ''], 
-	[0x0500, 'ias_zone',                ''], 
-	[0x0702, 'energy_meter',            ''], 
-	[0x0B05, 'misc_diagnostics',        ''], 
-	[0x1000, 'zll',                     ''], 
-	[0xFF01, 'xiaomi_private_1',        ''], 
-	[0xFF02, 'xiaomi_private_2',        ''], 
-	[0x1234, 'xiaomi_private_3',        ''], 
+	[0x0000, 'basic',                   ''],
+	[0x0001, 'power_config',            ''],
+	[0x0002, 'temperature_config',      ''],
+	[0x0003, 'identify',                ''],
+	[0x0004, 'groups',                  ''],
+	[0x0005, 'scenes',                  ''],
+	[0x0006, 'on_off',                  ''],
+	[0x0007, 'on_off_config',           ''],
+	[0x0008, 'level_control',           ''],
+	[0x0009, 'alarms',                  ''],
+	[0x000A, 'time',                    ''],
+	[0x000F, 'binary_input_basic',      ''],
+	[0x0020, 'poll_control',            ''],
+	[0x0019, 'ota',                     ''],
+	[0x0101, 'door_lock',               ''],
+	[0x0201, 'hvac_thermostat',         ''],
+	[0x0202, 'Hhvac_fan_control',       ''],
+	[0x0300, 'lightning_color_control', ''],
+	[0x0400, 'measurement_illuminance', ''],
+	[0x0402, 'measurement_temperature', ''],
+	[0x0403, 'measurement_pressure',    ''],
+	[0x0405, 'measurement_humidity',    ''],
+	[0x0406, 'measurement_occupancy',   ''],
+	[0x0500, 'ias_zone',                ''],
+	[0x0702, 'energy_meter',            ''],
+	[0x0B05, 'misc_diagnostics',        ''],
+	[0x1000, 'zll',                     ''],
+	[0xFF01, 'xiaomi_private_1',        ''],
+	[0xFF02, 'xiaomi_private_2',        ''],
+	[0x1234, 'xiaomi_private_3',        ''],
 ]);
 /*
 for (let i=0; i<=0xffff; ++i) {

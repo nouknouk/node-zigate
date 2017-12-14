@@ -1,0 +1,10 @@
+ZigBee summary:
+  https://www.mwrinfosecurity.com/assets/Whitepapers/mwri-zigbee-overview-finalv2.pdf
+
+
+Zigbee (full) spec book:
+  https://www3.nd.edu/~mhaenggi/ee67011/zigbee.pdf
+
+
+ZCL frames & context:
+  https://mmbnetworks.atlassian.net/wiki/spaces/SPRHA17/pages/99319820/Frame+Payload+Definitions#FramePayloadDefinitions-ZDODeviceAnnounceReceived

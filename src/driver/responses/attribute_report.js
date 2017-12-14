@@ -8,14 +8,14 @@ module.exports = {
 		rep.address = reader.nextUInt16BE();
 		rep.endpoint = reader.nextUInt8();
 		rep.cluster = Enum.CLUSTERS(reader.nextUInt16BE());
-		rep.id = reader.nextUInt16BE();
+		rep.attribute = reader.nextUInt16BE();
 		rep.status = Enum.ATTRIBUTE_STATUS(reader.nextUInt8());
-		rep.type = Enum.ATTRIBUTE_TYPE(reader.nextUInt8(), new Error('unknown attribute type '));
+		rep.valuetype = Enum.ATTRIBUTE_TYPE(reader.nextUInt8(), new Error('unknown attribute type '));
 		rep.value = undefined;
 
 		var attributeSize = reader.nextUInt16BE();
 		var valueData = reader.nextBuffer(attributeSize);
-		switch (rep.type.id) {
+		switch (rep.valuetype.id) {
 			case 0x00: // null
 				rep.value = null;
 				break;
@@ -42,6 +42,8 @@ module.exports = {
 			case 0x42: // string
 				rep.value = valueData.toString();
 				break;
+			default:
+				throw new Error("attribute_report: unhandled value type "+rep.valuetype);
 		}
 	},
 };

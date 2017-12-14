@@ -1,0 +1,13 @@
+[OUT] active_endpoint_request(undefined) {"target":30682,"name":"active_endpoint_request"}
+[IN]  status(8000) {"type":{"id":32768,"name":"status","typeHex":"8000"},"status":0,"srcSequence":162,"satusText":"success","requestType":69}
+[IN]  active_endpoint_response(8045) {"type":{"id":32837,"name":"active_endpoint_response","typeHex":"8045"},"sequence":162,"status":0,"srcAddress":30682,"endpoints":[1],"rssi":198}
+
+[device_0x77da] endpoints retrieved ; gathering clusters...
+
+[OUT] simple_descriptor_request(undefined) {"target":30682,"endpoint":1,"name":"simple_descriptor_request"}
+[IN] status(8000) {"type":{"id":32768,"name":"status","typeHex":"8000"},"status":0,"srcSequence":163,"satusText":"success","requestType":67}
+[ResponseBuilder_32835] the 6 last bytes of data has not been readen:
+[ResponseBuilder_32835] response payload: a3 00 77 da 1a 01 01 04 5f 01 01 06 00 00 00 03 ff ff 04 02 04 03 04 05 03 00 00 00 03 ff ff 04 02 04 03 04 05
+
+[IN] simple_descriptor_response(8043) {"type":{"id":32835,"name":"simple_descriptor_response","typeHex":"8043"},"srcSequence":163,"status":0,"srcAddress":30682,"length":26,"endpoint":1,"profileId":260,"deviceId":24321,"deviceVersion":1,"reserved":0,"inClusters":[0,3,65535,1026,1027,1029],"outClusters":[0,3,65535],"rssi":198}
+[device_0x77da][endpoint_1] clusters retrieved ; gathering attributes...

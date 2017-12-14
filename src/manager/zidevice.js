@@ -3,24 +3,15 @@ const ZiEndpoint = require('./ziendpoint.js');
 var LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
 
 class ZiDevice extends EventEmitter {
-    constructor(id) {
+    constructor(address) {
       super();
-      this.id = id;
+      this.address = address;
       this.endpoints = {};
       this.clusters = {};
-			this.ieeeAddress = null;
-			this.mac = null;
-			this.alternatePanCoordinator = null;
-			this.deviceType = null;
-			this.powerSource = null;
-			this.receiverOnWhenIdle = null;
-			this.reserved = null;
-			this.securityCapability = null;
-			this.allocateAddress = null;
-			this.rssi = null;
+			this.ieee = null;
     }
     toString() {
-      return "[device_0x"+this.id.toString(16)+"]";
+      return "[device_0x"+this.address.toString(16)+"]";
     }
 
     getOrCreateEndpoint(id) {

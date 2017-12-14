@@ -44,9 +44,9 @@ class CommandBuilder {
 
 			var cmd = Object.defineProperties({}, {
 				type:    {value: cmdType, enumerable: true},
-				payload: {value: Buffer.alloc(0)},
+				payload: {value: Buffer.alloc(0), writable:true},
 				options: {value: options},
-				inspect: {value: function(depth, options) { 
+				inspect: {value: function(depth, options) {
 					var str = (""+this.type+"").red;
 					for (var k in this) {
 						if (k!=='type' && k!=='payload' && k !== 'reader' && typeof(this[k]) !== 'function')
@@ -56,7 +56,7 @@ class CommandBuilder {
 				}},
 			});
 			cmdFactory.build(options, cmd);
-			
+
 			return cmd;
 	}
 }

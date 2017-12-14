@@ -6,8 +6,8 @@ module.exports = {
 	parse: function(reader, rep) {
 		rep.sequence = reader.nextUInt8();
 		rep.endpoint = reader.nextUInt8();
-		rep.cluster = Enum.CLUSTERS(reader.nextUInt16BE());
-		rep.id = reader.nextUInt8();
+		rep.cluster = Enum.CLUSTERS(reader.nextUInt16BE(), new Error("default_response: unknown cluster"));
+		rep.command = reader.nextUInt8();
 		rep.status = Enum.COMMAND_STATUS(reader.nextUInt8());
 	},
 };
