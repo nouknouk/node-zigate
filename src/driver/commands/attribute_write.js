@@ -2,8 +2,8 @@ module.exports = {
 	id: 0x0110,
 	name: "attribute_write",
 
+	
 	build: function(options, cmd) {
-		
 		cmd.addressMode = Enum.ADDRESS_MODE(options.addressMode, Enum.ADDRESS_MODE('short'));
 		cmd.address = !(isNaN(parseInt(options.address))) ? parseInt(options.address) : (()=>{throw new Error("invalid parameter 'address'.");})();
 		cmd.endpoint = options.endpoint || (()=>{throw new Error("invalid parameter 'dstEndpoint'.")})();

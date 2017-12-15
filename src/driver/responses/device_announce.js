@@ -1,6 +1,8 @@
 module.exports = {
 	id: 0x004D,
 	name: "device_announce",
+	
+	
 	parse: function(reader, rep) {
 		rep.address = reader.nextUInt16BE();
 		rep.ieee = reader.nextBuffer(8).toString('hex');

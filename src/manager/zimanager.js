@@ -51,8 +51,8 @@ class ZiManager extends EventEmitter {
     if (!this.started) {
       this.mgrStatus = 'starting';
       return this.driver.open(options.port)
-			.then(this.driver.send('set_channel_mask', {mask: 11}))
-			.then(this.driver.send('set_device_type', {type: 'coordinator'}))
+			.then(this.driver.send('channel_mask', {mask: 11}))
+			.then(this.driver.send('device_type', {type: 'coordinator'}))
       .then(()=> {
         this.mgrStatus = 'started';
         this.logger.log("[ZiManager] started on port '"+this.driver.port+"'.");
@@ -116,7 +116,7 @@ class ZiManager extends EventEmitter {
   }
 	startInclusion(timeInSec) {
 		if (this.started) {
-			return this.driver.send('permit_join_request', {duration: timeInSec}).then(
+			return this.driver.send('permit_join', {duration: timeInSec}).then(
         (command)=> {
           this.logger.log("[ZiManager] inclusion mode started for "+command.options.duration+" seconds.");
 					this.inclusionStatus = true;
@@ -164,7 +164,7 @@ class ZiManager extends EventEmitter {
 
 	attributesOf(deviceId, endpointId, clusterId) {
 
-		this.driver.send('attribute_discovery_request',{
+		this.driver.send('attribute_discovery',{
 				target:deviceId, srcEndpoint:endpointId, dstEndpoint:endpointId, cluster:clusterId, startAttribute:0,
 				clientToServer:true, manufacturerSpecific:false, maxCount:100
 		});

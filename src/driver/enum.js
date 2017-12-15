@@ -2,22 +2,27 @@ const util = require('util');
 const colors = require('colors');
 
 Enum = {};
+
 Enum.create = function(enumsetname, definitions) {
 
+	var byKeys = new Map();
+	var byNames = new Map();
+	
 	var enumSet = function(key, fallbackValue) {
-		if (typeof(key) === 'object' && key && (typeof(key.desc)==='string')) {
+		if (key && typeof(key) === 'object' && (typeof(key.id) !=='undefined')  && (typeof(key.name) ==='string')) {
 			return key;
 		}
-		else if (typeof(key) === 'number' && typeof(enumSet[key]) === 'object') {
-			return enumSet[key];
-		}
 		else {
-			for (var k in enumSet) {
-				if (enumSet[''+k].name == ''+key) {
-					return enumSet[''+k];
-				}
+			if (!isNaN(parseInt(key))) {
+				let e = byKeys.get(parseInt(key));
+				if (e) return e;
+			}
+			else {
+				let e = byNames.get(""+key);
+				if (e) return e;
 			}
 		}
+		
 		// value not found, fallback scenario
 		if (fallbackValue instanceof(Error)) {
 			throw fallbackValue;
@@ -29,16 +34,14 @@ Enum.create = function(enumsetname, definitions) {
 			return fallbackValue;
 		}
 	};
-
 	enumSet.toString = function() { return '[EnumSet_'+enumsetname+']'; };
-
-	enumSet.__add = function(def) {
+	enumSet.add = function(def) {
 		var enumObj = null;
 		if (Array.isArray(def) && def.length >=2 && def.length <=3) {
 			enumObj = {
 				id: def[0],
 				name: def[1],
-				description: def[2] || '',
+				description: def[2] || undefined,
 			};
 		}
 		else if (def && typeof(def) === 'object' && !isNaN(parseInt(def.id)) && typeof(def.name) === 'string') {
@@ -47,31 +50,51 @@ Enum.create = function(enumsetname, definitions) {
 		else {
 			throw new Error("invalid enum object definition provided: "+JSON.stringify(def));
 		}
-		if (enumSet[enumObj.id]) {
+		if (byKeys.has(enumObj.id)) {
 			throw new Error("cannot add new entry in enum '"+enumsetname+"': colliding identifier '"+enumObj.id+"'");
 		}
-		else if (enumSet(enumObj.name)) {
+		else if (byNames.has(enumObj.name)) {
 			throw new Error("cannot add new entry in enum '"+enumsetname+"':  colliding name '"+enumObj.name+"'");
 		}
 		
-		enumObj.toString = () => { return enumObj.name+ ('(0x'+enumObj.id.toString(16)+')').grey; };
-		enumObj.inspect = () => { return enumObj.toString(); };
-		enumSet[enumObj.id] = enumObj;		
+		enumObj.toString = /*enumObj.toString ||*/ (() => { return enumObj.name+ ('(0x'+enumObj.id.toString(16)+')').grey; });
+		enumObj.inspect = /*enumObj.inspect ||*/ (() => { return enumObj.toString(); });
+		byKeys.set(enumObj.id, enumObj);
+		byNames.set(enumObj.name, enumObj);
 	};
 
-	// register (optionally) provided definitions
+	// end of enumset construction: register (optionally) provided definitions
 	if (Array.isArray(definitions)) {
-		definitions.forEach(enumSet.__add);
+		definitions.forEach(enumSet.add);
 	}
 	else if (definitions && typeof(definitions) === 'object') {
 		for (let n in definitions) {
 			var e = definitions[n];
-			if ( (e && typeof(e) === 'object' && e.name)) {
-				e.id = e.id || n;
-				enumSet.__add(e);
+
+			// array like [id, name, description]
+			if (Array.isArray(e) && e.length >= 2 && !isNaN(parseInt(e[0])) && typeof(e[1]) === 'string') {
+				enumSet.add(e);
 			}
-			else if (Array.isArray(e) && e.length >= 2) {
-				enumSet.__add(e);
+
+			// literal object like { 0: "name1", 1:"name2", ...}
+			else if (typeof(e) === 'string' && !isNaN(parseInt(n))) {
+				enumSet.add({id:n, name:e});
+			}
+			// literal object like { "name1": int_1, "name2": int_2, ...}
+			else if (!isNaN(parseInt(e)) && typeof(n) === 'string') {
+				enumSet.add({id:e, name:n});
+			}
+			else if (e && typeof(e) === 'object') {
+				// list of objects with (id & name), or (name) only + key being an integer
+				if (typeof(e.name) === 'string' && (!isNaN(parseInt(e.id)) || !isNaN(parseInt(n))) ) { 
+					e.id = (!isNaN(parseInt(e.id))) ? parseInt(e.id) : parseInt(n);
+					enumSet.add(e);
+				}
+				// list of objects with (id) only + key being a string
+				else if (e && typeof(e) === 'object' && typeof(n) === 'string' && !isNaN(parseInt(e.id))) {
+					e.name = n;
+					enumSet.add(e);
+				}
 			}
 		}
 	}
@@ -290,7 +313,7 @@ Enum.create('NETWORK_JOIN_STATUS', [
 	[0, 'joined_existing_network',     ''],
 	[1, 'formed_new_network',          ''],
 ]);
-for (var i=128; i<=244; ++i) Enum.NETWORK_JOIN_STATUS.__add([i, 'failed_'+i, 'network join failed (error 0x'+i.toString(16)+')']);
+for (var i=128; i<=244; ++i) Enum.NETWORK_JOIN_STATUS.add([i, 'failed_'+i, 'network join failed (error 0x'+i.toString(16)+')']);
 
 Enum.create('NODE_LOGICAL_TYPE', [
 	[0x00, 'coordinator', ''],

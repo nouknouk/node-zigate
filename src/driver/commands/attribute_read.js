@@ -1,9 +1,10 @@
-const Enum = require('../constants.js');
+const Enum = require('../enum.js');
 
 module.exports = {
 	id: 0x0100,
 	name: "attribute_read",
 
+	
 	build: function(options, cmd) {
 		cmd.addressMode = Enum.ADDRESS_MODE(options.addressMode, Enum.ADDRESS_MODE('short'));
 		cmd.address = !(isNaN(parseInt(options.address))) ? parseInt(options.address) : (()=>{throw new Error("invalid parameter 'address'.");})();

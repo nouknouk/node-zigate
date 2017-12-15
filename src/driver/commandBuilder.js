@@ -1,17 +1,15 @@
 const path = require('path');
 const fs = require('fs');
-const Enum = require('./constants.js');
+const Enum = require('./enum.js');
 const colors = require('colors');
 
 Enum.create('COMMANDS');
 		
 class CommandBuilder {
 	constructor() {
-		this.commands = [];
 	}
 
 	loadCommands(cmdDir) {
-		this.commands = [];
 		cmdDir = cmdDir || __dirname +'/commands';
 		var fileList = fs.readdirSync(path.resolve(cmdDir));
 		fileList.forEach((id) => {
@@ -22,42 +20,30 @@ class CommandBuilder {
 						console.error("exception while loading command '" + id + "'.");
 						throw e;
 				}
-				this.commands.push(cmd);
-				Enum.COMMANDS.__add([cmd.id, cmd.name, cmd.description]);
+				Enum.COMMANDS.add(cmd);
 		});
 	}
 
-	build(nameOrOptions, options) {
-			if (typeof(nameOrOptions) === 'object') {
-				options = nameOrOptions;
-				nameOrOptions = options.name;
-			}
-			else if (typeof(nameOrOptions) === 'string') {
-				options = options || {};
-				options.name =  nameOrOptions;
-			}
-			else {
-				throw new Error('CommandBuilder.build(): invalid parameters');
-			}
+	build(typeOrOptions, options) {
+			var type = (typeof(typeOrOptions) === 'object') ? options.type : ""+typeOrOptions;
+			var options = ((typeof(typeOrOptions) === 'object') ? typeOrOptions : options) || {};
 
-			var cmdFactory = this.commands.find((t) => { return t.name === options.name; });
-			var cmdType = Enum.COMMANDS(options.name);
-			if (!cmdFactory || !cmdType) throw new Error("invalid command type name '"+options.name+"'.");
+			var commandType = Enum.COMMANDS(type, new Error("invalid command type name '"+type+"'."));
 
 			var cmd = Object.defineProperties({}, {
-				type:    {value: cmdType, enumerable: true},
+				type:    {value: commandType, enumerable: true},
 				payload: {value: Buffer.alloc(0), writable:true},
 				options: {value: options},
 				inspect: {value: function(depth, options) {
 					var str = (""+this.type+"").red;
 					for (var k in this) {
-						if (k!=='type' && k!=='payload' && k !== 'reader' && typeof(this[k]) !== 'function')
+						if (k!=='type' && typeof(this[k]) !== 'function')
 							str += ", " + (""+k) + ":" + (""+this[k]).grey;
 					}
 					return str;
 				}},
 			});
-			cmdFactory.build(options, cmd);
+			commandType.build(options, cmd);
 
 			return cmd;
 	}

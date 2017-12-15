@@ -1,6 +1,6 @@
 let ZiAttribute = require('./ziattribute.js');
 let ZiCommand = require('./zicommand.js');
-let Enum = require('../driver/constants.js');
+let Enum = require('../driver/enum.js');
 
 class ZiCluster {
     constructor(id, endpoint) {

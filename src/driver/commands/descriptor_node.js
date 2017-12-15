@@ -1,6 +1,10 @@
 module.exports = {
 	id: 0x0042,
 	name: "descriptor_node",
+	statusExpected: true,
+	responseExpected: 'descriptor_node',
+
+	
 	build: function(options, cmd) {
 		cmd.address = !(isNaN(parseInt(options.address))) ? parseInt(options.address) : (()=>{throw new Error("invalid parameter 'address'.");})();
 		

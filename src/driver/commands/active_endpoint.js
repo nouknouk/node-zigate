@@ -1,7 +1,10 @@
 module.exports = {
 	id: 0x0045,
 	name: "active_endpoint",
-
+	statusExpected: true,
+	responseExpected: 'active_endpoint',
+	
+	
 	build: function(options, cmd) {
 		cmd.address = !(isNaN(parseInt(options.address))) ? parseInt(options.address) : (()=>{throw new Error("invalid parameter 'address'.");})();
 

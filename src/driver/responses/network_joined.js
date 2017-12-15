@@ -1,4 +1,4 @@
-const Enum = require('../constants.js');
+const Enum = require('../enum.js');
 
 // 01  /  80 24  /  00 0d  /  b3  /  01 00 00 00 15 8d 00 01 b2 2e 15 0b 00
 

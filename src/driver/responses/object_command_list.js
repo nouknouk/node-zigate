@@ -1,4 +1,4 @@
-const Enum = require('../constants.js');
+const Enum = require('../enum.js');
 
 
 module.exports = {

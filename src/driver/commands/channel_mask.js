@@ -1,6 +1,8 @@
 module.exports = {
 	id: 0x0021,
 	name: "channel_mask",
+	
+	
 	build: function(options, cmd) {
 		cmd.mask = options.mask || 11;
 		

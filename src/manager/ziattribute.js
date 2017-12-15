@@ -1,8 +1,9 @@
+const CLUSTER = Symbol("CLUSTER");
 
 class ZiAttribute {
   constructor(id, cluster) {
     this.id = id;
-    this.cluster = cluster || null;
+    this[CLUSTER] = cluster || null;
     this.type = null;
     if (this.cluster && this.cluster.type) {
       this.type = this.cluster.type.attributes[id] || null;
@@ -11,6 +12,8 @@ class ZiAttribute {
   }
   toString() { return "[attr_0x"+this.id.toString(16)+","+ ((this.type && this.type.name) || "unknown")+"]"; }
 
+	get cluster() { return this[CLUSTER]; }
+	
   setValue(newVal) {
     this.value = newVal;
     ZiAttribute.LOGS.log(""+this.cluster.endpoint.device+""+this.cluster.endpoint+""+this.cluster+""+this+": value changed("+this.value+")");

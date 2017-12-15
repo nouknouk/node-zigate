@@ -1,6 +1,10 @@
 module.exports = {
 	id: 0x0049,
 	name: "permit_join",
+	statusExpected: true,
+	responseExpected: false,	
+	
+	
 	build: function(options, cmd) {
 		cmd.address = options.address || 0xFFFC /*broadcast*/;
 		cmd.duration = options.duration===0 ? 0 : (parseInt(options.duration) || 254);

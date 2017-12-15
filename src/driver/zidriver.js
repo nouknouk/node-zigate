@@ -2,7 +2,7 @@ const EventEmitter = require('events').EventEmitter;
 const SerialPort = require('serialport');
 const CommandBuilder = require('./commandBuilder.js');
 const ResponseBuilder = require('./responseBuilder.js');
-const Enum = require('./constants.js');
+const Enum = require('./enum.js');
 const util = require('util');
 
 const FRAME_START = 0x01;

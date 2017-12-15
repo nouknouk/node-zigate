@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const BufferReader = require('./buffer-reader.js');
-const Enum = require('./constants.js');
+const Enum = require('./enum.js');
 const util = require('util');
 const colors = require('colors');
 
@@ -26,36 +26,36 @@ class ResponseBuilder {
 						throw e;
 				}
 				this.responses.push(rep);
-				Enum.RESPONSES.__add([rep.id, rep.name, rep.description]);
+				Enum.RESPONSES.add(rep);
 		});
 	}
 
 	parse(typeid,payload) {
-		var responseFactory = this.responses.find((t) => { return t.id === typeid; });
-		var repType = Enum.RESPONSES(typeid);
-		if (!responseFactory || !repType) throw new Error("invalid response typeid '"+typeid+"'.");
-
+		var responseType = Enum.RESPONSES(typeid, new Error("invalid response typeid '"+typeid+"'."));
 		var reader = new BufferReader(payload);
 		
 		var rep = Object.defineProperties({}, {
-			type:    {value: repType, enumerable: true},
+			type:    {value: responseType, enumerable: true},
 			payload: {value: payload},
 			reader:  {value: reader},
 			inspect: {value: function(depth, options) { 
 				var str = (""+this.type+"").green;
 				for (var k in this) {
-					if (k!=='type' && k!=='payload' && k !== 'reader' && typeof(this[k]) !== 'function')
+					if (k!=='type'&& typeof(this[k]) !== 'function')
 						str += ", "+(""+k)+":"+(""+this[k]).grey;
 				}
 				return str;
 			}},
 		});
 		
-		responseFactory.parse(reader, rep);
+		responseType.parse(reader, rep);
 		
 		if (reader.isMore()) {
-			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+typeid+"] the "+(payload.length - reader.tell())+" last bytes of data has not been readen:");
-			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+typeid+"] response payload: "+payload.toString('hex').replace(/../g, "$& "));
+			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] the "+(payload.length - reader.tell())+" last bytes of data have not been parsed:");
+			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] response payload: "
+				+ (payload.toString('hex').slice(0, reader.tell()).replace(/../g, "$& ")).green
+				+ (payload.toString('hex').slice(reader.tell()).replace(/../g, "$& ")).red
+			);
 		}
 		return rep;
 	}

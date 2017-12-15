@@ -1,8 +1,10 @@
+const CLUSTER = Symbol("CLUSTER");
 
 class ZiCommand {
   constructor(id, cluster) {
     this.id = id;
-    this.cluster = cluster || null;
+    this[CLUSTER] = cluster || null;
+		
 		/*
     this.commandDef = null;
     if (this.cluster && this.cluster.clusterDef) {
@@ -10,7 +12,10 @@ class ZiCommand {
     }
     this.value = (this.commandDef && this.commandDef.default) || null;
 		*/
+		
   }
+	get cluster() { return this[CLUSTER]; }
+	
   toString() { return "[command_0x"+this.id.toString(16)+"]"; }
 }
 
