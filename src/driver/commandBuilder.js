@@ -30,10 +30,23 @@ class CommandBuilder {
 
 			var commandType = Enum.COMMANDS(type, new Error("invalid command type name '"+type+"'."));
 
+			var cmdPromiseResolve = null;
+			var cmdPromiseReject = null;
+			var cmdPromise = new Promise( (resolve, reject) => {
+				cmdPromiseResolve = resolve;
+				cmdPromiseReject = reject;
+			});
+			
 			var cmd = Object.defineProperties({}, {
 				type:    {value: commandType, enumerable: true},
 				payload: {value: Buffer.alloc(0), writable:true},
 				options: {value: options},
+				cmdPromise: {value: cmdPromise},
+				cmdPromiseResolve: {value: cmdPromiseResolve},
+				cmdPromiseReject: {value: cmdPromiseReject},
+				status:  {value: null, writable:true},
+				response: {value: null, writable:true},
+				timer: {value: null, writable: true},
 				inspect: {value: function(depth, options) {
 					var str = (""+this.type+"").red;
 					for (var k in this) {

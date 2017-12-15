@@ -46,6 +46,8 @@ class ZiDriver extends EventEmitter {
 	    lock: options.lock === false ? false : true,
 	  };
 
+		this.pendingCommands = [];
+		
 		this.port = null;
 	  this.parser = null;
 	  this.serial = null;
@@ -179,9 +181,13 @@ class ZiDriver extends EventEmitter {
 				this.logger.log("[ZiDriver] response received: ", util.inspect(response, {breakLength: 10000}));
 				this.emit('response_'+response.type.name, response);
 				this.emit('response', response);
+				
+				// special handling for 'status' response messages.
 				if (typeid === 0x8000) {
-					// special handling for 'status' response messages.
-					this.emit('status_'+response.requestType, response);
+					this.postProcessStatusResponse(response);
+				}
+				else {
+					this.postProcessNonStatusResponse(response);
 				}
 				return true;
 			}
@@ -194,7 +200,41 @@ class ZiDriver extends EventEmitter {
 					this.logger.error("[ZiDriver] raw data: "+raw_in.toString('hex').replace(/../g, "$& "));
 		}
 	}
-
+	postProcessStatusResponse(status) {
+		// try to match with a pending command
+		for (var i=0; i<this.pendingCommands.length; ++i) {
+			var cmd = this.pendingCommands[i];
+			if (cmd.type.statusExpected && !cmd.status && cmd.type.id === status.relatedTo) {
+				cmd.status = status;
+				if (cmd.status.id === 0x00) {
+					this.logger.log("[ZiDriver] status received & matched with command '"+cmd.type+"'");
+					this.emit('command_started', cmd, status);
+				}
+				else {
+					this.logger.log("[ZiDriver] command failed: "+cmd.type+"");
+					this.emit('command_failed', cmd, status);
+					cmd.cmdPromiseReject(status);
+				}
+				break;
+			}
+		}
+		
+		// in all cases, emit special 'status' event.
+		this.emit('status_'+response.requestType, response);
+	}
+	postProcessNonStatusResponse(response) {
+		for (var i=0; i<this.pendingCommands.length; ++i) {
+			var cmd = this.pendingCommands[i];
+			if ( (!cmd.type.statusExpected || cmd.status) && cmd.type.responseExpected && !cmd.response && cmd.type.responseExpected === response.type.name) {
+				cmd.response = response;
+				this.logger.log("[ZiDriver] response received has been well matched with initiating command '"+cmd.type+"'");
+				this.emit('command_fullfilled', cmd);
+				cmd.cmdPromiseResolve(response);
+				break;
+			}
+		}
+	}
+	
 	send(name, options) {
 		var p = new Promise((resolve, reject)=> {
 
@@ -229,6 +269,9 @@ class ZiDriver extends EventEmitter {
 			this.serial.write(raw_out);
 		  this.serial.write([FRAME_STOP]);
 
+			// registering this pending command.
+			this.pendingCommands.push(command);
+		
 			this.emit('raw_out', raw_out);
 			this.emit('command', command);
 			this.emit('command_'+command.type.name, command);
