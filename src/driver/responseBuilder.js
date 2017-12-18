@@ -14,10 +14,11 @@ const INSPECT_PRETTYFORMAT_FIELDS = {
 
 class ResponseBuilder {
 	constructor(options) {
-		this.responses = [];
 	}
 
 	loadResponses(repDir) {
+		Enum.RESPONSES.clear();
+		
 		repDir = repDir || __dirname +'/responses';
 
 		var fileList = fs.readdirSync(path.resolve(repDir));
@@ -30,7 +31,6 @@ class ResponseBuilder {
 						console.error("exception while loading response '" + id + "'.");
 						throw e;
 				}
-				this.responses.push(rep);
 				Enum.RESPONSES.add(rep);
 		});
 	}

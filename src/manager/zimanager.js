@@ -104,7 +104,7 @@ class ZiManager extends EventEmitter {
           this.emit('reset');
         },
         (err) => {
-          err = new Error("(ZiManager] reset error: "+err)
+          err = new Error("[ZiManager] reset error: "+err)
           this.emit('error', err);
 					return Promise.reject(err);
         }
@@ -132,7 +132,7 @@ class ZiManager extends EventEmitter {
 					}, timeInSec*1000);
         },
         (err) => {
-          err = new Error("(ZiManager] start inclusion error: "+err)
+          err = new Error("[ZiManager] start inclusion error: "+err)
           this.emit('error', err);
           return Promise.reject(err);
         }

@@ -15,6 +15,8 @@ class CommandBuilder {
 	}
 
 	loadCommands(cmdDir) {
+		Enum.COMMANDS.clear();
+		
 		cmdDir = cmdDir || __dirname +'/commands';
 		var fileList = fs.readdirSync(path.resolve(cmdDir));
 		fileList.forEach((id) => {

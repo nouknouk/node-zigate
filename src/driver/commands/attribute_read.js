@@ -23,10 +23,8 @@ module.exports = {
 		cmd.payload.writeUInt8(cmd.endpoint, 4);
 		cmd.payload.writeUInt16BE(cmd.cluster.id, 5);
 		cmd.payload.writeUInt8(cmd.direction.id, 7);
-		cmd.payload.writeUInt8((cmd.manufacturer ? 1 : 0), 8); /* manufacturer specific */
-		if (cmd.manufacturer) {
-			cmd.payload.writeUInt16BE(cmd.manufacturer || 0, 9);
-		}
+		cmd.payload.writeUInt8( (cmd.manufacturer ? 1 : 0), 8); /* manufacturer specific */
+		cmd.payload.writeUInt16BE( (cmd.manufacturer || 0), 9);
 		
 		cmd.payload.writeUInt8(cmd.attributes.length || 0, 11);
 		for (let i=0; i<cmd.attributes.length; ++i) {

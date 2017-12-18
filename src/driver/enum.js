@@ -35,6 +35,11 @@ Enum.create = function(enumsetname, definitions) {
 		}
 	};
 	enumSet.toString = function() { return '[EnumSet_'+enumsetname+']'; };
+	
+	enumSet.clear = function() { 
+		byKeys.clear(); 
+		byNames.clear();
+	}
 	enumSet.add = function(def) {
 		var enumObj = null;
 		if (Array.isArray(def) && def.length >=2 && def.length <=3) {
