@@ -29,5 +29,10 @@ class ZiEndpoint extends EventEmitter {
     }
 }
 
-ZiEndpoint.LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
+ZiEndpoint.LOGS = { 
+	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+};
 module.exports = ZiEndpoint;

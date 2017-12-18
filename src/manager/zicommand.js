@@ -19,5 +19,10 @@ class ZiCommand {
   toString() { return "[command_0x"+this.id.toString(16)+"]"; }
 }
 
-ZiCommand.LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
+ZiCommand.LOGS = {
+	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+};
 module.exports = ZiCommand;

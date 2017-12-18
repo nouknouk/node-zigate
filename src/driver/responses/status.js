@@ -8,7 +8,9 @@ module.exports = {
 	parse: function(reader, rep) {
 		rep.status = Enum.STATUS(reader.nextUInt8(), {id:-1, name:"unknown"});
 		rep.sequence = reader.nextUInt8();
-		rep.relatedTo = reader.nextUInt16BE();
-		rep.error = (reader.isMore()) ? reader.restAll().toString() : undefined;
+		rep.relatedTo = Enum.COMMANDS(reader.nextUInt16BE(), {id:0, name:'null'});
+		if (reader.isMore()) {
+			rep.error = reader.restAll().toString();
+		}
 	},
 };

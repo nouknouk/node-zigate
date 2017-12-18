@@ -8,7 +8,7 @@ module.exports = {
 	parse: function(reader, rep) {
 		rep.status = Enum.NETWORK_JOIN_STATUS(reader.nextUInt8());
 		rep.address = reader.nextUInt16BE();
-		rep.ieee = reader.nextBuffer(8).toString('hex'); // JS doesn't handle 64 bits integers.
+		rep.ieee = reader.nextBuffer(8).toString('hex');
 		rep.channel = reader.nextUInt8();
 	},
 };

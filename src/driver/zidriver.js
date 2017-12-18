@@ -11,8 +11,10 @@ const FRAME_ESCAPE_XOR = 0x10;
 const FRAME_ESCAPE= 0x02;
 
 const ZIDRIVER_LOGGERS = {
-	console: { log: console.log, warn: console.warn, error: console.error, debug: console.debug },
-	nolog:   { log: ()=>{},          warn: ()=>{},           error: ()=>{},            debug: ()=>{} },
+	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
 /* =========================== ZiDriver events ===================================
@@ -72,6 +74,9 @@ class ZiDriver extends EventEmitter {
 	get isOpen() {
 		return this.serial ? true : false;
 	}
+	get pending() {
+		return this.pendingCommands.slice();
+	};
 
 	open(port, callback) {
 		callback = callback || (()=>{});
@@ -94,7 +99,7 @@ class ZiDriver extends EventEmitter {
 					} else {
 						this.logger.log("[ZiDriver] successfully connected to device '"+this.port+"'.");
 						this.emit('open');
-						resolve();
+						resolve(this);
 					}
 				});
 				this.parser = this.serial.pipe(new SerialPort.parsers.Delimiter({ delimiter: [FRAME_STOP] }));
@@ -107,14 +112,12 @@ class ZiDriver extends EventEmitter {
 		}
 		else if (!this.isOpen && !port) {
 			// no port provided ? use 1st port gathered by auto-detection.
-			return ZiDriver.guessZigatePorts()
-				.then((ports) => {
+			return ZiDriver.guessZigatePorts().then(
+			(ports) => {
 					return this.open(ports[0].comName, callback);
-				})
-				.catch((err) => {
+			},(err) => {
 					throw new Error("no port provided & auto-detection failed.");
-				});
-
+			});
 		}
 		else {
 			// already open ? close first and reopen with new (/same) port.
@@ -144,7 +147,7 @@ class ZiDriver extends EventEmitter {
 				resolve();
 			}
 		});
-		p.then(callback);
+		p.then(callback, callback);
 		return p;
 	}
 
@@ -152,8 +155,6 @@ class ZiDriver extends EventEmitter {
 		try {
 			var data = this.unescapeData(raw_in);
 			data.str = data.toString('hex').replace(/../g, "$& ");
-			// this.logger.log("[ZiDriver] Frame received ; raw: ", raw_in.toString('hex').replace(/../g, "$& "));
-			// this.logger.log("[ZiDriver] Frame received ; data: ", data.str);
 
 		  if (data[0] !== FRAME_START) {
 				this.emitError(new Error("[ZiDriver] corrupted frame received: invalid 'frame_start' character: " + data.str), /*autoclose*/ false);
@@ -202,15 +203,51 @@ class ZiDriver extends EventEmitter {
 	}
 	postProcessStatusResponse(status) {
 		// try to match with a pending command
-		for (var i=0; i<this.pendingCommands.length; ++i) {
-			var cmd = this.pendingCommands[i];
-			if (cmd.type.statusExpected && !cmd.status && cmd.type.id === status.relatedTo) {
+		for (var commandIndex=0; commandIndex<this.pendingCommands.length; ++commandIndex) {
+			var cmd = this.pendingCommands[commandIndex];
+			if (cmd.type.statusExpected && !cmd.status && cmd.type.id === status.relatedTo.id) {
 				cmd.status = status;
-				if (cmd.status.id === 0x00) {
-					this.logger.log("[ZiDriver] status received & matched with command '"+cmd.type+"'");
-					this.emit('command_started', cmd, status);
+				
+				// validate the status
+				var statusIsValid = false;
+				if (typeof(cmd.type.statusExpected === 'object')) {
+					statusIsValid = true;
+					for (var k in cmd.type.statusExpected) {
+						var condition = cmd.type.statusExpected[k];
+						if (typeof(condition) === 'function') {
+							try {
+								var conditionOk = condition(status, cmd);
+								if (!conditionOk) {
+									this.logger.error("[ZiDriver] status response criterion '"+k+" failed for command '"+cmd.type+"'.");
+									statusIsValid = false;
+									break;
+								}
+							} catch (e) {
+									this.logger.error("[ZiDriver] status response criterion '"+k+" thrown an error for command '"+cmd.type+"': ",e);
+									statusIsValid = false;
+							}
+						}
+					} // for each status criterion
 				}
 				else {
+					// statusExpected is a simple boolean
+					statusIsValid = (cmd.status.id === 0x00);
+				}
+				
+				if (statusIsValid) {
+					this.logger.log("[ZiDriver] status received & matched with command '"+cmd.type+"'");
+					
+					if (!cmd.type.responseExpected) {
+						this.pendingCommands.splice(commandIndex, 1);
+						this.emit('command_fullfilled', cmd);
+						cmd.cmdPromiseResolve(status);						
+					}
+					else {
+						this.emit('command_started', cmd, status);
+					}
+				}
+				else {
+					this.pendingCommands.splice(commandIndex, 1);
 					this.logger.log("[ZiDriver] command failed: "+cmd.type+"");
 					this.emit('command_failed', cmd, status);
 					cmd.cmdPromiseReject(status);
@@ -218,16 +255,18 @@ class ZiDriver extends EventEmitter {
 				break;
 			}
 		}
-		
 		// in all cases, emit special 'status' event.
-		this.emit('status_'+response.requestType, response);
+		this.emit('status_'+status.relatedTo.name, status);
 	}
+	
 	postProcessNonStatusResponse(response) {
-		for (var i=0; i<this.pendingCommands.length; ++i) {
-			var cmd = this.pendingCommands[i];
+		for (var commandIndex=0; commandIndex<this.pendingCommands.length; ++commandIndex) {
+			var cmd = this.pendingCommands[commandIndex];
 			if ( (!cmd.type.statusExpected || cmd.status) && cmd.type.responseExpected && !cmd.response && cmd.type.responseExpected === response.type.name) {
 				cmd.response = response;
+				this.pendingCommands.splice(commandIndex, 1);
 				this.logger.log("[ZiDriver] response received has been well matched with initiating command '"+cmd.type+"'");
+				
 				this.emit('command_fullfilled', cmd);
 				cmd.cmdPromiseResolve(response);
 				break;
@@ -236,14 +275,17 @@ class ZiDriver extends EventEmitter {
 	}
 	
 	send(name, options) {
-		var p = new Promise((resolve, reject)=> {
-
-			if (!this.isOpen) throw new Error("Zigate not connected yet.");
-
-			var command = this.commands.build(name, options);
-			command.promise = p;
+		if (!this.isOpen) return Promise.reject(new Error("Zigate not connected yet."));
+		var command = null;
+		try {
+			command = this.commands.build(name, options);
+		}
+		catch (e) {
+			return Promise.reject(e);
+		}
+		
+		try {
 			command.timestamp = new Date();
-
 			var raw_out = Buffer.alloc(command.payload.length+5);
 			raw_out.writeUInt16BE(command.type.id, 0);
 			raw_out.writeUInt16BE(command.payload.length, 2);
@@ -263,22 +305,30 @@ class ZiDriver extends EventEmitter {
 			this.logger.log("[ZiDriver] sending command: ", util.inspect(command, {breakLength: 10000}));
 
 			raw_out = this.escapeData(raw_out);
-		  // this.logger.log("[ZiDriver] sending escaped frame: 01 "+escapeData(raw_out).toString('hex').replace(/../g, "$& ")+"03");
+			// this.logger.log("[ZiDriver] sending escaped frame: 01 "+escapeData(raw_out).toString('hex').replace(/../g, "$& ")+"03");
 
-		  this.serial.write([FRAME_START]);
+			this.serial.write([FRAME_START]);
 			this.serial.write(raw_out);
-		  this.serial.write([FRAME_STOP]);
+			this.serial.write([FRAME_STOP]);
 
-			// registering this pending command.
-			this.pendingCommands.push(command);
+			// registering this pending command if further responses are expected
+			if (command.type.statusExpected || command.type.responseExpected) {
+				this.pendingCommands.push(command);
+			}
+			else {
+				command.cmdPromiseResolve(command);
+			}
 		
 			this.emit('raw_out', raw_out);
 			this.emit('command', command);
 			this.emit('command_'+command.type.name, command);
-
-			resolve(command);
-		});
-		return p;
+			
+		} catch (e) {
+			command.cmdPromiseReject(e);
+		}
+		finally {
+			return command.cmdPromise;
+		}
 	}
 
 	static guessZigatePorts(callback/*(err, ports)*/) {

@@ -7,6 +7,11 @@ const colors = require('colors');
 
 Enum.create('RESPONSES');
 
+const INSPECT_PRETTYFORMAT_FIELDS = {
+	timestamp: function(timestamp, cmd) { return ""+timestamp.getFullYear()+'-'+(timestamp.getMonth()+1)+'-'+timestamp.getDate()+' '+timestamp.getHours()+':'+timestamp.getMinutes()+':'+timestamp.getSeconds()+'.'+timestamp.getMilliseconds(); },
+	address: function(address, cmd) { return '0x'+address.toString(16); },
+}
+
 class ResponseBuilder {
 	constructor(options) {
 		this.responses = [];
@@ -30,10 +35,10 @@ class ResponseBuilder {
 		});
 	}
 
+	
 	parse(typeid,payload) {
 		var responseType = Enum.RESPONSES(typeid, new Error("invalid response typeid '"+typeid+"'."));
 		var reader = new BufferReader(payload);
-		
 		var rep = Object.defineProperties({}, {
 			type:    {value: responseType, enumerable: true},
 			payload: {value: payload},
@@ -41,8 +46,14 @@ class ResponseBuilder {
 			inspect: {value: function(depth, options) { 
 				var str = (""+this.type+"").green;
 				for (var k in this) {
-					if (k!=='type'&& typeof(this[k]) !== 'function')
-						str += ", "+(""+k)+":"+(""+this[k]).grey;
+					if (k!=='type' && typeof(this[k]) !== 'function') {
+						if (INSPECT_PRETTYFORMAT_FIELDS[k]) {
+							str += ", "+(""+k)+":"+( INSPECT_PRETTYFORMAT_FIELDS[k](this[k]) ).grey;
+						}
+						else {
+							str += ", "+(""+k)+":"+( ""+this[k] ).grey;
+						}
+					}
 				}
 				return str;
 			}},
@@ -62,5 +73,10 @@ class ResponseBuilder {
 
 }
 
-ResponseBuilder.LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
+ResponseBuilder.LOGS = {
+	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+};
 module.exports = ResponseBuilder;

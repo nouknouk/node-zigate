@@ -7,8 +7,10 @@ const ZiAttribute = require('./ziattribute.js');
 const ZiCommand = require('./zicommand.js');
 
 const ZIMANAGER_LOGGERS = {
-	console: { log: console.log, warn: console.warn, error: console.error, debug: console.debug },
-	nolog:   { log: ()=>{},          warn: ()=>{},           error: ()=>{},            debug: ()=>{} },
+	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
 /* =========================== ZiDriver events ===================================
@@ -62,6 +64,7 @@ class ZiManager extends EventEmitter {
         this.mgrStatus = 'stopped';
         this.logger.log("[ZiManager] start failed: ", err)
         this.emit('error', err);
+				return Promise.reject(err);
       })
     }
     else {
@@ -103,7 +106,7 @@ class ZiManager extends EventEmitter {
         (err) => {
           err = new Error("(ZiManager] reset error: "+err)
           this.emit('error', err);
-          return Promise.reject(err);
+					return Promise.reject(err);
         }
       );
     }
@@ -217,6 +220,7 @@ class ZiManager extends EventEmitter {
         cluster.addCommands(rep.commands);
         break;
 			*/
+		
 			case 'attribute_report':
 				// {"type":{"id":33026,"name":"attribute_report"},"typeHex":"0x8102","sequence":0,"address":17685,"srcEndpoint":1,"clusterId":0,"attributeId":5,"attributeStatus":0,"attributeType":66,"attributeTypeName":"string","attributeSize":12,"value":"lumi.weather","rssi":201}
 				var device = this.getOrCreateDevice(rep.address);
@@ -225,6 +229,7 @@ class ZiManager extends EventEmitter {
 				var attribute = cluster.getOrCreateAttribute(rep.attribute);
 				attribute.setValue(rep.value);
 				break;
+			
 			case 'device_remove':
 				// {"device_remove", 0x8048, ieee, rejoin, rssi}
 				var device = null;
@@ -242,6 +247,7 @@ class ZiManager extends EventEmitter {
 					this.logger.warn("device_remove received from '"+rep.ieee+"' but device not registered.");
 				}
 				break;
+			
 			case 'device_announce':
 				// {"device_announce",0x4d, address, ieee, mac, alternatePanCoordinator, deviceType, powerSource, receiverOnWhenIdle, securityCapability, allocateAddress, rssi}
 				var device = this.getDevice(rep.address);
@@ -250,15 +256,33 @@ class ZiManager extends EventEmitter {
 					device.ieee = rep.ieee;
 				}
 				else {
-						this.logger.log(""+device+": device_remove received but this device is not registered.");
+						this.logger.log(""+device+": device_announce received but skipped as this device is already registered.");
 				}
 				break;
+			
+			case 'ieee_address':
+				// ieee_address(0x8041), sequence:255, status:cmds_success(0x0), ieee:00158d0001b95482, address:0x5d77, start:0, devices:, rssi:0
+				if (rep.status.id === 0x00) {
+					var device = this.getDevice(rep.address);
+					if (device) {
+						device.ieee = rep.ieee;
+					}
+					else {
+						this.logger.log(""+device+": ieee_address received but device 0x"+rep.address+" not registered.");
+					}
+				}
+				else {
+					this.logger.warn(""+device+": ieee_address request for 0x"+rep.address.toString(16)+"' has failed: "+rep.status+" ; skipping.");
+				}
+				break;
+			
 			case 'active_endpoint':
 				// {"active_endpoint",0x8045, sequence, status, address, endpoints, rssi}
 				// we get the list of endpoints for this new device.
 				// usually received after a 'gatherDeviceInformations_level0_start' which sent an 'active_endpoint'
 				this.gatherDeviceInformations_level1_endpoints(rep);
 				break;
+			
 			case 'descriptor_simple':
 				// {"descriptor_simple",sequence, status, address, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
 
@@ -287,6 +311,9 @@ class ZiManager extends EventEmitter {
 	gatherDeviceInformations_level0_start(device) {
 		// 1) send    active_endpoint {target: address}
 		this.logger.log("new "+device+" announced ; gathering its endpoints...");
+		if (!device.ieee) {
+			this.driver.send('ieee_address', { address: device.address });
+		}
 		this.driver.send('active_endpoint', { address: device.address });
 	}
 	gatherDeviceInformations_level1_endpoints(rep) {

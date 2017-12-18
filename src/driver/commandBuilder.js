@@ -4,7 +4,12 @@ const Enum = require('./enum.js');
 const colors = require('colors');
 
 Enum.create('COMMANDS');
-		
+
+const INSPECT_PRETTYFORMAT_FIELDS = {
+	timestamp: function(timestamp, cmd) { return ""+timestamp.getFullYear()+'-'+(timestamp.getMonth()+1)+'-'+timestamp.getDate()+' '+timestamp.getHours()+':'+timestamp.getMinutes()+':'+timestamp.getSeconds()+'.'+timestamp.getMilliseconds(); },
+	address: function(address, cmd) { return '0x'+address.toString(16); },
+}
+
 class CommandBuilder {
 	constructor() {
 	}
@@ -50,8 +55,14 @@ class CommandBuilder {
 				inspect: {value: function(depth, options) {
 					var str = (""+this.type+"").red;
 					for (var k in this) {
-						if (k!=='type' && typeof(this[k]) !== 'function')
-							str += ", " + (""+k) + ":" + (""+this[k]).grey;
+						if (k!=='type' && typeof(this[k]) !== 'function') {
+							if (INSPECT_PRETTYFORMAT_FIELDS[k]) {
+								str += ", " + (""+k) + ":" + ( ""+INSPECT_PRETTYFORMAT_FIELDS[k](this[k]) ).grey;
+							}
+							else {
+								str += ", " + (""+k) + ":" + ( ""+this[k] ).grey;
+							}
+						}
 					}
 					return str;
 				}},
@@ -63,6 +74,11 @@ class CommandBuilder {
 }
 
 
-CommandBuilder.LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
+CommandBuilder.LOGS = {
+	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+};
 
 module.exports = CommandBuilder;
