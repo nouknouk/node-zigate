@@ -218,12 +218,12 @@ class ZiDriver extends EventEmitter {
 							try {
 								var conditionOk = condition(status, cmd);
 								if (!conditionOk) {
-									this.logger.error("[ZiDriver] status response criterion '"+k+" failed for command '"+cmd.type+"'.");
+									this.logger.warn("[ZiDriver] status response criterion '"+k+" failed for command '"+cmd.type+"'.");
 									statusIsValid = false;
 									break;
 								}
 							} catch (e) {
-									this.logger.error("[ZiDriver] status response criterion '"+k+" thrown an error for command '"+cmd.type+"': ",e);
+									this.logger.warn("[ZiDriver] status response criterion '"+k+" thrown an error for command '"+cmd.type+"': "+e);
 									statusIsValid = false;
 							}
 						}
@@ -281,6 +281,7 @@ class ZiDriver extends EventEmitter {
 			command = this.commands.build(name, options);
 		}
 		catch (e) {
+			this.logger.warn("[ZiDriver] exception while building command: "+e);
 			return Promise.reject(e);
 		}
 		
@@ -324,6 +325,7 @@ class ZiDriver extends EventEmitter {
 			this.emit('command_'+command.type.name, command);
 			
 		} catch (e) {
+			this.logger.warn("[ZiDriver] exception while sending command "+command.type+": "+e);
 			command.cmdPromiseReject(e);
 		}
 		finally {
