@@ -27,12 +27,18 @@ class ZiEndpoint extends EventEmitter {
       }
       return this.clusters[clusterId];
     }
+    refreshAttribute(clusterId, attributeId) {
+      return this.device.refreshAttribute(this.id, clusterId, attributeId);
+    }
+    writeAttribute(clusterid, attributeid, value) {
+      return this.device.writeAttribute(this.id, clusterid, attributeid, value);
+    }
 }
 
-ZiEndpoint.LOGS = { 
+ZiEndpoint.LOGS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 module.exports = ZiEndpoint;

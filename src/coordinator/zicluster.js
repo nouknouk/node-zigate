@@ -9,7 +9,7 @@ class ZiCluster {
       this.type = Enum.CLUSTERS(id);
       this.attributes = {};
       this.commands = {};
-			
+
     }
     toString() {
       return (""+this.type || "[cluster_0x"+this.id.toString(16)+",notype]");
@@ -40,13 +40,20 @@ class ZiCluster {
         this.getOrCreateCommand(com_id);
       });
     }
+
+    refreshAttribute(attributeId) {
+      return this.endpoint.refreshAttribute(this.id, attributeId);
+    }
+    writeAttribute(attributeid, value) {
+      return this.endpoint.writeAttribute(this.id, attributeid, value);
+    }
 }
 
 ZiCluster.LOGS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
 module.exports = ZiCluster;

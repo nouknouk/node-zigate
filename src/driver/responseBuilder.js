@@ -10,6 +10,9 @@ Enum.create('RESPONSES');
 const INSPECT_PRETTYFORMAT_FIELDS = {
 	timestamp: function(timestamp, cmd) { return ""+timestamp.getFullYear()+'-'+(timestamp.getMonth()+1)+'-'+timestamp.getDate()+' '+timestamp.getHours()+':'+timestamp.getMinutes()+':'+timestamp.getSeconds()+'.'+timestamp.getMilliseconds(); },
 	address: function(address, cmd) { return '0x'+address.toString(16); },
+	value: function(value, cmd) { return JSON.stringify(value); },
+	definition: function(definition, cmd) { return definition && definition.name ? definition.name : 'unknown'; },
+	status: function(value, cmd) { return JSON.stringify(value); },
 }
 
 class ResponseBuilder {
@@ -18,7 +21,7 @@ class ResponseBuilder {
 
 	loadResponses(repDir) {
 		Enum.RESPONSES.clear();
-		
+
 		repDir = repDir || __dirname +'/responses';
 
 		var fileList = fs.readdirSync(path.resolve(repDir));
@@ -35,7 +38,7 @@ class ResponseBuilder {
 		});
 	}
 
-	
+
 	parse(typeid,payload) {
 		var responseType = Enum.RESPONSES(typeid, new Error("invalid response typeid '"+typeid+"'."));
 		var reader = new BufferReader(payload);
@@ -43,12 +46,13 @@ class ResponseBuilder {
 			type:    {value: responseType, enumerable: true},
 			payload: {value: payload},
 			reader:  {value: reader},
-			inspect: {value: function(depth, options) { 
+			inspect: {value: function(depth, options) {
 				var str = (""+this.type+"").green;
 				for (var k in this) {
 					if (k!=='type' && typeof(this[k]) !== 'function') {
 						if (INSPECT_PRETTYFORMAT_FIELDS[k]) {
-							str += ", "+(""+k)+":"+( INSPECT_PRETTYFORMAT_FIELDS[k](this[k]) ).grey;
+							var strval = INSPECT_PRETTYFORMAT_FIELDS[k](this[k]);
+							str += ", "+(""+k)+":"+(strval ? strval.grey : strval);
 						}
 						else {
 							str += ", "+(""+k)+":"+( ""+this[k] ).grey;
@@ -58,9 +62,9 @@ class ResponseBuilder {
 				return str;
 			}},
 		});
-		
+
 		responseType.parse(reader, rep);
-		
+
 		if (reader.isMore()) {
 			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] the "+(payload.length - reader.tell())+" last bytes of data have not been parsed:");
 			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] response payload: "
@@ -77,6 +81,6 @@ ResponseBuilder.LOGS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 module.exports = ResponseBuilder;

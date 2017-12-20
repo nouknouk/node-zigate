@@ -9,9 +9,12 @@ module.exports = {
 		rep.endpoint = reader.nextUInt8();
 		rep.cluster = Enum.CLUSTERS(reader.nextUInt16BE());
 		rep.attribute = reader.nextUInt16BE();
-		rep.status = Enum.ATTRIBUTE_STATUS(reader.nextUInt8());
+		rep.definition = (rep.cluster && rep.cluster.attributes && rep.cluster.attributes[rep.attribute]) || null;
+		rep.status = Enum.COMMAND_STATUS(reader.nextUInt8());
 		rep.valuetype = Enum.ATTRIBUTE_TYPE(reader.nextUInt8(), new Error('unknown attribute type '));
 		rep.value = undefined;
+
+
 
 		var attributeSize = reader.nextUInt16BE();
 		var valueData = reader.nextBuffer(attributeSize);
@@ -37,10 +40,20 @@ module.exports = {
 				rep.value = valueData.readIntBE(valueData.length);
 				break;
 			case 0x30: // enum
-				rep.value = valueData.readUIntBE(valueData.length);
+			var value = valueData.readUIntBE(valueData.length);
+				if (rep.definition && rep.definition.enum && rep.definition.enum[value]) {
+					rep.value = rep.definition.enum[rep.value];
+				}
+				else {
+					rep.value = { id: value, name:null };
+				}
+
 				break;
 			case 0x42: // string
 				rep.value = valueData.toString();
+				break;
+			case 0xff: // unknown
+				rep.value = valueData;
 				break;
 			default:
 				throw new Error("attribute_report: unhandled value type "+rep.valuetype);

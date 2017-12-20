@@ -8,6 +8,7 @@ Enum.create('COMMANDS');
 const INSPECT_PRETTYFORMAT_FIELDS = {
 	timestamp: function(timestamp, cmd) { return ""+timestamp.getFullYear()+'-'+(timestamp.getMonth()+1)+'-'+timestamp.getDate()+' '+timestamp.getHours()+':'+timestamp.getMinutes()+':'+timestamp.getSeconds()+'.'+timestamp.getMilliseconds(); },
 	address: function(address, cmd) { return '0x'+address.toString(16); },
+	value: function(value, cmd) { return JSON.stringify(value); },
 }
 
 class CommandBuilder {
@@ -16,7 +17,7 @@ class CommandBuilder {
 
 	loadCommands(cmdDir) {
 		Enum.COMMANDS.clear();
-		
+
 		cmdDir = cmdDir || __dirname +'/commands';
 		var fileList = fs.readdirSync(path.resolve(cmdDir));
 		fileList.forEach((id) => {
@@ -32,7 +33,7 @@ class CommandBuilder {
 	}
 
 	build(typeOrOptions, options) {
-			var type = (typeof(typeOrOptions) === 'object') ? options.type : ""+typeOrOptions;
+			var type = (typeof(typeOrOptions) === 'object') ? typeOrOptions.type : ""+typeOrOptions;
 			var options = ((typeof(typeOrOptions) === 'object') ? typeOrOptions : options) || {};
 
 			var commandType = Enum.COMMANDS(type, new Error("invalid command type name '"+type+"'."));
@@ -43,7 +44,7 @@ class CommandBuilder {
 				cmdPromiseResolve = resolve;
 				cmdPromiseReject = reject;
 			});
-			
+
 			var cmd = Object.defineProperties({}, {
 				type:    {value: commandType, enumerable: true},
 				payload: {value: Buffer.alloc(0), writable:true},
@@ -80,7 +81,7 @@ CommandBuilder.LOGS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
 module.exports = CommandBuilder;

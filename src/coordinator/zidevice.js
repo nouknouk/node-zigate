@@ -2,18 +2,15 @@ const EventEmitter = require('events').EventEmitter;
 const ZiEndpoint = require('./ziendpoint.js');
 var LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
 
-let MANAGER = Symbol("MANAGER");
-
 class ZiDevice extends EventEmitter {
-    constructor(address, manager) {
+    constructor(address, coordinator) {
       super();
       this.address = address;
-			this[MANAGER] = manager;
+      this.coordinator = coordinator;
       this.endpoints = {};
       this.clusters = {};
 			this.ieee = null;
     }
-		get manager() { return this[MANAGER]; }
 		get attributes() {
 			var attrs = [];
 			Object.keys(this.endpoints).forEach( (eid)=> {
@@ -44,13 +41,21 @@ class ZiDevice extends EventEmitter {
         this.getOrCreateEndpoint(id);
       });
     }
+
+    refreshAttribute(endpointid, clusterid, attributeid) {
+      return this.coordinator.driver.send({type: 'attribute_read', address: this.address, endpoint:endpointid, cluster:clusterid, attributes:[attributeid]});
+    }
+    writeAttribute(endpointid, clusterid, attributeid, value) {
+      return this.coordinator.driver.send({type: 'attribute_write', address: this.address, endpoint:endpointid, cluster:clusterid, attribute:attributeid, value:value});
+    }
+
 }
 
 ZiDevice.LOGS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },	
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
 module.exports = ZiDevice;

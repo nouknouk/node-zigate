@@ -7,7 +7,7 @@ Enum.create = function(enumsetname, definitions) {
 
 	var byKeys = new Map();
 	var byNames = new Map();
-	
+
 	var enumSet = function(key, fallbackValue) {
 		if (key && typeof(key) === 'object' && (typeof(key.id) !=='undefined')  && (typeof(key.name) ==='string')) {
 			return key;
@@ -22,7 +22,7 @@ Enum.create = function(enumsetname, definitions) {
 				if (e) return e;
 			}
 		}
-		
+
 		// value not found, fallback scenario
 		if (fallbackValue instanceof(Error)) {
 			throw fallbackValue;
@@ -35,9 +35,9 @@ Enum.create = function(enumsetname, definitions) {
 		}
 	};
 	enumSet.toString = function() { return '[EnumSet_'+enumsetname+']'; };
-	
-	enumSet.clear = function() { 
-		byKeys.clear(); 
+
+	enumSet.clear = function() {
+		byKeys.clear();
 		byNames.clear();
 	}
 	enumSet.add = function(def) {
@@ -61,7 +61,7 @@ Enum.create = function(enumsetname, definitions) {
 		else if (byNames.has(enumObj.name)) {
 			throw new Error("cannot add new entry in enum '"+enumsetname+"':  colliding name '"+enumObj.name+"'");
 		}
-		
+
 		enumObj.toString = /*enumObj.toString ||*/ (() => { return enumObj.name+ ('(0x'+enumObj.id.toString(16)+')').grey; });
 		enumObj.inspect = /*enumObj.inspect ||*/ (() => { return enumObj.toString(); });
 		byKeys.set(enumObj.id, enumObj);
@@ -91,7 +91,7 @@ Enum.create = function(enumsetname, definitions) {
 			}
 			else if (e && typeof(e) === 'object') {
 				// list of objects with (id & name), or (name) only + key being an integer
-				if (typeof(e.name) === 'string' && (!isNaN(parseInt(e.id)) || !isNaN(parseInt(n))) ) { 
+				if (typeof(e.name) === 'string' && (!isNaN(parseInt(e.id)) || !isNaN(parseInt(n))) ) {
 					e.id = (!isNaN(parseInt(e.id))) ? parseInt(e.id) : parseInt(n);
 					enumSet.add(e);
 				}
@@ -103,7 +103,7 @@ Enum.create = function(enumsetname, definitions) {
 			}
 		}
 	}
-	
+
 	Enum[enumsetname] = enumSet;
 	return enumSet;
 };
@@ -227,46 +227,37 @@ Enum.create('ATTRIBUTE_TYPE', [
 	[0xFF, 'unknown',     ],
 ]);
 
-// (teZCL_ReportAttributeStatus)
-Enum.create('ATTRIBUTE_STATUS', [
-	[0x00, 'report_ok',              'report is valid'],
-	[0x01, 'report_ep_mismatch',     'source endpoint does not match endpoint in mirror'],
-	[0x02, 'report_addr_mismatch',   'source address does not match address in mirror'],
-	[0x03, 'report_err',             'there is an error in the report'],
-]);
-
-
 /* teZCL_CommandStatus */
 Enum.create('COMMAND_STATUS', [
-	[0x00, 'cmds_success',                      'Command was successful'],
-	[0x01, 'cmds_failure',                      'Command was unsuccessful'],
-	[0x7e, 'cmds_not_authorized',               'Sender does not have authorisation to issue the command'],
-	[0x7f, 'cmds_reserved_field_not_zero',      'A reserved field of command is not set to zero'],
-	[0x80, 'cmds_malformed_command',            'Command has missing fields or invalid field values'],
-	[0x81, 'cmds_unsup_cluster_command',        'The specified cluster has not been registered with the ZCL on the device'],
-	[0x82, 'cmds_unsup_general_command',        'Command does not have a handler enabled in the zcl_options.h file'],
-	[0x83, 'cmds_unsup_manuf_cluster_command',  'Manufacturer-specific cluster command is not supported or has unknown manufacturer code'],
-	[0x84, 'cmds_unsup_manuf_general_command',  'Manufacturer-specific ZCL command is not supported or has unknown manufacturer code'],
-	[0x85, 'cmds_invalid_field',                'Command has field which contains invalid value'],
-	[0x86, 'cmds_unsupported_attribute',        'Specified attribute is not supported on the device'],
-	[0x87, 'cmds_invalid_value',                'Specified attribute value is out of range or a reserved value'],
-	[0x88, 'cmds_read_only',                    'Attempt to write to read-only attribute'],
-	[0x89, 'cmds_insufficient_space',           'Not enough memory space to perform requested operation'],
-	[0x8A, 'cmds_duplicate_exists',             'Attempt made to create a table entry that already exists in the target table'],
-	[0x8B, 'cmds_not_found',                    'Requested information cannot be found'],
-	[0x8C, 'cmds_unreportable_attribute',       'Periodic reports cannot be produced for this attribute'],
-	[0x8D, 'cmds_invalid_data_type',            'Invalid data type specified for attribute'],
-	[0x8E, 'cmds_invalid_selector',             'Incorrect selector for this attribute'],
-	[0x8F, 'cmds_write_only',                   'Issuer of command does not have authorisation to read specified attribute'],
-	[0x90, 'cmds_inconsistent_startup_state',   'Setting the specified values would put device into an inconsistent state on start-up'],
-	[0x91, 'cmds_defined_out_of_band',          'Attempt has been made to write to attribute using an out-of-band method or not over-air'],
-	[0x92, 'cmds_inconsistent',                 ''],
-	[0x93, 'cmds_action_denied',                ''],
-	[0x94, 'cmds_timeout',                      ''],
-	[0xc0, 'cmds_hardware_failure',             'Command was unsuccessful due to hardware failure'],
-	[0xc1, 'cmds_software_failure',             'Command was unsuccessful due to software failure'],
-	[0xc2, 'cmds_calibration_error',            ''],
-	[0xc3, 'cmds_unsupported_cluster',          ''],
+	[0x00, 'success',                      'Command was successful'],
+	[0x01, 'failure',                      'Command was unsuccessful'],
+	[0x7e, 'not_authorized',               'Sender does not have authorisation to issue the command'],
+	[0x7f, 'reserved_field_not_zero',      'A reserved field of command is not set to zero'],
+	[0x80, 'malformed_command',            'Command has missing fields or invalid field values'],
+	[0x81, 'unsup_cluster_command',        'The specified cluster has not been registered with the ZCL on the device'],
+	[0x82, 'unsup_general_command',        'Command does not have a handler enabled in the zcl_options.h file'],
+	[0x83, 'unsup_manuf_cluster_command',  'Manufacturer-specific cluster command is not supported or has unknown manufacturer code'],
+	[0x84, 'unsup_manuf_general_command',  'Manufacturer-specific ZCL command is not supported or has unknown manufacturer code'],
+	[0x85, 'invalid_field',                'Command has field which contains invalid value'],
+	[0x86, 'unsupported_attribute',        'Specified attribute is not supported on the device'],
+	[0x87, 'invalid_value',                'Specified attribute value is out of range or a reserved value'],
+	[0x88, 'read_only',                    'Attempt to write to read-only attribute'],
+	[0x89, 'insufficient_space',           'Not enough memory space to perform requested operation'],
+	[0x8A, 'duplicate_exists',             'Attempt made to create a table entry that already exists in the target table'],
+	[0x8B, 'not_found',                    'Requested information cannot be found'],
+	[0x8C, 'unreportable_attribute',       'Periodic reports cannot be produced for this attribute'],
+	[0x8D, 'invalid_data_type',            'Invalid data type specified for attribute'],
+	[0x8E, 'invalid_selector',             'Incorrect selector for this attribute'],
+	[0x8F, 'write_only',                   'Issuer of command does not have authorisation to read specified attribute'],
+	[0x90, 'inconsistent_startup_state',   'Setting the specified values would put device into an inconsistent state on start-up'],
+	[0x91, 'defined_out_of_band',          'Attempt has been made to write to attribute using an out-of-band method or not over-air'],
+	[0x92, 'inconsistent',                 ''],
+	[0x93, 'action_denied',                ''],
+	[0x94, 'timeout',                      ''],
+	[0xc0, 'hardware_failure',             'Command was unsuccessful due to hardware failure'],
+	[0xc1, 'software_failure',             'Command was unsuccessful due to software failure'],
+	[0xc2, 'calibration_error',            ''],
+	[0xc3, 'unsupported_cluster',          ''],
 ]);
 
 Enum.create('READ_WRITE_ATTRIBUTE_STATUS', [

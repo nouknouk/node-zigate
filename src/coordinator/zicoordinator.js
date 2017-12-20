@@ -6,7 +6,7 @@ const ZiCluster = require('./zicluster.js');
 const ZiAttribute = require('./ziattribute.js');
 const ZiCommand = require('./zicommand.js');
 
-const ZIMANAGER_LOGGERS = {
+const ZICOORDINATOR_LOGGERS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
@@ -17,12 +17,12 @@ const ZIMANAGER_LOGGERS = {
 	'start', 'stop', 'error',
 */
 
-class ZiManager extends EventEmitter {
+class ZiCoordinator extends EventEmitter {
   constructor(options) {
 		options = options || {};
     super();
 
-    this.logger = typeof(options.logger) === 'object' ? options.logger : ZIMANAGER_LOGGERS[options.logger  || 'nolog'];
+    this.logger = typeof(options.logger) === 'object' ? options.logger : ZICOORDINATOR_LOGGERS[options.logger  || 'nolog'];
 		ZiDevice.LOGS = ZiEndpoint.LOGS = ZiCluster.LOGS = ZiAttribute.LOGS = ZiCommand.LOGS = this.logger;
 
     this.driver = new ZiDriver(options);
@@ -36,7 +36,7 @@ class ZiManager extends EventEmitter {
 		this.inclusionStatus = false;
     this.devices = {};
   }
-  static get LOGGERS() { return ZIMANAGER_LOGGERS; };
+  static get LOGGERS() { return ZICOORDINATOR_LOGGERS; };
 
   get started() { return this.driver.isOpen }
   get status() { return this.mgrStatus; }
@@ -57,19 +57,19 @@ class ZiManager extends EventEmitter {
 			.then(this.driver.send('device_type', {type: 'coordinator'}))
       .then(()=> {
         this.mgrStatus = 'started';
-        this.logger.log("[ZiManager] started on port '"+this.driver.port+"'.");
+        this.logger.log("[ZiCoordinator] started on port '"+this.driver.port+"'.");
         this.emit('start');
       },
       (err)=> {
         this.mgrStatus = 'stopped';
-        this.logger.log("[ZiManager] start failed: ", err)
+        this.logger.log("[ZiCoordinator] start failed: ", err)
         this.emit('error', err);
 				return Promise.reject(err);
       })
     }
     else {
-      var err = new Error("manager is already started")
-      this.logger.log("[ZiManager] start failed: ", err)
+      var err = new Error("coordinator is already started")
+      this.logger.log("[ZiCoordinator] start failed: ", err)
       this.emit('error', err);
       return Promise.reject(err);
     }
@@ -81,12 +81,12 @@ class ZiManager extends EventEmitter {
         ()=> {
           this.mgrStatus = 'stopped';
 					this.inclusionStatus = false;
-          this.logger.log("[ZiManager] stopped.");
+          this.logger.log("[ZiCoordinator] stopped.");
           this.emit('stop');
         },
         (err) => {
-          err = new Error("manager is already stopped")
-          this.logger.log("[ZiManager] stop failed: ", err)
+          err = new Error("coordinator is already stopped")
+          this.logger.log("[ZiCoordinator] stop failed: ", err)
           this.emit('error', err);
           return Promise.reject(err);
         }
@@ -100,19 +100,19 @@ class ZiManager extends EventEmitter {
     if (this.started) {
       return this.driver.send('reset').then(
         ()=> {
-          this.logger.log("[ZiManager] reset done.");
+          this.logger.log("[ZiCoordinator] reset done.");
           this.emit('reset');
         },
         (err) => {
-          err = new Error("[ZiManager] reset error: "+err)
+          err = new Error("[ZiCoordinator] reset error: "+err)
           this.emit('error', err);
 					return Promise.reject(err);
         }
       );
     }
     else {
-      var err = new Error("manager is not started yet");
-      this.logger.log("[ZiManager] reset failed: ", err)
+      var err = new Error("coordinator is not started yet");
+      this.logger.log("[ZiCoordinator] reset failed: ", err)
       this.emit('error', err);
       return Promise.reject(err);
     }
@@ -121,7 +121,7 @@ class ZiManager extends EventEmitter {
 		if (this.started) {
 			return this.driver.send('permit_join', {duration: timeInSec}).then(
         (command)=> {
-          this.logger.log("[ZiManager] inclusion mode started for "+command.options.duration+" seconds.");
+          this.logger.log("[ZiCoordinator] inclusion mode started for "+command.options.duration+" seconds.");
 					this.inclusionStatus = true;
           this.emit('inclusion_start');
 					setTimeout(()=> {
@@ -132,15 +132,15 @@ class ZiManager extends EventEmitter {
 					}, timeInSec*1000);
         },
         (err) => {
-          err = new Error("[ZiManager] start inclusion error: "+err)
+          err = new Error("[ZiCoordinator] start inclusion error: "+err)
           this.emit('error', err);
           return Promise.reject(err);
         }
 			);
 		}
 		else {
-      var err = new Error("manager is not started yet");
-      this.logger.log("[ZiManager] reset failed: ", err)
+      var err = new Error("coordinator is not started yet");
+      this.logger.log("[ZiCoordinator] reset failed: ", err)
       this.emit('error', err);
       return Promise.reject(err);
     }
@@ -220,7 +220,7 @@ class ZiManager extends EventEmitter {
         cluster.addCommands(rep.commands);
         break;
 			*/
-		
+
 			case 'attribute_report':
 				// {"type":{"id":33026,"name":"attribute_report"},"typeHex":"0x8102","sequence":0,"address":17685,"srcEndpoint":1,"clusterId":0,"attributeId":5,"attributeStatus":0,"attributeType":66,"attributeTypeName":"string","attributeSize":12,"value":"lumi.weather","rssi":201}
 				var device = this.getOrCreateDevice(rep.address);
@@ -229,7 +229,7 @@ class ZiManager extends EventEmitter {
 				var attribute = cluster.getOrCreateAttribute(rep.attribute);
 				attribute.setValue(rep.value);
 				break;
-			
+
 			case 'device_remove':
 				// {"device_remove", 0x8048, ieee, rejoin, rssi}
 				var device = null;
@@ -247,7 +247,7 @@ class ZiManager extends EventEmitter {
 					this.logger.warn("device_remove received from '"+rep.ieee+"' but device not registered.");
 				}
 				break;
-			
+
 			case 'device_announce':
 				// {"device_announce",0x4d, address, ieee, mac, alternatePanCoordinator, deviceType, powerSource, receiverOnWhenIdle, securityCapability, allocateAddress, rssi}
 				var device = this.getDevice(rep.address);
@@ -259,7 +259,7 @@ class ZiManager extends EventEmitter {
 						this.logger.log(""+device+": device_announce received but skipped as this device is already registered.");
 				}
 				break;
-			
+
 			case 'ieee_address':
 				// ieee_address(0x8041), sequence:255, status:cmds_success(0x0), ieee:00158d0001b95482, address:0x5d77, start:0, devices:, rssi:0
 				if (rep.status.id === 0x00) {
@@ -275,14 +275,14 @@ class ZiManager extends EventEmitter {
 					this.logger.warn(""+device+": ieee_address request for 0x"+rep.address.toString(16)+"' has failed: "+rep.status+" ; skipping.");
 				}
 				break;
-			
+
 			case 'active_endpoint':
 				// {"active_endpoint",0x8045, sequence, status, address, endpoints, rssi}
 				// we get the list of endpoints for this new device.
 				// usually received after a 'gatherDeviceInformations_level0_start' which sent an 'active_endpoint'
 				this.gatherDeviceInformations_level1_endpoints(rep);
 				break;
-			
+
 			case 'descriptor_simple':
 				// {"descriptor_simple",sequence, status, address, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
 
@@ -356,4 +356,4 @@ class ZiManager extends EventEmitter {
 
 }
 
-module.exports = ZiManager;
+module.exports = ZiCoordinator;
