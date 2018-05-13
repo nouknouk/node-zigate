@@ -1,5 +1,5 @@
 
-nameSupportBits: {
+nameSupportBits= {
 		0: 'supported',
 };
 
@@ -20,10 +20,10 @@ module.exports = {
       "5": { "id": 5, "name": "addIfIdentifying", mandatory: true, params:[{name:'id', type:'uint16'}, {name:'name', type:'string'}] }
     },
     "responses": {
-      "0": { "id": 0, "name": "addRsp"           mandatory: true, params:[{name:'status', type:'enum8'}, {name:'id', type:'uint16'}] },
-      "1": { "id": 1, "name": "viewRsp"          mandatory: true, params:[{name:'status', type:'enum8'}, {name:'id', type:'uint16'}, {name:'name', type:'string'}] },
-      "2": { "id": 2, "name": "getMembershipRsp" mandatory: true, params:[{name:'capacity', type:'uint8'}, {name:'count', type:'uint8'}, {name:'list', type:'list'}]},
-      "3": { "id": 3, "name": "removeRsp"        mandatory: true, params:[{name:'status', type:'enum8'}, {name:'id', type:'uint16'}] }
+      "0": { "id": 0, "name": "addRsp",           mandatory: true, params:[{name:'status', type:'enum8'}, {name:'id', type:'uint16'}] },
+      "1": { "id": 1, "name": "viewRsp",          mandatory: true, params:[{name:'status', type:'enum8'}, {name:'id', type:'uint16'}, {name:'name', type:'string'}] },
+      "2": { "id": 2, "name": "getMembershipRsp", mandatory: true, params:[{name:'capacity', type:'uint8'}, {name:'count', type:'uint8'}, {name:'list', type:'list'}]},
+      "3": { "id": 3, "name": "removeRsp",        mandatory: true, params:[{name:'status', type:'enum8'}, {name:'id', type:'uint16'}] }
     },
 };
 

@@ -385,7 +385,7 @@ Enum.create('DEVICE_HA_TYPE', [
 ]);
 
 
-Enum.create('CLUSTERS', require('./clusterDefinitions.js'));
+Enum.create('CLUSTERS', require('./clusters/clusterDefinitions.js'));
 
 
 module.exports = Enum;

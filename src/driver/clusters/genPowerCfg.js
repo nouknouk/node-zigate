@@ -11,7 +11,7 @@ batterySizeEnum = {
 	0xff: 'unknown',
 };
 
-batteryAlarmBits: {
+batteryAlarmBits = {
 		0: 'battery too low',
 		1: 'battery threshold 1',
 		2: 'battery threshold 2',

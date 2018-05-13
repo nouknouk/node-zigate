@@ -1,4 +1,4 @@
-tempAlarmBits: {
+tempAlarmBits = {
 	0: 'temperature too low', 
 	1:'temperature too high',
 };

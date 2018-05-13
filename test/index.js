@@ -33,6 +33,6 @@ else {
 }
 myZikey.open(port).then(()=> {
   console.log("connection to Zigate well established.");
-  myZikey.send("get_version");
-  console.log("command 'get_version' sent ; awaiting response...");
+  myZikey.send("version");
+  console.log("command 'version' sent ; awaiting response...");
 });

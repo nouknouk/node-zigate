@@ -1,5 +1,5 @@
 
-triggerEffectEnum: {
+triggerEffectEnum= {
 	0x00: 'blink',
 	0x01: 'breathe',
 	0x02: 'okay',
@@ -21,7 +21,7 @@ module.exports = {
 		0x00: { "id": 0, "name": "identify", "mandatory": true, "specific": false, params: [{name: "time", "type": "uint16", }]},
 		0x01: { "id": 1, "name": "identifyQuery", "mandatory": true, "specific": false, params: [] },
 		0x02: { "id": 2, "name": "ezmodeInvoke", "mandatory": false, "specific": true, params: [] },
-		0x03: { "id": 3, "name": "updateCommissionState" "mandatory": false, "specific": true, params: [] },
+		0x03: { "id": 3, "name": "updateCommissionState", "mandatory": false, "specific": true, params: [] },
 		0x40: { "id": 64, "name": "triggerEffect", "mandatory": false, "specific": false, params: [{name: "effect", "type": "enum8", enum:triggerEffectEnum}, {name: "variant", "type": "uint8"}], }
 	},
 	"responses": {
