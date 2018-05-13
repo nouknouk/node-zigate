@@ -1,7 +1,5 @@
 const Enum = require('../enum.js');
 
-// 01  /  80 24  /  00 0d  /  b3  /  01 00 00 00 15 8d 00 01 b2 2e 15 0b 00
-
 module.exports = {
 	id: 0x8015,
 	name: "devices_list",
@@ -9,10 +7,10 @@ module.exports = {
 		rep.devices = [];
 		while(reader.isMore()) {
 			let device = {};
+			device.id = reader.nextUInt8();
 			device.address = reader.nextUInt16BE();
-			let powerSource = reader.nextUInt8();
-			device.ACPowered = powerSource === 0;
-			device.batteryPowered = powerSource === 1;
+			device.ieee = reader.nextBuffer(8).toString('hex');
+			device.battery = reader.nextUInt8();
 			device.linkQuality = reader.nextUInt8();
 
 			rep.devices.push(device);

@@ -13,6 +13,25 @@ const INSPECT_PRETTYFORMAT_FIELDS = {
 	value: function(value, cmd) { return JSON.stringify(value); },
 	definition: function(definition, cmd) { return definition && definition.name ? definition.name : 'unknown'; },
 	status: function(value, cmd) { return JSON.stringify(value); },
+	devices: function(value, cmd) {
+		let str = "";
+		value.forEach(d => {
+			str += str ? ", {": "{";
+			for (var k in d) {
+				if (k!=='type' && typeof(d[k]) !== 'function') {
+					if (INSPECT_PRETTYFORMAT_FIELDS[k]) {
+						var strval = INSPECT_PRETTYFORMAT_FIELDS[k](d[k]);
+						str += ", "+(""+k)+":"+(strval ? strval.grey : strval);
+					}
+					else {
+						str += ", "+(""+k)+":"+( ""+d[k] ).grey;
+					}
+				}
+			}
+			str +="}";
+		});
+		return str;
+	}
 }
 
 class ResponseBuilder {
