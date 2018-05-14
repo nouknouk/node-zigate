@@ -57,8 +57,8 @@ class ZiCoordinator extends EventEmitter {
 			.then(this.driver.send('device_type', {type: 'coordinator'}))
       .then(()=> {
         this.mgrStatus = 'started';
-        this.logger.log("[ZiCoordinator] started on port '"+this.driver.port+"'.");
-        this.emit('start');
+        this.logger.log("[ZiCoordinator] started on port '"+this.driver.port+"' ; auto-start devices discovery...");
+				this.driver.send('devices_list');
       },
       (err)=> {
         this.mgrStatus = 'stopped';
@@ -181,19 +181,19 @@ class ZiCoordinator extends EventEmitter {
 	}
   onDriverOpen() {
     this.devices = {};
-    this.emit('started')
+    this.emit('started');
   }
 
   onDriverClose() {
-    this.emit('stopped')
+    this.emit('stopped');
   }
 
   onDriverError(err) {
-    this.emit('error', err)
+    this.emit('error', err);
   }
 
   onDriverCommand(cmd) {
-    this.emit('command', cmd)
+    this.emit('command', cmd);
   }
 
   onDriverResponse(rep) {
@@ -242,6 +242,7 @@ class ZiCoordinator extends EventEmitter {
 				if (device) {
 					delete this.devices[device.address];
 					this.logger.log(""+device+": removed.");
+					this.emit('device_remove', device);
 				}
 				else {
 					this.logger.warn("device_remove received from '"+rep.ieee+"' but device not registered.");
@@ -252,12 +253,26 @@ class ZiCoordinator extends EventEmitter {
 				// {"device_announce",0x4d, address, ieee, mac, alternatePanCoordinator, deviceType, powerSource, receiverOnWhenIdle, securityCapability, allocateAddress, rssi}
 				var device = this.getDevice(rep.address);
 				if (!this.getDevice(rep.address)) {
-					device = this.getOrCreateDevice(rep.address);
-					device.ieee = rep.ieee;
+					device = this.getOrCreateDevice(rep.address, rep.ieee);
+					// calling getOrCreateDevice() will automatically start requests/responses to gather device informations.
 				}
 				else {
 						this.logger.log(""+device+": device_announce received but skipped as this device is already registered.");
 				}
+				break;
+				
+			case 'devices_list':
+				// {"devices_list",0x4d, id, address, ieee, battery, linkQuality}
+				rep.devices.forEach((devicedef) => {
+					var device = this.getDevice(devicedef.address);
+					if (!this.getDevice(devicedef.address)) {
+						device = this.getOrCreateDevice(devicedef.address, devicedef.ieee);
+						// calling getOrCreateDevice() will automatically start requests/responses to gather device informations.
+					}
+					else {
+							this.logger.log("devices_list("+device+"): device definition received but skipped as this device is already registered.");
+					}
+				});
 				break;
 
 			case 'ieee_address':
@@ -297,12 +312,16 @@ class ZiCoordinator extends EventEmitter {
 	getDevice(address) {
 		return this.devices[address] || null;
 	}
-  getOrCreateDevice(address) {
+  getOrCreateDevice(address, optionalIeeeOnCreate) {
 		var device = this.devices[address];
     if (!device) {
 			device = new ZiDevice(address, this);
+			if (ieee) device.ieee = optionalIeeeOnCreate;
       this.devices[address] = device;
 			this.logger.log(""+device+": created.");
+			
+			this.emit('device_add', device);
+			
 			this.gatherDeviceInformations_level0_start(device)
     }
     return device;
@@ -324,11 +343,12 @@ class ZiCoordinator extends EventEmitter {
 			return;
 		}
 		this.logger.log("endpoints of "+device+" retrieved: "+rep.endpoints+" ; gathering clusters...");
-		// 3) for each (enpoint) - send   descriptor_simple {target: address, endpoint}
+		// 3) for each (enpoint) - send descriptor_simple {target: address, endpoint}
 		rep.endpoints.forEach((endpointId) => {
 			var endpoint = device.getOrCreateEndpoint(endpointId);
 			this.driver.send('descriptor_simple', {target: rep.address, endpoint:endpointId});
 		});
+		this.emit('device_endpoints_update', device);
 	}
 	gatherDeviceInformations_level2_clusters(rep) {
 		// {"descriptor_simple",sequence, status, address, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
@@ -347,11 +367,11 @@ class ZiCoordinator extends EventEmitter {
 
 		rep.inClusters.forEach((clusterId) => {
 			var cluster = endpoint.getOrCreateCluster(clusterId);
-
 		});
 		rep.outClusters.forEach((clusterId) => {
 			var cluster = endpoint.getOrCreateCluster(clusterId);
 		});
+		this.emit('device_clusters_update', device, endpoint);
 	}
 
 }
