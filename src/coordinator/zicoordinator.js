@@ -366,7 +366,7 @@ class ZiCoordinator extends EventEmitter {
 				endpoint = device.addEndpoint(endpointId);
 				this.emit('endpoint_add', endpoint);
 			}
-			this.driver.send('descriptor_simple', {target: rep.address, endpoint:endpointId});
+			this.driver.send('descriptor_simple', {address: rep.address, endpoint:endpointId});
 		});
 	}
 	gatherDeviceInformations_level2_clusters(rep) {
