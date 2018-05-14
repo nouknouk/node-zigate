@@ -14,13 +14,10 @@ class ZiEndpoint extends EventEmitter {
       return "[endpoint_"+this.id+"]";
     }
 
-    addClusters(clusterIds) {
-      clusterIds.forEach((c_id) => {
-        this.getOrCreateCluster(c_id);
-      });
+    getCluster(clusterId) {
+      return this.clusters[clusterId];
     }
-
-    getOrCreateCluster(clusterId) {
+    addCluster(clusterId) {
       if (!this.clusters[clusterId]) {
         this.clusters[clusterId] = new ZiCluster(clusterId, this);
         ZiEndpoint.LOGS.log(""+this.device+""+this+""+this.clusters[clusterId]+": created.");

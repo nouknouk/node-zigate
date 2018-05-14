@@ -8,7 +8,6 @@ class ZiDevice extends EventEmitter {
       this.address = address;
       this.coordinator = coordinator;
       this.endpoints = {};
-      this.clusters = {};
 			this.ieee = null;
     }
 		get attributes() {
@@ -29,19 +28,16 @@ class ZiDevice extends EventEmitter {
       return "[device_0x"+this.address.toString(16)+"]";
     }
 
-    getOrCreateEndpoint(id) {
+    getEndpoint(id) {
+      return this.endpoints[id];
+    }
+    addEndpoint(id) {
       if (!this.endpoints[id]) {
         this.endpoints[id] = new ZiEndpoint(id, this);
         ZiDevice.LOGS.log(""+this+""+this.endpoints[id]+": created");
       }
       return this.endpoints[id];
     }
-    addEndpoints(endpointIds) {
-      endpointIds.forEach((id) => {
-        this.getOrCreateEndpoint(id);
-      });
-    }
-
     refreshAttribute(endpointid, clusterid, attributeid) {
       return this.coordinator.driver.send({type: 'attribute_read', address: this.address, endpoint:endpointid, cluster:clusterid, attributes:[attributeid]});
     }

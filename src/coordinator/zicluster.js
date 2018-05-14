@@ -15,37 +15,32 @@ class ZiCluster {
       return (""+this.type || "[cluster_0x"+this.id.toString(16)+",notype]");
     }
 
-    getOrCreateAttribute(id) {
+    getAttribute(id) {
+      return this.attributes[id];
+    }
+    addAttribute(id) {
       if (!this.attributes[id]) {
         this.attributes[id] = new ZiAttribute(id, this);
         ZiCluster.LOGS.log(""+this.endpoint.device+""+this.endpoint+""+this+""+this.attributes[id]+": created");
       }
       return this.attributes[id];
     }
-    getOrCreateCommand(id) {
-      if (!this.commands[id]) {
-        this.commands[id] = new ZiCommand(id, this);
-        ZiCluster.LOGS.log(""+this.endpoint.device+""+this.endpoint+""+this+""+this.commands[id]+": created");
-      }
-      return this.attributes[id];
-    }
-
-    addAttributes(attributeIds) {
-      attributeIds.forEach( (attr_id) => {
-        this.getOrCreateAttribute(attr_id);
-      });
-    }
-		addCommands(commandIds) {
-      commandIds.forEach( (com_id) => {
-        this.getOrCreateCommand(com_id);
-      });
-    }
-
     refreshAttribute(attributeId) {
       return this.endpoint.refreshAttribute(this.id, attributeId);
     }
     writeAttribute(attributeid, value) {
       return this.endpoint.writeAttribute(this.id, attributeid, value);
+    }
+
+    getCommand(id) {
+      return this.commands[id];
+    }
+    addCommand(id) {
+      if (!this.commands[id]) {
+        this.commands[id] = new ZiCommand(id, this);
+        ZiCluster.LOGS.log(""+this.endpoint.device+""+this.endpoint+""+this+""+this.commands[id]+": created");
+      }
+      return this.commands[id];
     }
 }
 

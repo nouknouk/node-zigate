@@ -53,11 +53,14 @@ class ZiCoordinator extends EventEmitter {
     if (!this.started) {
       this.mgrStatus = 'starting';
       return this.driver.open(options.port)
+			.then(()=> {
+				this.logger.log("[ZiCoordinator] USB port '"+this.driver.port+"' to Zigate well opened.");
+			})
 			.then(this.driver.send('channel_mask', {mask: 11}))
 			.then(this.driver.send('device_type', {type: 'coordinator'}))
       .then(()=> {
         this.mgrStatus = 'started';
-        this.logger.log("[ZiCoordinator] started on port '"+this.driver.port+"' ; auto-start devices discovery...");
+        this.logger.log("[ZiCoordinator] zigbee network is up ; starting devices discovery...");
 				this.driver.send('devices_list');
       },
       (err)=> {
@@ -77,7 +80,7 @@ class ZiCoordinator extends EventEmitter {
   stop() {
     if (this.started) {
       this.mgrStatus = 'stopping';
-      return driver.close().then(
+      return this.driver.close().then(
         ()=> {
           this.mgrStatus = 'stopped';
 					this.inclusionStatus = false;
@@ -224,10 +227,23 @@ class ZiCoordinator extends EventEmitter {
 			case 'attribute_report':
 				// {"type":{"id":33026,"name":"attribute_report"},"typeHex":"0x8102","sequence":0,"address":17685,"srcEndpoint":1,"clusterId":0,"attributeId":5,"attributeStatus":0,"attributeType":66,"attributeTypeName":"string","attributeSize":12,"value":"lumi.weather","rssi":201}
 				var device = this.getOrCreateDevice(rep.address);
-				var endpoint = device.getOrCreateEndpoint(rep.endpoint);
-				var cluster = endpoint.getOrCreateCluster(rep.cluster.id);
-				var attribute = cluster.getOrCreateAttribute(rep.attribute);
+				var endpoint = device.getEndpoint(rep.endpoint);
+				if (!endpoint) {
+					endpoint = device.addEndpoint(rep.endpoint);
+					this.emit('endpoint_add', endpoint);
+				}
+				var cluster = endpoint.getCluster(rep.cluster.id);
+				if (!cluster) {
+					cluster = endpoint.addCluster(rep.cluster.id);
+					this.emit('cluster_add', cluster);
+				}
+				var attribute = cluster.getAttribute(rep.attribute);
+				if (!attribute) {
+					attribute = cluster.addAttribute(rep.attribute);
+					this.emit('attribute_add', attribute);
+				}
 				attribute.setValue(rep.value);
+				this.emit('attribute_changed', attribute);
 				break;
 
 			case 'device_remove':
@@ -260,7 +276,7 @@ class ZiCoordinator extends EventEmitter {
 						this.logger.log(""+device+": device_announce received but skipped as this device is already registered.");
 				}
 				break;
-				
+
 			case 'devices_list':
 				// {"devices_list",0x4d, id, address, ieee, battery, linkQuality}
 				rep.devices.forEach((devicedef) => {
@@ -316,12 +332,12 @@ class ZiCoordinator extends EventEmitter {
 		var device = this.devices[address];
     if (!device) {
 			device = new ZiDevice(address, this);
-			if (ieee) device.ieee = optionalIeeeOnCreate;
+			if (optionalIeeeOnCreate) device.ieee = optionalIeeeOnCreate;
       this.devices[address] = device;
 			this.logger.log(""+device+": created.");
-			
+
 			this.emit('device_add', device);
-			
+
 			this.gatherDeviceInformations_level0_start(device)
     }
     return device;
@@ -345,10 +361,13 @@ class ZiCoordinator extends EventEmitter {
 		this.logger.log("endpoints of "+device+" retrieved: "+rep.endpoints+" ; gathering clusters...");
 		// 3) for each (enpoint) - send descriptor_simple {target: address, endpoint}
 		rep.endpoints.forEach((endpointId) => {
-			var endpoint = device.getOrCreateEndpoint(endpointId);
+			var endpoint = device.getEndpoint(endpointId);
+			if (!endpoint) {
+				endpoint = device.addEndpoint(endpointId);
+				this.emit('endpoint_add', endpoint);
+			}
 			this.driver.send('descriptor_simple', {target: rep.address, endpoint:endpointId});
 		});
-		this.emit('device_endpoints_update', device);
 	}
 	gatherDeviceInformations_level2_clusters(rep) {
 		// {"descriptor_simple",sequence, status, address, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
@@ -359,19 +378,30 @@ class ZiCoordinator extends EventEmitter {
 			return;
 		}
 
-		var endpoint = device.getOrCreateEndpoint(rep.endpoint);
+		var endpoint = device.getEndpoint(rep.endpoint);
+		if (!endpoint) {
+			endpoint = device.addEndpoint(rep.endpoint);
+			this.emit('endpoint_add', endpoint);
+		}
 		endpoint.deviceId = rep.deviceId;
 		endpoint.deviceVersion = rep.deviceVersion;
 
 		this.logger.log(""+device+""+endpoint+" clusters retrieved in="+rep.inClusters+" ; out="+rep.outClusters+" ; gathering attributes...");
 
 		rep.inClusters.forEach((clusterId) => {
-			var cluster = endpoint.getOrCreateCluster(clusterId);
+			var cluster = endpoint.getCluster(clusterId);
+			if (!cluster) {
+				cluster = endpoint.addCluster(clusterId);
+				this.emit('cluster_add', cluster);
+			}
 		});
 		rep.outClusters.forEach((clusterId) => {
-			var cluster = endpoint.getOrCreateCluster(clusterId);
+			var cluster = endpoint.getCluster(clusterId);
+			if (!cluster) {
+				cluster = endpoint.addCluster(clusterId);
+				this.emit('cluster_add', cluster);
+			}
 		});
-		this.emit('device_clusters_update', device, endpoint);
 	}
 
 }
