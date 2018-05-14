@@ -77,7 +77,7 @@ class ZiCoordinator extends EventEmitter {
   stop() {
     if (this.started) {
       this.mgrStatus = 'stopping';
-      return driver.close().then(
+      return this.driver.close().then(
         ()=> {
           this.mgrStatus = 'stopped';
 					this.inclusionStatus = false;
@@ -316,7 +316,7 @@ class ZiCoordinator extends EventEmitter {
 		var device = this.devices[address];
     if (!device) {
 			device = new ZiDevice(address, this);
-			if (ieee) device.ieee = optionalIeeeOnCreate;
+			if (optionalIeeeOnCreate) device.ieee = optionalIeeeOnCreate;
       this.devices[address] = device;
 			this.logger.log(""+device+": created.");
 			
