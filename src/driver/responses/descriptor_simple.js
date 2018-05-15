@@ -1,3 +1,8 @@
+// parsed response example:
+//    descriptor_simple(0x8043), sequence:116, status:0, address:0x3dad, 
+//    length:20, endpoint:1, profile:ha(0x104), deviceType:unknown(0x5f01), 
+//    deviceVersion:1, reserved:0, inClusters:0,65535,6, outClusters:0,4,65535, rssi:108
+
 module.exports = {
 	id: 0x8043,
 	name: "descriptor_simple",

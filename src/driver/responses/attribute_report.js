@@ -1,5 +1,12 @@
 const Enum = require('../enum.js');
 
+// parsed response example:
+//     attribute_report(0x8102), sequence:128, address:0x3dad, endpoint:1, 
+//     cluster:genBasic(0x0), attribute:65281, definition:unknown, 
+//     status:{"id":0,"name":"success","description":"Command was successful"}, 
+//     valuetype:string(0x42), value:"toto", rssi:108
+
+
 module.exports = {
 	id: 0x8102,
 	name: "attribute_report",

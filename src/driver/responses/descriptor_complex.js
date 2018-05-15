@@ -1,3 +1,6 @@
+// parsed response example:
+//    descriptor_complex(0x8034), sequence:117, status:132, interest:0, xmlTag:0, values:[], rssi:108
+
 module.exports = {
 	id: 0x8034,
 	name: "descriptor_complex",

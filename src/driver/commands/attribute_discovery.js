@@ -8,7 +8,7 @@ module.exports = {
 	build: function(options, cmd) {
 		cmd.addressMode = Enum.ADDRESS_MODE(options.addressMode, Enum.ADDRESS_MODE('short'));
 		cmd.address = !(isNaN(parseInt(options.address))) ? parseInt(options.address) : (()=>{throw new Error("invalid parameter 'address'.");})();
-		cmd.endpoint = options.endpoint || (()=>{throw new Error("invalid parameter 'dstEndpoint'.")})();
+		cmd.endpoint = options.endpoint || (()=>{throw new Error("invalid parameter 'endpoint'.")})();
 		cmd.endpointSource = options.endpointSource || 0x01; // the zigbee key's endpoint itself ?
 		cmd.cluster = Enum.CLUSTERS(options.cluster, {id: options.cluster, name:'unknown_0x'+options.cluster.toString(16) });
 		cmd.firstId = options.firstId || 0x0000;
