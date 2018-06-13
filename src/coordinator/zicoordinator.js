@@ -53,11 +53,8 @@ class ZiCoordinator extends EventEmitter {
     if (!this.started) {
       this.mgrStatus = 'starting';
       return this.driver.open(options.port)
-			.then(()=> {
-				this.logger.log("[ZiCoordinator] USB port '"+this.driver.port+"' to Zigate well opened.");
-			})
-			.then(this.driver.send('channel_mask', {mask: 11}))
-			.then(this.driver.send('device_type', {type: 'coordinator'}))
+			.then(() => { this.driver.send('channel_mask', {mask: 11}); })
+			.then(() => { this.driver.send('device_type', {type: 'coordinator'}); })
       .then(()=> {
         this.mgrStatus = 'started';
         this.logger.log("[ZiCoordinator] zigbee network is up ; starting devices discovery...");
