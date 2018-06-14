@@ -22,7 +22,7 @@ class ZiAttribute {
   }
   setValue(newVal) {
     this.value = newVal;
-    ZiAttribute.LOGS.log(""+this.cluster.endpoint.device+""+this.cluster.endpoint+""+this.cluster+""+this+": value changed("+this.value+")");
+    ZiAttribute.LOGS.debug(""+this.cluster.endpoint.device+""+this.cluster.endpoint+""+this.cluster+""+this+": value changed("+this.value+")");
   }
 }
 
