@@ -21,6 +21,9 @@ class ZiEndpoint extends EventEmitter {
       if (!this.clusters[clusterId]) {
         this.clusters[clusterId] = new ZiCluster(clusterId, this);
         ZiEndpoint.LOGS.log(""+this.device+""+this+""+this.clusters[clusterId]+": created.");
+				this.emit('cluster_add', this.clusters[clusterId]);
+				this.device.emit('cluster_add', this.clusters[clusterId]);
+				this.device.coordinator.emit('cluster_add', this.clusters[clusterId]);
       }
       return this.clusters[clusterId];
     }
@@ -32,10 +35,12 @@ class ZiEndpoint extends EventEmitter {
     }
 }
 
-ZiEndpoint.LOGS = {
-	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
-	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
-	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
+ZiEndpoint.LOGS = { 
+	trace: () => {},
+	debug: () => {},
+	log: () => {},
+	warn: () => {},
+	error: () => {},
 };
+
 module.exports = ZiEndpoint;

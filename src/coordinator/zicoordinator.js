@@ -7,6 +7,8 @@ const ZiAttribute = require('./ziattribute.js');
 const ZiCommand = require('./zicommand.js');
 const ZiLoadSave = require('./ziloadsave.js');
 
+const EquipmentManager = require('./equipmentManager.js');
+
 const ZICOORDINATOR_LOGGERS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
@@ -25,6 +27,7 @@ class ZiCoordinator extends EventEmitter {
 
     this.logger = typeof(options.logger) === 'object' ? options.logger : ZICOORDINATOR_LOGGERS[options.logger  || 'nolog'];
 		ZiDevice.LOGS = ZiEndpoint.LOGS = ZiCluster.LOGS = ZiAttribute.LOGS = ZiCommand.LOGS = this.logger;
+		EquipmentManager.LOGS = Equipment.LOGS = this.logger;
 
     this.driver = new ZiDriver(options);
     this.driver.on('open', this.onDriverOpen.bind(this));
@@ -37,6 +40,7 @@ class ZiCoordinator extends EventEmitter {
 		this.inclusionStatus = false;
     this.devices = {};
 		this.loadsave = options.file ? new ZiLoadSave(this, {path: options.file}) : null;
+		this.equipmentManager = new EquipmentManager(this);
   }
   static get LOGGERS() { return ZICOORDINATOR_LOGGERS; };
 
@@ -229,20 +233,16 @@ class ZiCoordinator extends EventEmitter {
 				var endpoint = device.getEndpoint(rep.endpoint);
 				if (!endpoint) {
 					endpoint = device.addEndpoint(rep.endpoint);
-					this.emit('endpoint_add', endpoint);
 				}
 				var cluster = endpoint.getCluster(rep.cluster.id);
 				if (!cluster) {
 					cluster = endpoint.addCluster(rep.cluster.id);
-					this.emit('cluster_add', cluster);
 				}
 				var attribute = cluster.getAttribute(rep.attribute);
 				if (!attribute) {
 					attribute = cluster.addAttribute(rep.attribute);
-					this.emit('attribute_add', attribute);
 				}
 				attribute.setValue(rep.value);
-				this.emit('attribute_changed', attribute);
 				break;
 
 			case 'device_remove':
@@ -363,7 +363,6 @@ class ZiCoordinator extends EventEmitter {
 			var endpoint = device.getEndpoint(endpointId);
 			if (!endpoint) {
 				endpoint = device.addEndpoint(endpointId);
-				this.emit('endpoint_add', endpoint);
 			}
 			this.driver.send('descriptor_simple', {address: rep.address, endpoint:endpointId});
 		});
@@ -380,7 +379,6 @@ class ZiCoordinator extends EventEmitter {
 		var endpoint = device.getEndpoint(rep.endpoint);
 		if (!endpoint) {
 			endpoint = device.addEndpoint(rep.endpoint);
-			this.emit('endpoint_add', endpoint);
 		}
 		endpoint.deviceId = rep.deviceId;
 		endpoint.deviceVersion = rep.deviceVersion;
@@ -391,14 +389,12 @@ class ZiCoordinator extends EventEmitter {
 			var cluster = endpoint.getCluster(clusterId);
 			if (!cluster) {
 				cluster = endpoint.addCluster(clusterId);
-				this.emit('cluster_add', cluster);
 			}
 		});
 		rep.outClusters.forEach((clusterId) => {
 			var cluster = endpoint.getCluster(clusterId);
 			if (!cluster) {
 				cluster = endpoint.addCluster(clusterId);
-				this.emit('cluster_add', cluster);
 			}
 		});
 	}

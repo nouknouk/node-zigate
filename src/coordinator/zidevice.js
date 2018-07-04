@@ -1,6 +1,5 @@
 const EventEmitter = require('events').EventEmitter;
 const ZiEndpoint = require('./ziendpoint.js');
-var LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
 
 class ZiDevice extends EventEmitter {
     constructor(address, coordinator) {
@@ -36,6 +35,8 @@ class ZiDevice extends EventEmitter {
       if (!this.endpoints[id]) {
         this.endpoints[id] = new ZiEndpoint(id, this);
         ZiDevice.LOGS.log(""+this+""+this.endpoints[id]+": created");
+				this.emit('endpoint_add', this.endpoints[id]);
+				this.coordinator.emit('endpoint_add', this.endpoints[id]);
       }
       return this.endpoints[id];
     }
