@@ -36,7 +36,7 @@ class ZiCoordinator extends EventEmitter {
     this.mgrStatus = 'stopped';
 		this.inclusionStatus = false;
     this.devices = {};
-		this.loadsave = options.file ? new ZiLoadSave({path: file, coordinator: this}) : null;
+		this.loadsave = options.file ? new ZiLoadSave(this, {path: options.file}) : null;
   }
   static get LOGGERS() { return ZICOORDINATOR_LOGGERS; };
 

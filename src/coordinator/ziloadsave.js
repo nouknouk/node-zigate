@@ -1,5 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 const Fs = require('fs');
+const Path = require('path');
 const MkDirP = require('mkdirp');
 
 const ZiDriver = require('../driver/zidriver.js');
@@ -52,10 +53,14 @@ class ZiLoadSave {
 	
 	loadFile() {
 		try {
+      this.logger.trace("loadFile("+this.path+")...");
 			this[LOAD_IN_PROGRESS] = true;			
 			
-			if (!Fs.existsSync(this.path)) this.saveFile();
-			let devicesData = JSON.parse( fs.readFileSync(this.path) );
+			if (!Fs.existsSync(this.path)) {
+				this.logger.log("initial zigate persistence file '"+this.path+"' doesn't exist ; creating a new one.");
+        this.saveFile();
+      }
+			let devicesData = JSON.parse( Fs.readFileSync(this.path) );
 
 			devicesData.forEach(devdata => {
 				let device = this.coordinator.getOrCreateDevice(d.address, d.ieee);
@@ -77,7 +82,8 @@ class ZiLoadSave {
 				});
 				
 			});
-				this.logger.info("successfully loaded persisted devices data from '"+this.path+"'.");
+			this.logger.log("successfully loaded persisted devices data from '"+this.path+"'.");
+
 		} catch (e) {
 			this.logger.warn("zigate data file load error:",e);
 			this[LOAD_IN_PROGRESS] = false;		
@@ -90,15 +96,15 @@ class ZiLoadSave {
 	
 	saveFile() {
 		try{
+      this.logger.trace("saveFile("+this.path+")...");
 			if (!Fs.existsSync(this.path)) {
-				this.logger.info("initial zigate persistence file '"+this.path+"' doesn't exist ; creating a new one.");
-				MkDirP.sync(this.path);
+				MkDirP.sync(Path.dirname(this.path));
 			}			
 			
-			let devicesData = this.coordinator.devices.map(device => ({
+			let devicesData = Object.values(this.coordinator.devices).map(device => ({
 				address: device.address,
 				ieee: device.ieee,
-				endpoints: Object.values(device.enpoints).map(endpoint => ({
+				endpoints: Object.values(device.endpoints).map(endpoint => ({
 					id: endpoint.id,
 					clusters: Object.values(endpoint.clusters).map(cluster => ({
 						id: cluster.id,
@@ -113,7 +119,7 @@ class ZiLoadSave {
 				})), // endpoints
 			})); // devices
 			
-			fs.writeFileSync(this.path, JSON.stringify(devicesData, /*pretty print*/ null, 2 /*pretty print*/));
+			Fs.writeFileSync(this.path, JSON.stringify(devicesData, /*pretty print*/ null, 2 /*pretty print*/));
 			this.logger.debug("zigate data file saved in '"+this.path+"'.");
 		}
 		catch (e) {
