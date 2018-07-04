@@ -87,29 +87,31 @@ myZikey.on('response_yyy', function(rep) => {
 
 ```
 
-### The Zigate.Manager class:
+### The Zigate.Coordinator class:
 
-Zigate.Manager is an 'higher level' abstraction of the Zigate key: it handles communication with it by using the Driver class and (would) provide additionnal features:
-* (TODO) expose the availables devices, their endpoints / clusters / attributes and actions on them (get/set attribute's values, ...)
-* (TODO) metadata related to clusters/attributes (names, type of data, ...
-* (TODO) better API to start/stop inclusion mode
-* (TODO) automatic discovering & retrieval of clusters & attributes after an association of a new Zigbee device
+Zigate.Coordinator is an 'higher level' abstraction of the Zigate key: it handles communication with it by using the Driver class and (would) provide additionnal features:
+* expose the availables devices, their endpoints / clusters / attributes and actions on them (get/set attribute's values, ...)
+* stores the data to the nodes included in the network in a file, for further loading on next run. 
+* metadata related to clusters/attributes (names, type of data, ...
+* better API to start/stop inclusion mode
+* automatic discovering & retrieval of clusters & attributes after an association of a new Zigbee device
 
 #### instanciation;
 ```
 let Zigate = require('node-zigate');
-let manager = new Zigate.Manager({
-  logger: 'console' // optional: displays debug information to the conosle (by default, no output).
+let coord = new Zigate.Coordinator({
+  logger: 'console',          // optional: displays debug information to the conosle (by default, no output).
+  file: './zigate_data.json', // the file where new devices data is persisted / reloaded
 });
 ```
 
 #### start Manager
 ```
-manager.start({
+coord.start({
   port: '/dev/ttyUSB0' // optional: if no port provided, try to guess it.
 });
 .then(()=> {
-  console.log("manager started ; resetting the Zigate key");
+  console.log("coordinator started ; resetting the Zigate key");
   return manager.reset();
 })
 ```
@@ -121,11 +123,11 @@ TODO ; cf. classes:
 - .. which holds (0...n) `src/manager/zicluster.js`
 - .. which holds (0...n) `src/manager/ziattribute.js`
 
-(TEMPORARY) Access from manager instance:
+(TEMPORARY) Access from coordinator instance:
 ```
-for (let shortAddress in manager.devices) {
-  var device = manager.devices[shortAddress);
-}
+Object.values(coord.devices).forEach(dev => {
+  console.log("device "+device.address);
+})
 
 ```
 
@@ -133,7 +135,7 @@ for (let shortAddress in manager.devices) {
 #### start inclusion mode
 ```
 let timeInSeconds = 120;
-manager.startInclusion(timeInSeconds);
+coord.startInclusion(timeInSeconds);
 ```
 
 ## installation:
