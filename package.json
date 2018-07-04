@@ -4,9 +4,9 @@
   "description": "a nodejs module for zigate USB-TTL key",
   "main": "src/zigate.js",
   "dependencies": {
-    "colors": "^1.1.2",
+    "colors": "^1.3.0",
     "mkdirp": "^0.5.1",
-    "serialport": "^6.0.4",
+    "serialport": "^6.2.1",
     "zcl-id": "^0.3.2"
   },
   "devDependencies": {},

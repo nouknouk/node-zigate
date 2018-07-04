@@ -63,11 +63,11 @@ class ZiLoadSave {
 			let devicesData = JSON.parse( Fs.readFileSync(this.path) );
 
 			// devices
-			devicesData.forEach(devdata => {
-				let device = this.coordinator.getOrCreateDevice(d.address, d.ieee);
+			devicesData.forEach(devicedata => {
+				let device = this.coordinator.getOrCreateDevice(devicedata.address, devicedata.ieee);
 				
 				// endpoints
-				devdata.endpoints.forEach(endpointdata => {
+				devicedata.endpoints.forEach(endpointdata => {
 					let endpoint = device.addEndpoint(endpointdata.id);
 
 					// clusters
@@ -105,27 +105,32 @@ class ZiLoadSave {
 			// devices
 			let devicesData = Object.values(this.coordinator.devices).map(device => ({
 				address: device.address,
+        hex: "0x"+(("0000"+Number(device.address).toString(16)).substr(-4,4)),
 				ieee: device.ieee,
 				
 				// endpoints
 				endpoints: Object.values(device.endpoints).map(endpoint => ({
 					id: endpoint.id,
+          hex: "0x"+(("0000"+Number(endpoint.id).toString(16)).substr(-4,4)),
 					
 					// clusters
 					clusters: Object.values(endpoint.clusters).map(cluster => ({
 						id: cluster.id,
+            hex: "0x"+(("0000"+Number(cluster.id).toString(16)).substr(-4,4)),
 						name: (cluster.type && cluster.type.name) || undefined,
 						
 						// attributes
 						attributes: Object.values(cluster.attributes).map(attribute => ({
 							id: attribute.id,
+              hex: "0x"+(("0000"+Number(attribute.id).toString(16)).substr(-4,4)),
 							name: (cluster.type && cluster.type.attributes && cluster.type.attributes[attribute.id] && cluster.type.attributes[attribute.id].name) || undefined,
 						})),
 						
 						// commands
 						commands: Object.values(cluster.commands).map(command => ({
 							id: command.id,
-							name: (cluster.type && cluster.type.commands && cluster.type.commands[command.id] && cluster.type.commands[command.id].name) || undefined,,
+              hex: "0x"+(("0000"+Number(command.id).toString(16)).substr(-4,4)),
+							name: (cluster.type && cluster.type.commands && cluster.type.commands[command.id] && cluster.type.commands[command.id].name) || undefined,
 						})), // commands
 						
 					})), // clusters
