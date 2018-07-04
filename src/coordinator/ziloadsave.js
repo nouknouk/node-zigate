@@ -62,6 +62,7 @@ class ZiLoadSave {
       }
 			let devicesData = JSON.parse( Fs.readFileSync(this.path) );
 
+			// devices
 			devicesData.forEach(devdata => {
 				let device = this.coordinator.getOrCreateDevice(d.address, d.ieee);
 				
@@ -101,29 +102,43 @@ class ZiLoadSave {
 				MkDirP.sync(Path.dirname(this.path));
 			}			
 			
+			// devices
 			let devicesData = Object.values(this.coordinator.devices).map(device => ({
 				address: device.address,
 				ieee: device.ieee,
+				
+				// endpoints
 				endpoints: Object.values(device.endpoints).map(endpoint => ({
 					id: endpoint.id,
+					
+					// clusters
 					clusters: Object.values(endpoint.clusters).map(cluster => ({
 						id: cluster.id,
+						name: (cluster.type && cluster.type.name) || undefined,
+						
+						// attributes
 						attributes: Object.values(cluster.attributes).map(attribute => ({
 							id: attribute.id,
-							value: attribute.value
-						})), // attributes
+							name: (cluster.type && cluster.type.attributes && cluster.type.attributes[attribute.id] && cluster.type.attributes[attribute.id].name) || undefined,
+						})),
+						
+						// commands
 						commands: Object.values(cluster.commands).map(command => ({
 							id: command.id,
+							name: (cluster.type && cluster.type.commands && cluster.type.commands[command.id] && cluster.type.commands[command.id].name) || undefined,,
 						})), // commands
+						
 					})), // clusters
+					
 				})), // endpoints
+				
 			})); // devices
 			
 			Fs.writeFileSync(this.path, JSON.stringify(devicesData, /*pretty print*/ null, 2 /*pretty print*/));
 			this.logger.debug("zigate data file saved in '"+this.path+"'.");
 		}
 		catch (e) {
-			this.logger.warn("zigate data file save error:",e);
+			this.logger.warn("zigate data file save error ("+this.path+"):",e);
 			throw e;
 		}
 	}
