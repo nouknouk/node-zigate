@@ -5,6 +5,7 @@ const ZiEndpoint = require('./ziendpoint.js');
 const ZiCluster = require('./zicluster.js');
 const ZiAttribute = require('./ziattribute.js');
 const ZiCommand = require('./zicommand.js');
+const ZiLoadSave = require('./ziloadsave.js');
 
 const ZICOORDINATOR_LOGGERS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
@@ -35,6 +36,7 @@ class ZiCoordinator extends EventEmitter {
     this.mgrStatus = 'stopped';
 		this.inclusionStatus = false;
     this.devices = {};
+		this.loadsave = options.file ? new ZiLoadSave({path: file, coordinator: this});
   }
   static get LOGGERS() { return ZICOORDINATOR_LOGGERS; };
 
@@ -104,16 +106,15 @@ class ZiCoordinator extends EventEmitter {
           this.emit('reset');
         },
         (err) => {
-          err = new Error("[ZiCoordinator] reset error: "+err)
+          err = new Error("reset error: "+err)
           this.emit('error', err);
-					return Promise.reject(err);
+					throw err;
         }
       );
     }
     else {
       var err = new Error("coordinator is not started yet");
       this.logger.log("[ZiCoordinator] reset failed: ", err)
-      this.emit('error', err);
       return Promise.reject(err);
     }
   }
@@ -186,6 +187,7 @@ class ZiCoordinator extends EventEmitter {
 
   onDriverClose() {
     this.emit('stopped');
+    this.devices = {};
   }
 
   onDriverError(err) {

@@ -28,6 +28,7 @@ class ZiDevice extends EventEmitter {
       return "[device_0x"+this.address.toString(16)+"]";
     }
 
+		
     getEndpoint(id) {
       return this.endpoints[id];
     }

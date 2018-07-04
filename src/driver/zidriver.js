@@ -150,7 +150,7 @@ class ZiDriver extends EventEmitter {
 				resolve();
 			}
 		});
-		p.then(callback, callback);
+		p = p.then(callback, callback);
 		return p;
 	}
 
