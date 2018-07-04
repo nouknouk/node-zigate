@@ -39,7 +39,7 @@ class ZiLoadSave {
 			
 			device_add: (device) => { this.onDeviceAdded(device); },
 			device_remove: (device) => { this.onDeviceRemoved(device); },
-			endpoint_add: (endpoint) => { }this.onEndpointAdded(endpoint); ,
+			endpoint_add: (endpoint) => { this.onEndpointAdded(endpoint); } ,
 			cluster_add: (cluster) => { this.onClusterAdded(cluster); },
 			attribute_add: (attribute) => { this.onAttributeAdded(attribute); },
 		};
@@ -95,23 +95,23 @@ class ZiLoadSave {
 				MkDirP.sync(this.path);
 			}			
 			
-			let devicesData = this.coordinator.devices.map(device => {
-				address: dev.address,
-				ieee: dev.ieee,
-				endpoints: Object.values(device.enpoints).map(endpoint => {
+			let devicesData = this.coordinator.devices.map(device => ({
+				address: device.address,
+				ieee: device.ieee,
+				endpoints: Object.values(device.enpoints).map(endpoint => ({
 					id: endpoint.id,
-					clusters: Object.values(endpoint.clusters).map(cluster => {
-						cluster.id,
-						attributes: Object.values(cluster.attributes).map(attribute => {
+					clusters: Object.values(endpoint.clusters).map(cluster => ({
+						id: cluster.id,
+						attributes: Object.values(cluster.attributes).map(attribute => ({
 							id: attribute.id,
 							value: attribute.value
-						}), // attributes
-						commands: Object.values(cluster.commands).map(command => {
+						})), // attributes
+						commands: Object.values(cluster.commands).map(command => ({
 							id: command.id,
-						}), // commands
-					}), // clusters
-				}), // endpoints
-			}); // devices
+						})), // commands
+					})), // clusters
+				})), // endpoints
+			})); // devices
 			
 			fs.writeFileSync(this.path, JSON.stringify(devicesData, /*pretty print*/ null, 2 /*pretty print*/));
 			this.logger.debug("zigate data file saved in '"+this.path+"'.");
