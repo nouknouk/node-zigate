@@ -5,6 +5,7 @@
   "main": "src/zigate.js",
   "dependencies": {
     "colors": "^1.1.2",
+    "mkdirp": "^0.5.1",
     "serialport": "^6.0.4",
     "zcl-id": "^0.3.2"
   },
