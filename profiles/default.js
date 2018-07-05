@@ -1,11 +1,11 @@
 module.exports = {
 	
 	match: function(device) {
-		return false;
-	}
+		return Number.MIN_SAFE_INTEGER+1
+	},
 	
 	setup: function(device) {
 		
-	}
+	},
 	
 };

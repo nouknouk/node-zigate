@@ -7,6 +7,7 @@ class ZiCluster extends EventEmitter {
     constructor(id, endpoint) {
       this.id = id;
       this.endpoint = endpoint;
+      this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));
       this.type = Enum.CLUSTERS(id);
       this.attributes = {};
       this.commands = {};
@@ -48,13 +49,13 @@ class ZiCluster extends EventEmitter {
 				this.endpoint.emit('command_add', this.commands[id]);
 				this.endpoint.device.emit('command_add', this.commands[id]);
 				this.endpoint.device.coordinator.emit('command_add', this.commands[id]);
-				
+
       }
       return this.commands[id];
     }
 }
 
-ZiCluster.LOGS = { 
+ZiCluster.LOGS = {
 	trace: () => {},
 	debug: () => {},
 	log: () => {},

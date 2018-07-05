@@ -5,6 +5,7 @@ class ZiDevice extends EventEmitter {
     constructor(address, coordinator) {
       super();
       this.address = address;
+      this.hex = (("0000"+Number(this.address).toString(16)).substr(-4,4));
       this.coordinator = coordinator;
       this.endpoints = {};
 			this.ieee = null;
@@ -26,8 +27,6 @@ class ZiDevice extends EventEmitter {
     toString() {
       return "[device_0x"+this.address.toString(16)+"]";
     }
-
-		
     getEndpoint(id) {
       return this.endpoints[id];
     }

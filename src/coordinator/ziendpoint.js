@@ -7,6 +7,7 @@ class ZiEndpoint extends EventEmitter {
     constructor(id, device) {
       super();
       this.id = id;
+      this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));
       this.device = device;
       this.clusters = {};
     }
@@ -35,7 +36,7 @@ class ZiEndpoint extends EventEmitter {
     }
 }
 
-ZiEndpoint.LOGS = { 
+ZiEndpoint.LOGS = {
 	trace: () => {},
 	debug: () => {},
 	log: () => {},

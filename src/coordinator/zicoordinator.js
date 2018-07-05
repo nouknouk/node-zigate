@@ -8,6 +8,7 @@ const ZiCommand = require('./zicommand.js');
 const ZiLoadSave = require('./ziloadsave.js');
 
 const EquipmentManager = require('./equipmentManager.js');
+const Equipment = require('./equipment.js');
 
 const ZICOORDINATOR_LOGGERS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
@@ -40,7 +41,9 @@ class ZiCoordinator extends EventEmitter {
 		this.inclusionStatus = false;
     this.devices = {};
 		this.loadsave = options.file ? new ZiLoadSave(this, {path: options.file}) : null;
-		this.equipmentManager = new EquipmentManager(this);
+    this.equipmentManager = new EquipmentManager(this);
+    this.equipmentManager.loadProfiles();
+
   }
   static get LOGGERS() { return ZICOORDINATOR_LOGGERS; };
 
@@ -151,39 +154,30 @@ class ZiCoordinator extends EventEmitter {
     }
 	}
 	endpointsOf(deviceId) {
-		this.driver.send('active_endpoint', { target: deviceId });
-		var cbfn = (rep) => {
+		this.driver.send('active_endpoint', { address: deviceId });
+		this.driver.once('response_active_endpoint', (rep) => {
 			this.logger.warn("--------- endpoints -----------");
 			this.logger.warn("device ("+deviceId+"): "+rep.endpoints.length+" available endpoints: "+JSON.stringify(rep.endpoints));
 			this.logger.warn("-------------------------------");
-		};
-
-		this.driver.once('response_active_endpoint', cbfn);
+		});
 	}
 	clustersOf(deviceId, endpointId) {
-		this.driver.send('descriptor_simple', {target: deviceId, endpoint:endpointId});
-		var cbfn = (rep) => {
-			this.logger.warn("---------- clusters ----------");
+		this.driver.send('descriptor_simple', {address: deviceId, endpoint:endpointId});
+		this.driver.once('response_descriptor_simple', (rep) => {
+			this.logger.warn("---------- descriptor_simple ----------");
 			this.logger.warn("device ("+rep.address+"), endpoint ("+rep.endpoint+"): in="+JSON.stringify(rep.inClusters)+" ; out="+JSON.stringify(rep.outClusters));
 			this.logger.warn("------------------------------");
-		};
-		this.driver.once('response_descriptor_simple', cbfn);
-	}
-
-	attributesOf(deviceId, endpointId, clusterId) {
-
-		this.driver.send('attribute_discovery',{
-				target:deviceId, srcEndpoint:endpointId, dstEndpoint:endpointId, cluster:clusterId, startAttribute:0,
-				clientToServer:true, manufacturerSpecific:false, maxCount:100
 		});
-
-		var cbfn = (rep) => {
+	}
+	attributesOf(deviceId, endpointId, clusterId, count) {
+		this.driver.send('attribute_discovery', { address:deviceId, endpoint:endpointId, cluster:clusterId, count:count || 5});
+		this.driver.once('response_attribute_discovery_response', (rep) => {
 			this.logger.warn("------- attribute_discovery ---------");
 			this.logger.warn("attribute="+rep.attributeId+" ("+rep.attributeTypeName+")");
 			this.logger.warn("-------------------------------------");
-		};
-		this.driver.once('response_attribute_discovery_response', cbfn);
+		});
 	}
+
   onDriverOpen() {
     this.devices = {};
     this.emit('started');
@@ -211,13 +205,39 @@ class ZiCoordinator extends EventEmitter {
 				var endpoint = device.getOrCreateEndpoint(rep.srcEndpoint);
         endpoint.addClusters(rep.clusters);
         break;
+			*/
+			case 'attribute_read':
+				this.logger.info("attribute_read received:", rep);
+
+				var device = this.getOrCreateDevice(rep.address);
+				var endpoint = device.getEndpoint(rep.endpoint);
+				if (!endpoint) {
+					endpoint = device.addEndpoint(rep.endpoint);
+				}
+				var cluster = endpoint.getCluster(rep.cluster.id);
+				if (!cluster) {
+					cluster = endpoint.addCluster(rep.cluster.id);
+				}
+				var attribute = cluster.getAttribute(rep.id);
+				if (!attribute) {
+					attribute = cluster.addAttribute(rep.id);
+				}
+				attribute.setValue(rep.value);
+			break;
+
+			case 'attribute_discovery':
+				this.logger.info("attribute_discovery received:", rep);
+				break;
       case 'object_attribute_list':
+				this.logger.info("object_attribute_list received:", rep);
+				break;
+			/*
 				// {"type":{"id":32772,"name":"object_attribute_list"},"typeHex":"0x8004","srcEndpoint":1,"profileId":260,"clusterId":513,"attributes":[0,3,4,17,18,27,28]}
 				var device = this.getOrCreateDevice(rep.srcEndpoint); //// <<<<<<==================== to fix !!!!!!!!!! ====================
 				var endpoint = device.getOrCreateEndpoint(rep.srcEndpoint);
 				var cluster = endpoint.getOrCreateCluster(rep.clusterId);
         cluster.addAttributes(rep.attributes);
-        break;
+
       case 'object_command_list':
 				// {"type":{"id":32773,"name":"object_command_list","typeHex":"8005"},"srcEndpoint":1,"profileId":260,"clusterId":8,"commands":[0,1,2,3,4,5,6,7,8]}
 				var device = this.getOrCreateDevice(rep.srcEndpoint); //// <<<<<<==================== to fix !!!!!!!!!! ====================
@@ -226,7 +246,6 @@ class ZiCoordinator extends EventEmitter {
         cluster.addCommands(rep.commands);
         break;
 			*/
-
 			case 'attribute_report':
 				// {"type":{"id":33026,"name":"attribute_report"},"typeHex":"0x8102","sequence":0,"address":17685,"srcEndpoint":1,"clusterId":0,"attributeId":5,"attributeStatus":0,"attributeType":66,"attributeTypeName":"string","attributeSize":12,"value":"lumi.weather","rssi":201}
 				var device = this.getOrCreateDevice(rep.address);
@@ -365,6 +384,9 @@ class ZiCoordinator extends EventEmitter {
 				endpoint = device.addEndpoint(endpointId);
 			}
 			this.driver.send('descriptor_simple', {address: rep.address, endpoint:endpointId});
+
+			// first attempt to get genBasic::manufacturerName (4)  & genBasic/::modelId (5)
+			this.driver.send("attribute_read", { address: rep.address, endpoint: endpointId, cluster: 0, attributes:[4,5]})
 		});
 	}
 	gatherDeviceInformations_level2_clusters(rep) {
