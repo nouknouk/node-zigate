@@ -262,6 +262,9 @@ class ZiCoordinator extends EventEmitter {
 					attribute = cluster.addAttribute(rep.attribute);
 				}
 				attribute.setValue(rep.value);
+				if (rep.cluster.id === 0 /* genBasic */ && this.equipmentManager) {
+					this.equipmentManager.onDeviceSpec(device);
+				}
 				break;
 
 			case 'device_remove':

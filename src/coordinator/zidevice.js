@@ -10,6 +10,7 @@ class ZiDevice extends EventEmitter {
       this.endpoints = {};
 			this.ieee = null;
     }
+    get log() { return ZiCommand.LOGS; }
 		get attributes() {
 			var attrs = [];
 			Object.keys(this.endpoints).forEach( (eid)=> {
@@ -48,11 +49,6 @@ class ZiDevice extends EventEmitter {
 
 }
 
-ZiDevice.LOGS = {
-	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
-	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
-	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
-};
+ZiDevice.LOGS = { trace: () => {}, debug: () => {}, log: () => {}, warn: () => {}, error: () => {} };
 
 module.exports = ZiDevice;

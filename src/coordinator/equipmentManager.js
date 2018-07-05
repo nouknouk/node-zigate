@@ -44,7 +44,7 @@ class EquipmentManager extends EventEmitter {
 	}
   onDeviceSpec(device) {
     Object.values(this.profiles).forEach((p) => {
-      let bestprofile = {};
+      let bestprofile = { id: 'noprofile' };
       let bestscore = Number.MIN_SAFE_INTEGER
       if (p.match) {
         let score = p.match.apply(device);
@@ -54,7 +54,9 @@ class EquipmentManager extends EventEmitter {
         }
       }
     });
-    this.equipments[device.address].setProfile(profile);
+    if (!this.equipments[device.address].profile || this.equipments[device.address].profile.id !== bestprofile.id) {
+      this.equipments[device.address].setProfile(profile);
+    }
   }
 
   loadProfiles() {
@@ -68,7 +70,8 @@ class EquipmentManager extends EventEmitter {
 		filenames.forEach((filename) => {
 			try {
 				let profile = require(Path.resolve(this.profilesPath, filename));
-				this.profiles[filename] = profile;
+				profile.id = profile.id || Path.basename(filename).split(Path.sep)[0];
+				this.profiles[profile.id] = profile;
 			}
 			catch(e) {
 				this.logger.error("error while loading profile '"+filename+"':",e);

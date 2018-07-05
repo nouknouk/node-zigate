@@ -9,8 +9,8 @@ class ZiAttribute extends EventEmitter {
     this.type = (this.cluster && this.cluster.type && this.cluster.type.attributes && this.cluster.type.attributes[id]) || null;
 		this.value = (this.type && typeof(this.type.default) !== "undefined" && this.type.default) || null;
   }
+  get log() { return ZiAttribute.LOGS; }
   toString() { return "[attr_0x"+this.id.toString(16)+","+ ((this.type && this.type.name) || "unknown")+"]"; }
-
 	get cluster() { return this.cluster; }
 
   refresh() {
@@ -31,12 +31,6 @@ class ZiAttribute extends EventEmitter {
   }
 }
 
-ZiAttribute.LOGS = {
-	trace: () => {},
-	debug: () => {},
-	log: () => {},
-	warn: () => {},
-	error: () => {},
-};
+ZiAttribute.LOGS = { trace: () => {}, debug: () => {}, log: () => {}, warn: () => {}, error: () => {} };
 
 module.exports = ZiAttribute;

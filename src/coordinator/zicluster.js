@@ -13,6 +13,7 @@ class ZiCluster extends EventEmitter {
       this.commands = {};
 
     }
+    get log() { return ZiCluster.LOGS; }
     toString() {
       return (""+this.type || "[cluster_0x"+this.id.toString(16)+",notype]");
     }
@@ -55,12 +56,6 @@ class ZiCluster extends EventEmitter {
     }
 }
 
-ZiCluster.LOGS = {
-	trace: () => {},
-	debug: () => {},
-	log: () => {},
-	warn: () => {},
-	error: () => {},
-};
+ZiCluster.LOGS = { trace: () => {}, debug: () => {}, log: () => {}, warn: () => {}, error: () => {} };
 
 module.exports = ZiCluster;
