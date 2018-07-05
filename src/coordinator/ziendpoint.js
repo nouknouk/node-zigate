@@ -11,7 +11,7 @@ class ZiEndpoint extends EventEmitter {
       this.device = device;
       this.clusters = {};
     }
-    get log() { return ZiCommand.LOGS; }
+    get log() { return ZiEndpoint.LOGS; }
     toString() {
       return "[endpoint_"+this.id+"]";
     }

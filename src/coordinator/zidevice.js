@@ -10,7 +10,7 @@ class ZiDevice extends EventEmitter {
       this.endpoints = {};
 			this.ieee = null;
     }
-    get log() { return ZiCommand.LOGS; }
+    get log() { return ZiDevice.LOGS; }
 		get attributes() {
 			var attrs = [];
 			Object.keys(this.endpoints).forEach( (eid)=> {

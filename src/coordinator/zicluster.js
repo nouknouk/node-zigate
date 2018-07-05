@@ -5,6 +5,7 @@ let Enum = require('../driver/enum.js');
 
 class ZiCluster extends EventEmitter {
     constructor(id, endpoint) {
+      super();
       this.id = id;
       this.endpoint = endpoint;
       this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));

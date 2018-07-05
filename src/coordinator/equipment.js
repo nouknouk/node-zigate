@@ -26,36 +26,36 @@ class Equipment extends EventEmitter {
 			endpoint_add: (endpoint) => {
         if (this[PROFILE]) {
           let fullid = endpoint.hex;
-          if (this[PROFILE]['endpoint_add']) this[PROFILE]['endpoint_add'].apply(this, endpoint);
-          if (this[PROFILE]['endpoint_add_'+fullid]) this[PROFILE]['endpoint_add_'+fullid].apply(this,endpoint);
+          if (this[PROFILE]['endpoint_add']) this[PROFILE]['endpoint_add'].apply(this, [endpoint]);
+          if (this[PROFILE]['endpoint_add_'+fullid]) this[PROFILE]['endpoint_add_'+fullid].apply(this, [endpoint]);
         }
       },
 			cluster_add: (cluster) => {
         if (this[PROFILE]) {
           let fullid = cluster.endpoint.hex+"_"+cluster.hex;
-          if (this[PROFILE]['cluster_add']) this[PROFILE]['cluster_add'].apply(this, cluster);
-          if (this[PROFILE]['cluster_add_'+fullid]) this[PROFILE]['cluster_add_'+fullid].apply(this,cluster);
+          if (this[PROFILE]['cluster_add']) this[PROFILE]['cluster_add'].apply(this, [cluster]);
+          if (this[PROFILE]['cluster_add_'+fullid]) this[PROFILE]['cluster_add_'+fullid].apply(this, [cluster]);
         }
       },
 			attribute_add: (attribute) => {
         if (this[PROFILE]) {
           let fullid = attribute.cluster.endpoint.hex+"_"+attribute.cluster.hex+"_"+attribute.hex;
-          if (this[PROFILE]['attribute_add']) this[PROFILE]['attribute_add'].apply(this, attribute);
-          if (this[PROFILE]['attribute_add_'+fullid]) this[PROFILE]['attribute_add_'+fullid].apply(this,attribute);
+          if (this[PROFILE]['attribute_add']) this[PROFILE]['attribute_add'].apply(this, [attribute]);
+          if (this[PROFILE]['attribute_add_'+fullid]) this[PROFILE]['attribute_add_'+fullid].apply(this, [attribute]);
         }
       },
 			command_add: (command) => {
         if (this[PROFILE]) {
           let fullid = command.cluster.endpoint.hex+"_"+command.cluster.hex+"_"+command.hex;
-          if (this[PROFILE]['command_add']) this[PROFILE]['command_add'].apply(this, command);
-          if (this[PROFILE]['command_add_'+fullid]) this[PROFILE]['command_add_'+fullid].apply(this,command);
+          if (this[PROFILE]['command_add']) this[PROFILE]['command_add'].apply(this, [command]);
+          if (this[PROFILE]['command_add_'+fullid]) this[PROFILE]['command_add_'+fullid].apply(this,[command]);
         }
       },
 			attribute_change: (attribute, newVal, oldVal) => {
         if (this[PROFILE]) {
           let fullid = attribute.cluster.endpoint.hex+"_"+attribute.cluster.hex+"_"+attribute.hex;
-          if (this[PROFILE]['attribute_change']) this[PROFILE]['attribute_change'].apply(this, attribute, newVal, oldVal);
-          if (this[PROFILE]['attribute_change_'+fullid]) this[PROFILE]['attribute_change_'+fullid].apply(this, attribute, newVal, oldVal);
+          if (this[PROFILE]['attribute_change']) this[PROFILE]['attribute_change'].apply(this, [attribute, newVal, oldVal]);
+          if (this[PROFILE]['attribute_change_'+fullid]) this[PROFILE]['attribute_change_'+fullid].apply(this, [attribute, newVal, oldVal]);
         }
       },
 		};
@@ -66,19 +66,21 @@ class Equipment extends EventEmitter {
 
   static get logger() { return Equipment.LOGS; };
 
+  get profile() { return this[PROFILE]; }
+
   setProfile(profile) {
 
     // remove old profile
     if (this[PROFILE] !== null) {
-      this.removeProfile(profile);
       if (this[PROFILE]['profile_unset']) this[PROFILE]['profile_unset'].apply(this);
       this[VALUES] = {};
       this[ACTIONS] = {};
+      this[PROFILE] = null;
     }
 
     // setup new profile
-    this[PROFILE] = profile;
     if (this[PROFILE] !== null) {
+      this[PROFILE] = profile;
 
       if (profile.values) {
         Object.entries(profile.values).forEach(([name, def]) => {
@@ -182,7 +184,14 @@ class Equipment extends EventEmitter {
   }
 
 
-	toString() { return "Equipment_0x"+this.address.toString(16)+"]"; }
+	toString() { return "[equipment_0x"+this[ZIDEVICE].hex+" ("+((this.profile && this.profile.id) || "noprofile")+")]"; }
+
+  inspect(depth, options) {
+    let out = this.toString();
+    Object.entries(this[VALUES]).forEach(([key, val]) => { out += '\n    '+key+' = '+val.value; });
+    Object.keys(this[ACTIONS]).forEach(([key]) => { out += '\n    '+key+'()' });
+    return out;
+  }
 }
 
 Equipment.LOGS = {

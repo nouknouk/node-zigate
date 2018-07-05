@@ -3,6 +3,7 @@ const CLUSTER = Symbol("CLUSTER");
 
 class ZiCommand extends EventEmitter {
   constructor(id, cluster) {
+    super();
     this.id = id;
     this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));
     this.cluster = cluster || null;

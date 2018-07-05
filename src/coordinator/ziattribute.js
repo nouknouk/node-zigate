@@ -3,6 +3,7 @@ const CLUSTER = Symbol("CLUSTER");
 
 class ZiAttribute extends EventEmitter {
   constructor(id, cluster) {
+    super();
     this.id = id;
     this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));
     this.cluster = cluster || null;
@@ -11,7 +12,6 @@ class ZiAttribute extends EventEmitter {
   }
   get log() { return ZiAttribute.LOGS; }
   toString() { return "[attr_0x"+this.id.toString(16)+","+ ((this.type && this.type.name) || "unknown")+"]"; }
-	get cluster() { return this.cluster; }
 
   refresh() {
     return this.cluster.refreshAttribute(this.id);
@@ -23,11 +23,11 @@ class ZiAttribute extends EventEmitter {
     let oldVal = this.value;
     this.value = newVal;
     ZiAttribute.LOGS.debug(""+this.cluster.endpoint.device+""+this.cluster.endpoint+""+this.cluster+""+this+": value changed("+this.value+")");
-		this.emit('attribute_change', attribute, newVal, oldVal);
-		this.cluster.emit('attribute_change', attribute, newVal, oldVal);
-		this.cluster.endpoint.emit('attribute_change', attribute, newVal, oldVal);
-		this.cluster.endpoint.device.emit('attribute_change', attribute, newVal, oldVal);
-		this.cluster.endpoint.device.coordinator.emit('attribute_change', attribute, newVal, oldVal);
+		this.emit('attribute_change', this, newVal, oldVal);
+		this.cluster.emit('attribute_change', this, newVal, oldVal);
+		this.cluster.endpoint.emit('attribute_change', this, newVal, oldVal);
+		this.cluster.endpoint.device.emit('attribute_change', this, newVal, oldVal);
+		this.cluster.endpoint.device.coordinator.emit('attribute_change', this, newVal, oldVal);
   }
 }
 

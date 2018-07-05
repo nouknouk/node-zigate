@@ -43,19 +43,21 @@ class EquipmentManager extends EventEmitter {
 		delete this.equipments[device.address];
 	}
   onDeviceSpec(device) {
+    let bestprofile = { id: 'noprofile' };
+    let bestscore = 0;
     Object.values(this.profiles).forEach((p) => {
-      let bestprofile = { id: 'noprofile' };
-      let bestscore = Number.MIN_SAFE_INTEGER
       if (p.match) {
-        let score = p.match.apply(device);
-        if (scope >= bestscore) {
+        let score = p.match.apply(device, [device]);
+        this.logger.trace(""+device+" check match with profile "+p.id+" match score="+score+" (vs="+bestprofile.id+","+bestscore+")");
+        if (score && (score > bestscore)) {
           bestscore = score;
-          bestprofile = profile;
+          bestprofile = p;
         }
       }
     });
     if (!this.equipments[device.address].profile || this.equipments[device.address].profile.id !== bestprofile.id) {
-      this.equipments[device.address].setProfile(profile);
+      this.logger.log("upgrading "+device+" profile to '"+bestprofile.id+"'");
+      this.equipments[device.address].setProfile(bestprofile);
     }
   }
 
@@ -84,7 +86,15 @@ class EquipmentManager extends EventEmitter {
   }
 
 
-	toString() { return "EquipmentManager-"+Object.keys(equipments).length+"]"; }
+	toString() { return "[EquipmentManager ("+Object.keys(this.equipments).length+")]"; }
+
+  inspect(depth, options) {
+    let out = this.toString();
+    Object.values(this.equipments).forEach(eq => { out += '\n'+eq.inspect().replace(/\n/gi,'\n    '); });
+    out +='\n';
+    return out;
+  }
+
 }
 
 EquipmentManager.LOGS = {
