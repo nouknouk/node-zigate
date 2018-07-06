@@ -3,7 +3,9 @@ const Sym = require('./symbols.js');
 const CLUSTER = Symbol("CLUSTER");
 
 class ZiCommand extends EventEmitter {
+<<<<<<< HEAD
   constructor(id, cluster, verified) {
+		super();
     this[Sym.ID] = id;
     this[Sym.CLUSTER] = cluster;
 		this[Sym.VERIFIED] = !!verified;
@@ -26,4 +28,21 @@ class ZiCommand extends EventEmitter {
 	toString() { return "[attr_0x"+this.id.toString(16)+","+ ((this.type && this.type.name) || "notype")+"]"; }
 }
 
+=======
+  constructor(id, cluster) {
+    super();
+    this.id = id;
+    this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));
+    this.cluster = cluster || null;
+		this.type = (this.cluster && this.cluster.type && this.cluster.type.commands && this.cluster.type.commands[id]) || null;
+  }
+  get log() { return ZiCommand.LOGS; }
+	get cluster() { return this.cluster; }
+
+  toString() { return "[command_0x"+this.id.toString(16)+"]"; }
+}
+
+ZiCommand.LOGS = { trace: () => {}, debug: () => {}, log: () => {}, warn: () => {}, error: () => {} };
+
+>>>>>>> 38cd6bd449c3a417c9155d1ce5e54c0d54434138
 module.exports = ZiCommand;

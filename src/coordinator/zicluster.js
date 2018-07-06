@@ -6,6 +6,7 @@ let ZiCommand = require('./zicommand.js');
 
 class ZiCluster extends EventEmitter {
 	constructor(id, endpoint, verified) {
+		super();
     this[Sym.ID] = id;
     this[Sym.ENDPOINT] = endpoint;
     this[Sym.TYPE] = Enum.CLUSTERS(id);

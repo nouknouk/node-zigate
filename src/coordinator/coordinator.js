@@ -11,18 +11,28 @@ const DeviceLoadSave = require('./deviceLoadSave.js');
 const DeviceTypes = require('./deviceTypes.js');
 
 const COORDINATOR_LOGGERS = {
-	console: { trace: console.trace, debug: console.debug, log: console.log, info: console.log, warn: console.warn, error: console.error },
-	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      info: ()=>{},      warn: console.warn, error: console.error },
-	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      info: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
+	console: { trace: console.trace, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: console.error },
 };
 
 class Coordinator extends EventEmitter {
   constructor(options) {
-		options = options || {};
-    super();
+		super();
 
-    this[Sym.LOG] = typeof(options.log) === 'object' ? options.log : COORDINATOR_LOGGERS[options.log  || 'nolog'];
+		options = options || {
+			log: 'nolog',           // 'console'
+			loadsavepath: null,     // './zigate_data.json'
+			devicespath: null,      // './devices'
+			commandspath: null,			// './driver/commands'
+			responsespath: null,	  // './driver/responses'
+			port: null,             // 'auto'
+		};
+
+		this[Sym.LOG] = (typeof(options.log) === 'object' && options.log)
+										|| COORDINATOR_LOGGERS[options.log]
+										|| COORDINATOR_LOGGERS['nolog'];
 
     this.driver = new Driver(options);
     this.driver.on('open', this.onDriverOpen.bind(this));
@@ -34,22 +44,27 @@ class Coordinator extends EventEmitter {
     this[Sym.STATUS] = 'stopped';
 		this.inclusionStatus = false;
     this[Sym.DEVICES] = {};
-		this.loadsave = options.file ? new DeviceLoadSave(this, {path: options.file}) : null;
-		this.deviceTypes = new DeviceTypes(this, options);
+		this.deviceTypes = new DeviceTypes(this, {
+			commandspath: options.commandspath,
+			responsespath: options.responsespath,
+			log: (this.log.getLogger ? this.log.getLogger('devicetypes') : this.log)
+		});
+		this.loadsave = (options.loadsavepath ? new DeviceLoadSave(this, options) : null);
   }
+
   static get LOGGERS() { return COORDINATOR_LOGGERS; };
 
 	get log() { return this[Sym.LOG]; }
   get status() { return this[Sym.STATUS]; }
   get started() { return this.driver.isOpen }
-	
-	get devices() { return Object.entries(this[Sym.DEVICES]); }
+
+	get devices() { return Object.values(this[Sym.DEVICES]); }
 	device(address) { return this[Sym.DEVICES][address] || null; }
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///                   COORDINATOR ACTIONS
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
+
   start(port, options) {
 
     // called with only 1 arg, 'options'
@@ -61,24 +76,25 @@ class Coordinator extends EventEmitter {
 
     if (!this.started) {
       this[Sym.STATUS] = 'starting';
+      this.log.info("[Coordinator] starting zigate driver...");
       return this.driver.open(options.port)
 			.then(() => { this.driver.send('channel_mask', {mask: 11}); })
 			.then(() => { this.driver.send('device_type', {type: 'coordinator'}); })
       .then(()=> {
         this[Sym.STATUS] = 'started';
-        this.log.log("[Coordinator] zigbee network is up ; starting devices discovery...");
+        this.log.info("[Coordinator] zigbee network is up ; starting devices discovery...");
 				this.driver.send('devices_list');
       },
       (err)=> {
         this[Sym.STATUS] = 'stopped';
-        this.log.log("[Coordinator] start failed: ", err)
+        this.log.info("[Coordinator] start failed: ", err)
         this.emit('error', err);
 				return Promise.reject(err);
       })
     }
     else {
       var err = new Error("coordinator is already started")
-      this.log.log("[Coordinator] start failed: ", err)
+      this.log.info("[Coordinator] start failed: ", err)
       this.emit('error', err);
       return Promise.reject(err);
     }
@@ -90,12 +106,12 @@ class Coordinator extends EventEmitter {
         ()=> {
           this[Sym.STATUS] = 'stopped';
 					this.inclusionStatus = false;
-          this.log.log("[Coordinator] stopped.");
+          this.log.info("[Coordinator] stopped.");
           this.emit('stop');
         },
         (err) => {
           err = new Error("coordinator is already stopped")
-          this.log.log("[Coordinator] stop failed: ", err)
+          this.log.info("[Coordinator] stop failed: ", err)
           this.emit('error', err);
           return Promise.reject(err);
         }
@@ -109,7 +125,7 @@ class Coordinator extends EventEmitter {
     if (this.started) {
       return this.driver.send('reset').then(
         ()=> {
-          this.log.log("[Coordinator] reset done.");
+          this.log.info("[Coordinator] reset done.");
           this.emit('reset');
         },
         (err) => {
@@ -121,7 +137,7 @@ class Coordinator extends EventEmitter {
     }
     else {
       var err = new Error("coordinator is not started yet");
-      this.log.log("[Coordinator] reset failed: ", err)
+      this.log.info("[Coordinator] reset failed: ", err)
       return Promise.reject(err);
     }
   }
@@ -129,7 +145,7 @@ class Coordinator extends EventEmitter {
 		if (this.started) {
 			return this.driver.send('permit_join', {duration: timeInSec}).then(
         (command)=> {
-          this.log.log("[Coordinator] inclusion mode started for "+command.options.duration+" seconds.");
+          this.log.info("[Coordinator] inclusion mode started for "+command.options.duration+" seconds.");
 					this.inclusionStatus = true;
           this.emit('inclusion_start');
 					setTimeout(()=> {
@@ -148,7 +164,7 @@ class Coordinator extends EventEmitter {
 		}
 		else {
       var err = new Error("coordinator is not started yet");
-      this.log.log("[Coordinator] reset failed: ", err)
+      this.log.info("[Coordinator] reset failed: ", err)
       this.emit('error', err);
       return Promise.reject(err);
     }
@@ -157,17 +173,18 @@ class Coordinator extends EventEmitter {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///                   MANAGE DEVICES' DATA
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
+
 	addDevice(address, optionalIeee) {
-		if (!this[Sym.DEVICES][address]) {
-			let device = new Device(this, address);
+    let device = this.device(address);
+		if (!device) {
+			device = new Device(this, address);
 			if (typeof(optionalIeee) !== 'undefined') { device.ieee = optionalIeee; }
 			this[Sym.DEVICES][address] = device;
-			this.log.log(""+device+" : device created");
+			this.log.info(""+device+" : device created");
 			this.emit('device_add', device);
 		}
-		return device[Sym.ENDPOINTS][id];
-	}	
+		return device;
+	}
 	removeDevice(address) {
 		let device = this[Sym.DEVICES][address];
 		if (device) {
@@ -177,23 +194,23 @@ class Coordinator extends EventEmitter {
 		}
 		return device;
 	}
-	
+
 	addEndpoint(device, id, verified) {
 		if (!device[Sym.ENDPOINTS][id]) {
 			let endpoint = new ZiEndpoint(id, device, verified);
 			device[Sym.ENDPOINTS][id] = endpoint;
-			this.log.log(""+device+""+endpoint+" : endpoint created");
+			this.log.info(""+device+""+endpoint+" : endpoint created");
 			device[Sym.ON_ENDPOINT_ADD](endpoint);
 			this.emit('endpoint_add', endpoint);
 		}
 		return device[Sym.ENDPOINTS][id];
-	}	
-		
+	}
+
 	addCluster(endpoint, id, verified) {
 		if (!endpoint[Sym.CLUSTERS][id]) {
 			let cluster = new ZiCluster(id, endpoint, verified);
 			endpoint[Sym.CLUSTERS][id] = cluster;
-			this.log.log(""+endpoint.device+""+endpoint+""+cluster+" : cluster created");
+			this.log.info(""+endpoint.device+""+endpoint+""+cluster+" : cluster created");
 			endpoint.device[Sym.ON_CLUSTER_ADD](cluster);
 			this.emit('cluster_add', cluster);
 		}
@@ -203,7 +220,7 @@ class Coordinator extends EventEmitter {
 	addAttribute(cluster, id, value, verified) {
 		if (!cluster[Sym.ATTRIBUTES][id]) {
 			let attribute = new ZiAttribute(id, cluster, value, verified);
-			this.log.log(""+cluster.endpoint.device+""+cluster.endpoint+""+cluster+""+attribute+": attribute created");
+			this.log.info(""+cluster.endpoint.device+""+cluster.endpoint+""+cluster+""+attribute+": attribute created");
 			cluster[Sym.ATTRIBUTES][id] = attribute;
 			cluster.device[Sym.ON_ATTRIBUTE_ADD](attribute);
 			this.emit('attribute_add', attribute);
@@ -213,42 +230,43 @@ class Coordinator extends EventEmitter {
 	writeAttribute(attribute, value) {
 		let oldval = attribute.value;
 		return driver.send({
-			type: 'attribute_write', 
-			address: attribute.device[Sym.ADDRESS], 
-			endpoint:attribute.endpoint.id, 
-			cluster:attribute.cluster.id, 
+			type: 'attribute_write',
+			address: attribute.device[Sym.ADDRESS],
+			endpoint:attribute.endpoint.id,
+			cluster:attribute.cluster.id,
 			attribute:attribute.id, value: val
 		})
 		.then((rep) => {
 			attribute[Sym.SET_DATA](rep.value);
 			attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, value, oldval)
-			attribute.emit('attribute_change', attribute, value);
-			attribute.device.emit('attribute_change', attribute, value);
-			this.emit('attribute_change', attribute, value);
+			attribute.emit('attribute_change', attribute, value, oldval);
+			attribute.device.emit('attribute_change', attribute, value, oldval);
+			this.emit('attribute_change', attribute, value, oldval);
 			return rep.value;
 		});
 	}
-	refreshAttribute(attribute, value) {
+	refreshAttribute(attribute) {
+		let oldval = attribute.value;
 		return attribute.device[Sym.COORDINATOR].driver.send({
-			type: 'attribute_read', 
-			address: attribute[Sym.ADDRESS], 
-			endpoint:attribute.endpoint.id, 
-			cluster:attribute.cluster.id, 
+			type: 'attribute_read',
+			address: attribute[Sym.ADDRESS],
+			endpoint:attribute.endpoint.id,
+			cluster:attribute.cluster.id,
 			attributes:[attribute.id],
 		}).then((r) => {
 			attribute[Sym.SET_DATA](rep.value);
-			attribute.emit('attribute_change', attribute, value);
-			attribute.device.emit('attribute_change', attribute, value);
-			this.emit('attribute_change', attribute, value);
+			attribute.emit('attribute_change', attribute, rep.value, oldval);
+			attribute.device.emit('attribute_change', attribute, rep.value, oldval);
+			this.emit('attribute_change', attribute, rep.value, oldval);
 			return rep.value;
-		});		
+		});
 	}
-	
+
 	addCommand(cluster, id, verified) {
 		if (!cluster[Sym.COMMANDS][id]) {
 			let command = new ZiCommand(id, cluster, verified);
 			cluster[Sym.COMMANDS][id] = command;
-			this.log.log(""+cluster.endpoint.device+""+cluster.endpoint+""+cluster+""+command+": command created");
+			this.log.info(""+cluster.endpoint.device+""+cluster.endpoint+""+cluster+""+command+": command created");
 			cluster.device[Sym.ON_COMMAND_ADD](command);
 			this.emit('command_add', command);
 		}
@@ -257,12 +275,12 @@ class Coordinator extends EventEmitter {
 	execCommand(command, args) {
 			throw new Error("not implemented yet");
 	}
-	
-	
+
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///                   QUERIES
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	
+
 	queryDevices() {
 		return this.driver.send('devices_list', { /*noparam*/ })
 		.then((rep) => { return this.onResponseDevicesList(rep); });
@@ -274,10 +292,10 @@ class Coordinator extends EventEmitter {
 				this.addDevice(dev.address, dev.ieee);
 			}
 		});
-		
+
 		return rep;
 	}
-	
+
 	queryEndpoints(device) {
 		return this.driver.send('active_endpoint', { address: device.address })
 		.then((rep) => { return this.onResponseActiveEndpoint(rep); });
@@ -293,13 +311,13 @@ class Coordinator extends EventEmitter {
 		return this.driver.send('descriptor_simple', {address: endpoint.device.address, endpoint:endpoint.id} )
 		.then((rep) => { return this.onResponseDescriptorSimple(rep); });
 	}
-	
+
 	onResponseDescriptorSimple(rep) {
 		// {"descriptor_simple",sequence, status, address, endpoint, profileId, deviceId, deviceVersion, inClusters, outClusters, rssi}
 		let device = this.device(rep.address) || this.addDevice(rep.address);
 		let endpoint = device.endpoint(rep.endpoint) || device.addEndpoint(rep.endpoint, /*verified*/ true);
 		endpoint.verified = true;
-		
+
 		rep.inClusters.forEach((clusterId) => {
 			var cluster = endpoint.cluster(clusterId) || endpoint.addCluster(clusterId, /*verified*/ true);
 			cluster.verified = true;
@@ -307,11 +325,11 @@ class Coordinator extends EventEmitter {
 		rep.outClusters.forEach((clusterId) => {
 			var cluster = endpoint.cluster(clusterId) || endpoint.addCluster(clusterId, /*verified*/ true);
 			cluster.verified = true;
-		});		
+		});
 		return rep;
 	}
-	
-	
+
+
 	queryAttributes(cluster) {
 		return this.driver.send('attribute_discovery', {address: cluster.device.address, endpoint: cluster.endpoint.id, firstId: 0, count: 5} )
 		.then((rep) => { return this.onResponseAttributeDiscovery(rep, cluster); });
@@ -326,13 +344,13 @@ class Coordinator extends EventEmitter {
 		}
 		return rep;
 	}
-	
+
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///                   DRIVER CALLBACKS
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-		
-	
+
+
   onDriverOpen() {
     this[Sym.DEVICES] = {};
     this.emit('started');
@@ -352,6 +370,7 @@ class Coordinator extends EventEmitter {
   }
 
   onDriverResponse(rep) {
+
     switch (rep.type.name) {
       case 'object_cluster_list':
 				// {"type":{"id":0x8003,"name":"object_cluster_list"},"srcEndpoint":1,"profileId":260,"clusters":[0,1,3,4,5,6,8,25,257,4096,768,513,516]}
@@ -376,10 +395,10 @@ class Coordinator extends EventEmitter {
 				endpoint.verified = true;
 				var cluster = endpoint.cluster(rep.cluster.id) || endpoint.addCluster(rep.cluster.id, /*verified*/ true);
 				cluster.verified = true;
-				
+
 				var attribute = cluster.attribute(rep.attribute);
-				if (!attribute) { 
-					attribute = cluster.addAttribute(rep.attribute, rep.value, /*verified*/ true); 
+				if (!attribute) {
+					attribute = cluster.addAttribute(rep.attribute, rep.value, /*verified*/ true);
 				}
 				else {
 					attribute.verified = true;
@@ -419,7 +438,7 @@ class Coordinator extends EventEmitter {
 					var device = this.device(rep.address);
 					if (!device) {
 						device = this.addDevice(rep.address, rep.ieee);
-					}			
+					}
 					else {
 						device.ieee = rep.ieee;
 					}
@@ -437,21 +456,21 @@ class Coordinator extends EventEmitter {
 				// we get the list of in/out clusters for a device.
 				this.onResponseDescriptorSimple(rep);
 				break;
-			case: 'attribute_discovery'
+			case 'attribute_discovery':
 				this.onResponseAttributeDiscovery(rep);
 				break;
     }
   }
 
 	/* discovering roadmap:
-	
+
 		1) we received a 'device_announce'
 
 		2a) send 'ieee_address' to get device's address
 		2b) send 'active_endpoint' to get list of endpoints
 
 		3) forEach(endpoint), send 'descriptor_simple' to get list of  clusters
-	
+
 	*/
 
 }

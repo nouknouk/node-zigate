@@ -6,6 +6,7 @@ var LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
 
 class ZiEndpoint extends EventEmitter {
 	constructor(id, device, verified) {
+		super();
     this[Sym.ID] = id;
     this[Sym.DEVICE] = device;
 		this[Sym.VERIFIED] = !!verified;

@@ -11,10 +11,10 @@ const FRAME_ESCAPE_XOR = 0x10;
 const FRAME_ESCAPE= 0x02;
 
 const DRIVER_LOGGERS = {
+	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
 /* =========================== Driver events ===================================
@@ -37,7 +37,11 @@ const DRIVER_LOGGERS = {
 
 class Driver extends EventEmitter {
 	constructor(options) {
-		options = options || {};
+		options = options || {
+			log: null,
+			commandspath: null,
+			responsespath: null,
+		};
 		super();
 
 	  this.serialOptions = {
@@ -53,15 +57,17 @@ class Driver extends EventEmitter {
 		this.port = null;
 	  this.parser = null;
 	  this.serial = null;
-		this.logger = typeof(options.logger) === 'object' ? options.logger : DRIVER_LOGGERS[options.logger  || 'nolog'];
+		this.logger = (typeof(options.log) === 'object' && options.log)
+									|| DRIVER_LOGGERS[options.log]
+									|| DRIVER_LOGGERS['nolog'];
 
 		CommandBuilder.LOGS = this.logger;
 		this.commands = new CommandBuilder();
-		this.commands.loadCommands(options.commandPath || __dirname+'/commands');
+		this.commands.loadCommands(options.commandspath || __dirname+'/commands');
 
 		ResponseBuilder.LOGS = this.logger;
 		this.responses = new ResponseBuilder();
-		this.responses.loadResponses(options.responsePath || __dirname+'/responses');
+		this.responses.loadResponses(options.responsespath || __dirname+'/responses');
 
 		if (this.port) {
 			this.open(options.port);
@@ -79,6 +85,8 @@ class Driver extends EventEmitter {
 	};
 
 	open(port, callback) {
+		if (port === 'auto') port = null;
+		
 		callback = callback || (()=>{});
 
 		if (!this.isOpen && port) {

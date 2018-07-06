@@ -7,7 +7,7 @@ class Device extends EventEmitter {
     constructor(coordinator, address) {
       super();
       this[Sym.ADDRESS] = address;
-			this[Sym.TYPE] = DeviceTypes.default;
+			this[Sym.TYPE] = DeviceTypes.Default;
       this[Sym.COORDINATOR] = coordinator;
 			this[Sym.IEEE] = null;
 			this[Sym.READY] = false;
@@ -15,13 +15,14 @@ class Device extends EventEmitter {
     }
 		get address() { return this[Sym.ADDRESS]; }
 		get ieee() { return this[Sym.IEEE]; }
-		set ieee(ieee) { if (this[Sym.IEEE] !== null) throw new Error(""+this+" ieee already set.") else this[Sym.IEEE] = ieee; }
+		set ieee(ieee) { if (this[Sym.IEEE] !== null) throw new Error(""+this+" ieee already set."); else this[Sym.IEEE] = ieee; }
 		get type() { return this[Sym.TYPE].id; }
 		
 		get endpoints() { return Object.values(this[Sym.ENDPOINTS]); }
 		endpoint(id) { return this[Sym.ENDPOINTS][id]; }
 		addEndpoint(id, verified) { 
-			this[Sym.COORDINATOR].addEndpoint(this, id, verified); 
+			this[Sym.COORDINATOR].addEndpoint(this, id, verified);
+      this.log(''+this+' endpoint added '+this.endpoint(id)); 
 		}
 		queryEndpoints() { return this[Sym.COORDINATOR].queryEndpoints(this); }
 		
