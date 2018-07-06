@@ -1,17 +1,17 @@
-const EventEmitter = require('events').EventEmitter;
+const Sym = require('./ziymbols.js');
 var Path = require("path");
-var fs = require("fs");
+var Fs = require("fs");
 
 const Equipment = require('./equipment.js');
 
 
-class EquipmentManager extends EventEmitter {
+class DeviceTypes {
   constructor(coordinator, options) {
     super();
 		this[Sym.COORDINATOR] = coordinator;
 		this.equipments = {};
 		this.profiles = this.loadProfiles();
-		this.profilesPath = options.profiles || Path.resolve(__dirname, '../../', 'profiles');
+		this.typesPath = options.devicetypes || Path.resolve(__dirname, '../../devices');
 
 		this.coordCallbacks = {
 			started: () => {},
@@ -43,12 +43,12 @@ class EquipmentManager extends EventEmitter {
 	}
 
 	loadProfiles() {
-    let filenames = fs.readdirSync(this.profilesPath).sort();
-    if (!filenames.length) throw new Error("error while loading profiles in '"+this.profilesPath+"'.");
+    let filenames = Fs.readdirSync(this.typesPath).sort();
+    if (!filenames.length) throw new Error("error while loading profiles in '"+this.typesPath+"'.");
 		
 		filenames.forEach((filename) => {
 			try {
-				let profile = require(Path.resolve(this.profilesPath, filename);
+				let profile = require(Path.resolve(this.typesPath, filename);
 				this.profiles[filename] = profile;
 			}
 			catch(e) {

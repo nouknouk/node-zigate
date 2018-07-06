@@ -1,42 +1,28 @@
 const EventEmitter = require('events').EventEmitter;
+const Sym = require('./symbols.js');
 const ZiCluster = require('./zicluster.js');
 
 var LOGS = { log: ()=>{}, warn: ()=>{}, error: ()=>{}, debug: ()=>{} };
 
 class ZiEndpoint extends EventEmitter {
-    constructor(id, device) {
-      super();
-      this.id = id;
-      this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));
-      this.device = device;
-      this.clusters = {};
-    }
-    get log() { return ZiEndpoint.LOGS; }
-    toString() {
-      return "[endpoint_"+this.id+"]";
-    }
+	constructor(id, device, verified) {
+    this[Sym.ID] = id;
+    this[Sym.DEVICE] = device;
+		this[Sym.VERIFIED] = !!verified;
+		this[Sym.CLUSTERS] = {};
+	}
 
-    getCluster(clusterId) {
-      return this.clusters[clusterId];
-    }
-    addCluster(clusterId) {
-      if (!this.clusters[clusterId]) {
-        this.clusters[clusterId] = new ZiCluster(clusterId, this);
-        ZiEndpoint.LOGS.log(""+this.device+""+this+""+this.clusters[clusterId]+": created.");
-				this.emit('cluster_add', this.clusters[clusterId]);
-				this.device.emit('cluster_add', this.clusters[clusterId]);
-				this.device.coordinator.emit('cluster_add', this.clusters[clusterId]);
-      }
-      return this.clusters[clusterId];
-    }
-    refreshAttribute(clusterId, attributeId) {
-      return this.device.refreshAttribute(this.id, clusterId, attributeId);
-    }
-    writeAttribute(clusterid, attributeid, value) {
-      return this.device.writeAttribute(this.id, clusterid, attributeid, value);
-    }
+	get id() { return this[Sym.ID]; }
+	get device() { return this[Sym.ENDPOINT][Sym.DEVICE]; }
+	get verified() { return this[Sym.VERIFIED]; }
+	set verified(v) { return this[Sym.VERIFIED] = v; }
+	get clusters() { return Object.values(this[Sym.CLUSTERS]); }
+	cluster(id) { return this[Sym.CLUSTERS][id]; }
+	addCluster(id, verified) { return this.device[Sym.COORDINATOR].addCluster(this, id, verified); }
+	queryClusters() { return this[Sym.COORDINATOR].queryClusters(this); }
+	
+  get log() { return this.device[Sym.COORDINATOR].log; }
+	toString() { return (""+this.type || "[cluster_0x"+this.id.toString(16)+","+((this.type && this.type.name) || 'notype')+"]"); }
 }
-
-ZiEndpoint.LOGS = { trace: () => {}, debug: () => {}, log: () => {}, warn: () => {}, error: () => {} };
 
 module.exports = ZiEndpoint;

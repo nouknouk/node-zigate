@@ -1,0 +1,43 @@
+module.exports = {
+	LOG:        Symbol("LOG"),
+	STATUS:     Symbol("STATUS"),
+	ADDRESS:    Symbol("ADDRESS"),
+	IEEE:       Symbol("IEEE"),
+	ID:         Symbol("ID"),
+	TYPE:       Symbol("TYPE"),
+	DEVICE:     Symbol("DEVICE"),
+	DEVICES:    Symbol("DEVICES"),
+	PROFILE:    Symbol("PROFILE"),
+	READY:			Symbol("READY"),
+	ENDPOINT:   Symbol("ENDPOINT"),
+	ENDPOINTS:  Symbol("ENDPOINTS"),
+	CLUSTER:    Symbol("CLUSTER"),
+	CLUSTERS:   Symbol("CLUSTERS"),
+	ATTRIBUTE:  Symbol("ATTRIBUTE"),
+	ATTRIBUTES: Symbol("ATTRIBUTES"),
+	ATTR_DATA:  Symbol("ATTR_DATA"),
+	COMMAND:    Symbol("COMMAND"),
+	COMMANDS:   Symbol("COMMANDS"),
+	ACTION:     Symbol("ACTION"),
+	ACTIONS:    Symbol("ACTIONS"),
+	VALUE:      Symbol("VALUE"),
+	VALUES:     Symbol("VALUES"),
+	VERIFIED:		Symbol("VERIFIED"),
+	
+	// functions
+	DESTROY:             Symbol("DESTROY"),
+	ADD_ENDPOINT:        Symbol("ADD_ENDPOINT"),
+	ADD_CLUSTER:         Symbol("ADD_CLUSTER"),
+	ADD_ATTRIBUTE:       Symbol("ADD_ATTRIBUTE"),
+	SET_DATA:            Symbol("SET_DATA"),
+	SET_VALUE:           Symbol("SET_VALUE"),
+	UPDATE_PROFILE:      Symbol("UPDATE_PROFILE"),
+	
+	
+	ON_ENDPOINT_ADD:     Symbol("ON_ENDPOINT_ADD"),
+	ON_CLUSTER_ADD:      Symbol("ON_CLUSTER_ADD"),
+	ON_ATTRIBUTE_ADD:    Symbol("ON_ATTRIBUTE_ADD"),
+	ON_ATTRIBUTE_CHANGE: Symbol("ON_ATTRIBUTE_CHANGE"),
+	ON_COMMAND_ADD:      Symbol("ON_COMMAND_ADD"),
+
+};

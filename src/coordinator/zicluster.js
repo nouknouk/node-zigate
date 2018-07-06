@@ -1,62 +1,37 @@
-let ZiAttribute = require('./ziattribute.js');
 const EventEmitter = require('events').EventEmitter;
-let ZiCommand = require('./zicommand.js');
+const Sym = require('./symbols.js');
 let Enum = require('../driver/enum.js');
+let ZiAttribute = require('./ziattribute.js');
+let ZiCommand = require('./zicommand.js');
 
 class ZiCluster extends EventEmitter {
-    constructor(id, endpoint) {
-      super();
-      this.id = id;
-      this.endpoint = endpoint;
-      this.hex = (("0000"+Number(this.id).toString(16)).substr(-4,4));
-      this.type = Enum.CLUSTERS(id);
-      this.attributes = {};
-      this.commands = {};
+	constructor(id, endpoint, verified) {
+    this[Sym.ID] = id;
+    this[Sym.ENDPOINT] = endpoint;
+    this[Sym.TYPE] = Enum.CLUSTERS(id);
+		this[Sym.VERIFIED] = !!verified;
+		this[Sym.ATTRIBUTES] = {};
+		this[Sym.COMMANDS] = {};
+	}
 
-    }
-    get log() { return ZiCluster.LOGS; }
-    toString() {
-      return (""+this.type || "[cluster_0x"+this.id.toString(16)+",notype]");
-    }
+	get id() { return this[Sym.ID]; }
+	get type() { return this[Sym.TYPE]; }
+	get verified() { return this[Sym.VERIFIED]; }
+	set verified(v) { return this[Sym.VERIFIED] = v; }
+	get endpoint() { return this[Sym.ENDPOINT]; }
+	get device() { return this[Sym.ENDPOINT][Sym.DEVICE]; }
 
-    getAttribute(id) {
-      return this.attributes[id];
-    }
-    addAttribute(id) {
-      if (!this.attributes[id]) {
-        this.attributes[id] = new ZiAttribute(id, this);
-        ZiCluster.LOGS.log(""+this.endpoint.device+""+this.endpoint+""+this+""+this.attributes[id]+": created");
-				this.emit('attribute_add', this.attributes[id]);
-				this.endpoint.emit('attribute_add', this.attributes[id]);
-				this.endpoint.device.emit('attribute_add', this.attributes[id]);
-				this.endpoint.device.coordinator.emit('attribute_add', this.attributes[id]);
-      }
-      return this.attributes[id];
-    }
-    refreshAttribute(attributeId) {
-      return this.endpoint.refreshAttribute(this.id, attributeId);
-    }
-    writeAttribute(attributeid, value) {
-      return this.endpoint.writeAttribute(this.id, attributeid, value);
-    }
+	get attributes() { return Object.values(this[Sym.ATTRIBUTES]); }
+	attribute(id) { return this[Sym.ATTRIBUTES][id]; }
+	addAttribute(id, value, verified) { return this.device[Sym.COORDINATOR].addAttribute(this, id, value, verified); }
+	queryAttributes() { return this[Sym.COORDINATOR].queryAttributes(this); }
+	
+	get commands() { return Object.values(this[Sym.COMMANDS]); }
+	command(id) { return this[Sym.COMMANDS][id]; }
+	addCommand(id, verified) { return this.device[Sym.COORDINATOR].addCommand(this, id); }
 
-    getCommand(id) {
-      return this.commands[id];
-    }
-    addCommand(id) {
-      if (!this.commands[id]) {
-        this.commands[id] = new ZiCommand(id, this);
-        ZiCluster.LOGS.log(""+this.endpoint.device+""+this.endpoint+""+this+""+this.commands[id]+": created");
-				this.emit('command_add', this.commands[id]);
-				this.endpoint.emit('command_add', this.commands[id]);
-				this.endpoint.device.emit('command_add', this.commands[id]);
-				this.endpoint.device.coordinator.emit('command_add', this.commands[id]);
-
-      }
-      return this.commands[id];
-    }
+  get log() { return this.device[Sym.COORDINATOR].log; }
+	toString() { return (""+this.type || "[cluster_0x"+this.id.toString(16)+","+((this.type && this.type.name) || 'notype')+"]"); }
 }
-
-ZiCluster.LOGS = { trace: () => {}, debug: () => {}, log: () => {}, warn: () => {}, error: () => {} };
 
 module.exports = ZiCluster;

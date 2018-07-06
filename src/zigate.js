@@ -1,7 +1,7 @@
-const ZiDriver = require('./driver/zidriver.js');
-const ZiCoordinator = require('./coordinator/zicoordinator.js');
+const Driver = require('./driver/driver.js');
+const Coordinator = require('./coordinator/coordinator.js');
 
 module.exports = {
-  Driver: ZiDriver,
-  Coordinator: ZiCoordinator,
+  Driver: Driver,
+  Coordinator: Coordinator,
 };

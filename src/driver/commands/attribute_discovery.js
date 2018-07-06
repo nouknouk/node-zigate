@@ -4,7 +4,7 @@ module.exports = {
 	id: 0x0140,
 	name: "attribute_discovery",
 
-
+	
 	build: function(options, cmd) {
 		cmd.addressMode = Enum.ADDRESS_MODE(options.addressMode, Enum.ADDRESS_MODE('short'));
 		cmd.address = !(isNaN(parseInt(options.address))) ? parseInt(options.address) : (()=>{throw new Error("invalid parameter 'address'.");})();

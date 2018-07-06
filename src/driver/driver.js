@@ -10,14 +10,14 @@ const FRAME_STOP = 0x03;
 const FRAME_ESCAPE_XOR = 0x10;
 const FRAME_ESCAPE= 0x02;
 
-const ZIDRIVER_LOGGERS = {
+const DRIVER_LOGGERS = {
 	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
 	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
-/* =========================== ZiDriver events ===================================
+/* =========================== Driver events ===================================
 	'open', 'close', 'error',
 	'raw_out', 'command', 'command_xxx_yyy',
 	'raw_in', 'response', 'response_xxx_yyy'
@@ -35,7 +35,7 @@ const ZIDRIVER_LOGGERS = {
 	checksum = ( 0x00    XOR    MSG_TYPE    XOR    LENGTH    XOR    RSSI    XOR    DATA )
 */
 
-class ZiDriver extends EventEmitter {
+class Driver extends EventEmitter {
 	constructor(options) {
 		options = options || {};
 		super();
@@ -53,7 +53,7 @@ class ZiDriver extends EventEmitter {
 		this.port = null;
 	  this.parser = null;
 	  this.serial = null;
-		this.logger = typeof(options.logger) === 'object' ? options.logger : ZIDRIVER_LOGGERS[options.logger  || 'nolog'];
+		this.logger = typeof(options.logger) === 'object' ? options.logger : DRIVER_LOGGERS[options.logger  || 'nolog'];
 
 		CommandBuilder.LOGS = this.logger;
 		this.commands = new CommandBuilder();
@@ -68,7 +68,7 @@ class ZiDriver extends EventEmitter {
 		}
 	}
 	static get LOGGERS() {
-		return ZIDRIVER_LOGGERS;
+		return DRIVER_LOGGERS;
 	};
 
 	get isOpen() {
@@ -90,7 +90,7 @@ class ZiDriver extends EventEmitter {
 						this.serial = null;
 						this.parser = null;
 						this.port = null;
-						this.logger.error("[ZiDriver] Error while opening ZiGate port '"+port+"': "+err);
+						this.logger.error("[Driver] Error while opening ZiGate port '"+port+"': "+err);
 						var ziError = new Error("Error while opening ZiGate port '"+port+"': "+err);
 						if (process.platform.indexOf("win") === 0 && (""+err).indexOf('File not found') >=0) {
 							ziError = new Error("Error while opening ZiGate port '"+port+"': "+err+" ; aren't windows drivers missing ?" );
@@ -98,7 +98,7 @@ class ZiDriver extends EventEmitter {
 						this.emitError(ziError);
 						reject(ziError)
 					} else {
-						this.logger.log("[ZiDriver] successfully connected to device '"+this.port+"'.");
+						this.logger.log("[Driver] successfully connected to device '"+this.port+"'.");
 						this.emit('open');
 						resolve(this);
 					}
@@ -115,7 +115,7 @@ class ZiDriver extends EventEmitter {
 		}
 		else if (!this.isOpen && !port) {
 			// no port provided ? use 1st port gathered by auto-detection.
-			return ZiDriver.guessZigatePorts().then(
+			return Driver.guessZigatePorts().then(
 			(ports) => {
 					return this.open(ports[0].comName, callback);
 			},(err) => {
@@ -160,11 +160,11 @@ class ZiDriver extends EventEmitter {
 			data.str = data.toString('hex').replace(/../g, "$& ");
 
 		  if (data[0] !== FRAME_START) {
-				this.emitError(new Error("[ZiDriver] corrupted frame received: invalid 'frame_start' character: " + data.str), /*autoclose*/ false);
+				this.emitError(new Error("[Driver] corrupted frame received: invalid 'frame_start' character: " + data.str), /*autoclose*/ false);
 				return false;
 			}
 		  if (data.length < 6) {
-				this.emitError(new Error("[ZiDriver] corrupted frame received: less than 8 bytes long ("+data.length+" bytes). ",  data), /*autoclose*/ false);
+				this.emitError(new Error("[Driver] corrupted frame received: less than 8 bytes long ("+data.length+" bytes). ",  data), /*autoclose*/ false);
 				return false;
 			}
 
@@ -175,14 +175,14 @@ class ZiDriver extends EventEmitter {
 			let rssi = data[data.length-1];
 
 			if (payload.length !== length - 1) {
-				this.emitError(new Error("[ZiDriver] corrupted frame received: inconsistent frame length attribute ("+length+") vs. payload length ("+payload.length+") + 1 (rssi). " + data.str), /*autoclose*/ false);
+				this.emitError(new Error("[Driver] corrupted frame received: inconsistent frame length attribute ("+length+") vs. payload length ("+payload.length+") + 1 (rssi). " + data.str), /*autoclose*/ false);
 				return false;
 			}
 
 			var response = this.responses.parse(typeid, payload);
 			if (response) {
 				if (typeof(rssi) !== 'undefined') response.rssi = rssi;
-				this.logger.debug("[ZiDriver] response received: ", util.inspect(response, {breakLength: 10000}));
+				this.logger.debug("[Driver] response received: ", util.inspect(response, {breakLength: 10000}));
 				this.emit('response_'+response.type.name, response);
 				this.emit('response', response);
 
@@ -196,12 +196,12 @@ class ZiDriver extends EventEmitter {
 				return true;
 			}
 			else {
-				this.emitError(new Error("[ZiDriver] unrecognized response received (type="+typeid.toString(16)+"): "+payload.toString('hex').replace(/../g, "$& ")), /*autoclose*/ false);
+				this.emitError(new Error("[Driver] unrecognized response received (type="+typeid.toString(16)+"): "+payload.toString('hex').replace(/../g, "$& ")), /*autoclose*/ false);
 				return false;
 			}
 		} catch (e) {
-					this.logger.error("[ZiDriver] exception while parsing frame: ", e);
-					this.logger.error("[ZiDriver] raw data: "+raw_in.toString('hex').replace(/../g, "$& "));
+					this.logger.error("[Driver] exception while parsing frame: ", e);
+					this.logger.error("[Driver] raw data: "+raw_in.toString('hex').replace(/../g, "$& "));
 		}
 	}
 	postProcessStatusResponse(status) {
@@ -221,12 +221,12 @@ class ZiDriver extends EventEmitter {
 							try {
 								var conditionOk = condition(status, cmd);
 								if (!conditionOk) {
-									this.logger.warn("[ZiDriver] status response criterion '"+k+" failed for command '"+cmd.type+"'.");
+									this.logger.warn("[Driver] status response criterion '"+k+" failed for command '"+cmd.type+"'.");
 									statusIsValid = false;
 									break;
 								}
 							} catch (e) {
-									this.logger.warn("[ZiDriver] status response criterion '"+k+" thrown an error for command '"+cmd.type+"': "+e);
+									this.logger.warn("[Driver] status response criterion '"+k+" thrown an error for command '"+cmd.type+"': "+e);
 									statusIsValid = false;
 							}
 						}
@@ -238,7 +238,7 @@ class ZiDriver extends EventEmitter {
 				}
 
 				if (statusIsValid) {
-					this.logger.debug("[ZiDriver] status received & matched with command '"+cmd.type+"'");
+					this.logger.debug("[Driver] status received & matched with command '"+cmd.type+"'");
 
 					if (!cmd.type.responseExpected) {
 						this.pendingCommands.splice(commandIndex, 1);
@@ -251,7 +251,7 @@ class ZiDriver extends EventEmitter {
 				}
 				else {
 					this.pendingCommands.splice(commandIndex, 1);
-					this.logger.warn("[ZiDriver] command failed: "+cmd.type+"");
+					this.logger.warn("[Driver] command failed: "+cmd.type+"");
 					this.emit('command_failed', cmd, status);
 					cmd.cmdPromiseReject(status);
 				}
@@ -268,7 +268,7 @@ class ZiDriver extends EventEmitter {
 			if ( (!cmd.type.statusExpected || cmd.status) && cmd.type.responseExpected && !cmd.response && cmd.type.responseExpected === response.type.name) {
 				cmd.response = response;
 				this.pendingCommands.splice(commandIndex, 1);
-				this.logger.debug("[ZiDriver] response received has been well matched with initiating command '"+cmd.type+"'");
+				this.logger.debug("[Driver] response received has been well matched with initiating command '"+cmd.type+"'");
 
 				this.emit('command_fullfilled', cmd);
 				cmd.cmdPromiseResolve(response);
@@ -284,7 +284,7 @@ class ZiDriver extends EventEmitter {
 			command = this.commands.build(name, options);
 		}
 		catch (e) {
-			this.logger.warn("[ZiDriver] exception while building command: "+e);
+			this.logger.warn("[Driver] exception while building command: "+e);
 			return Promise.reject(e);
 		}
 
@@ -305,11 +305,11 @@ class ZiDriver extends EventEmitter {
 				checksum ^= b;
 			}
 			raw_out.writeUInt8(checksum, 4);
-			this.logger.trace("[ZiDriver] sending frame: 01 "+raw_out.toString('hex').replace(/../g, "$& ")+ "03");
-			this.logger.debug("[ZiDriver] sending command: ", util.inspect(command, {breakLength: 10000}));
+			this.logger.trace("[Driver] sending frame: 01 "+raw_out.toString('hex').replace(/../g, "$& ")+ "03");
+			this.logger.debug("[Driver] sending command: ", util.inspect(command, {breakLength: 10000}));
 
 			raw_out = this.escapeData(raw_out);
-			// this.logger.log("[ZiDriver] sending escaped frame: 01 "+escapeData(raw_out).toString('hex').replace(/../g, "$& ")+"03");
+			// this.logger.log("[Driver] sending escaped frame: 01 "+escapeData(raw_out).toString('hex').replace(/../g, "$& ")+"03");
 
 			this.serial.write([FRAME_START]);
 			this.serial.write(raw_out);
@@ -328,7 +328,7 @@ class ZiDriver extends EventEmitter {
 			this.emit('command_'+command.type.name, command);
 
 		} catch (e) {
-			this.logger.warn("[ZiDriver] exception while sending command "+command.type+": "+e);
+			this.logger.warn("[Driver] exception while sending command "+command.type+": "+e);
 			command.cmdPromiseReject(e);
 		}
 		finally {
@@ -339,11 +339,11 @@ class ZiDriver extends EventEmitter {
 	static guessZigatePorts(callback/*(err, ports)*/) {
 		callback = callback || (()=>{});
 
-	  //console.debug("[ZiDriver] retrieving list of available serial devices");
+	  //console.debug("[Driver] retrieving list of available serial devices");
 		var p = new Promise((resolve, reject) => {
 			SerialPort.list((err, ports) => {
 		    if (!err) {
-					//console.debug("[ZiDriver] "+ports.length+" serial devices found.");
+					//console.debug("[Driver] "+ports.length+" serial devices found.");
 		      // discard logical tty, like /dev/ttyS1
 		      var ziports = ports.filter((p) => { return p.vendorId && p.vendorId.toLowerCase() === '067b' && p.productId === '2303'; });
 					if (ziports.length) {
@@ -372,7 +372,7 @@ class ZiDriver extends EventEmitter {
 	}
 
 	emitError(err, autoclose) {
-		this.logger.error("[ZiDriver] ERROR: ", err);
+		this.logger.error("[Driver] ERROR: ", err);
 	  process.nextTick(this.emit.bind(this, 'error', err));
 	  if (autoclose && this.isOpen) {
 	    this.serial.close();
@@ -384,7 +384,7 @@ class ZiDriver extends EventEmitter {
 	}
 	onSerialClosed(port) {
 		if (this.serial) {
-			this.logger.log("[ZiDriver] port '"+port+"' closed.");
+			this.logger.log("[Driver] port '"+port+"' closed.");
 			this.emit('close', port);
 			this.serial = null;
 			this.parser = null;
@@ -401,8 +401,8 @@ class ZiDriver extends EventEmitter {
 		var i=0;
 		while (i<data.length) {
 			if (data[i] === FRAME_START && i>0) {
-				this.logger.warn("[ZiDriver] FRAME_START(0x01) byte found in the middle of the data (pos "+i+"): 1st message after a ZiGate reset ?");
-				this.logger.warn("[ZiDriver]   => raw data = "+data.toString('hex').replace(/../g, "$& "));
+				this.logger.warn("[Driver] FRAME_START(0x01) byte found in the middle of the data (pos "+i+"): 1st message after a ZiGate reset ?");
+				this.logger.warn("[Driver]   => raw data = "+data.toString('hex').replace(/../g, "$& "));
 				// this.parseFrame(data.slice(0, i));
 				return this.unescapeData(data.slice(i));
 			}
@@ -439,4 +439,4 @@ class ZiDriver extends EventEmitter {
 
 }
 
-module.exports = ZiDriver;
+module.exports = Driver;

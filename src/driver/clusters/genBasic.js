@@ -1,5 +1,5 @@
 const powerSourceEnum = {
-	0x00: 'unknown',
+	0x00: 'unknown', 
 	0x01: 'mains (single phase)',
 	0x02: 'mains (3 phase)',
 	0x03: 'battery',
@@ -9,7 +9,7 @@ const powerSourceEnum = {
 };
 
 const physicalEnvEnum = {
-	0x00: 'Unspecified environment',
+	0x00: 'Unspecified environment',			
 	0x01: 'Mirror (ZSE Profile)',
 	0x01: 'Atrium',
 	0x02: 'Bar',
