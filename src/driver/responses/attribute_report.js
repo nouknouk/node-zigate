@@ -1,11 +1,10 @@
 const Enum = require('../enum.js');
 
 // parsed response example:
-//     attribute_report(0x8102), sequence:128, address:0x3dad, endpoint:1, 
-//     cluster:genBasic(0x0), attribute:65281, definition:unknown, 
-//     status:{"id":0,"name":"success","description":"Command was successful"}, 
+//     attribute_report(0x8102), sequence:128, address:0x3dad, endpoint:1,
+//     cluster:genBasic(0x0), attribute:65281, definition:unknown,
+//     status:{"id":0,"name":"success","description":"Command was successful"},
 //     valuetype:string(0x42), value:"toto", rssi:108
-
 
 module.exports = {
 	id: 0x8102,
@@ -54,16 +53,43 @@ module.exports = {
 				else {
 					rep.value = { id: value, name:null };
 				}
+			case 0x38: // semi precision (float)
 
+				// TODO: test this.
+				rep.Value = float16_to_float( valueData.readUInt16BE() );
+			case 0x39: // single precision
+				rep.Value = valueData.readFloatBE();
 				break;
+			case 0x3a: // double plecision
+			rep.Value = valueData.readDoubleBE();
+			break;
 			case 0x42: // string
 				rep.value = valueData.toString();
 				break;
 			case 0xff: // unknown
 				rep.value = valueData;
 				break;
+
 			default:
-				throw new Error("attribute_report: unhandled value type "+rep.valuetype);
-		}
+		  throw new Error("attribute_report: un-implemented read value type "+rep.valuetype+" (size="+attributeSize+")");
+		 }
+
+
 	},
 };
+
+
+
+const float16_to_float = function(h) {
+		var s = (h & 0x8000) >> 15;
+		var e = (h & 0x7C00) >> 10;
+		var f = h & 0x03FF;
+
+		if(e == 0) {
+				return (s?-1:1) * Math.pow(2,-14) * (f/Math.pow(2, 10));
+		} else if (e == 0x1F) {
+				return f?NaN:((s?-1:1)*Infinity);
+		}
+
+		return (s?-1:1) * Math.pow(2, e-15) * (1+(f/Math.pow(2, 10)));
+}

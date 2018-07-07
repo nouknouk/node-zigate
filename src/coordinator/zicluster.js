@@ -16,6 +16,7 @@ class ZiCluster extends EventEmitter {
 	}
 
 	get id() { return this[Sym.ID]; }
+	get hex() { return "0x"+(("0000"+Number(this.id).toString(16)).substr(-4,4)); }
 	get type() { return this[Sym.TYPE]; }
 	get verified() { return this[Sym.VERIFIED]; }
 	set verified(v) { return this[Sym.VERIFIED] = v; }
@@ -32,7 +33,7 @@ class ZiCluster extends EventEmitter {
 	addCommand(id, verified) { return this.device[Sym.COORDINATOR].addCommand(this, id); }
 
   get log() { return this.device[Sym.COORDINATOR].log; }
-	toString() { return ("["+this.type+"]" || "[cluster_0x"+this.id.toString(16)+","+((this.type && this.type.name) || 'notype')+"]"); }
+	toString() { return "[cluster_"+this.type+"]"; }
 }
 
 module.exports = ZiCluster;

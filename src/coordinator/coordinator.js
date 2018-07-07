@@ -1,18 +1,26 @@
 const EventEmitter = require('events').EventEmitter;
+
 const Sym = require('./symbols.js');
 const Driver = require('../driver/driver.js');
+
 const Device = require('./device.js');
+const DeviceTypes = require('./deviceTypes.js');
+
 const ZiEndpoint = require('./ziendpoint.js');
 const ZiCluster = require('./zicluster.js');
 const ZiAttribute = require('./ziattribute.js');
 const ZiCommand = require('./zicommand.js');
 const DeviceLoadSave = require('./deviceLoadSave.js');
 
-const DeviceTypes = require('./deviceTypes.js');
+const Value = require('./value.js');
+const Action = require('./action.js');
+const Event = require('./event.js');
 
 const COORDINATOR_LOGGERS = {
 	nolog:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 	console: { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	trace:   { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	debug:   { trace: ()=>{},        debug: console.debug, info: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: console.error },
 };
@@ -75,27 +83,26 @@ class Coordinator extends EventEmitter {
 
     if (!this.started) {
       this[Sym.STATUS] = 'starting';
-      this.log.info("[Coordinator] starting zigate driver...");
+      this.log.info("starting zigate driver...");
       return this.driver.open(options.port)
 			.then(() => { this.driver.send('channel_mask', {mask: 11}); })
 			.then(() => { this.driver.send('device_type', {type: 'coordinator'}); })
       .then(()=> {
         this[Sym.STATUS] = 'started';
-        this.log.info("[Coordinator] zigbee network is up ; starting devices discovery...");
+        this.log.info("zigbee network is up ; starting devices discovery...");
 				this.driver.send('devices_list');
       },
       (err)=> {
         this[Sym.STATUS] = 'stopped';
-        this.log.info("[Coordinator] start failed: ", err)
+        this.log.error("zigate driver start failed: ", err)
         this.emit('error', err);
 				return Promise.reject(err);
       })
     }
     else {
       var err = new Error("coordinator is already started")
-      this.log.info("[Coordinator] start failed: ", err)
-      this.emit('error', err);
-      return Promise.reject(err);
+      this.log.info("attempt to restart zigate coordinator, while it is already started. no-op.");
+      return Promise.resolve("already started");
     }
   }
   stop() {
@@ -105,14 +112,12 @@ class Coordinator extends EventEmitter {
         ()=> {
           this[Sym.STATUS] = 'stopped';
 					this.inclusionStatus = false;
-          this.log.info("[Coordinator] stopped.");
+          this.log.info("stopped.");
           this.emit('stop');
         },
         (err) => {
-          err = new Error("coordinator is already stopped")
-          this.log.info("[Coordinator] stop failed: ", err)
-          this.emit('error', err);
-          return Promise.reject(err);
+					this.log.info("attempt to stop zigate coordinator, while it is already stopped. no-op.");
+          return Promise.resolve("already stopped");
         }
       );
     }
@@ -124,27 +129,25 @@ class Coordinator extends EventEmitter {
     if (this.started) {
       return this.driver.send('reset').then(
         ()=> {
-          this.log.info("[Coordinator] reset done.");
+          this.log.info("reset done.");
           this.emit('reset');
         },
         (err) => {
-          err = new Error("reset error: "+err)
-          this.emit('error', err);
-					throw err;
+          this.emit('error', "reset error: "+err);
+					throw "reset error: "+err;
         }
       );
     }
     else {
-      var err = new Error("coordinator is not started yet");
-      this.log.info("[Coordinator] reset failed: ", err)
-      return Promise.reject(err);
+      this.log.warn("reset failed: not started yet")
+      return Promise.reject("not started");
     }
   }
 	startInclusion(timeInSec) {
 		if (this.started) {
 			return this.driver.send('permit_join', {duration: timeInSec}).then(
         (command)=> {
-          this.log.info("[Coordinator] inclusion mode started for "+command.options.duration+" seconds.");
+          this.log.info("inclusion mode started for "+command.duration+" seconds.");
 					this.inclusionStatus = true;
           this.emit('inclusion_start');
 					setTimeout(()=> {
@@ -152,20 +155,17 @@ class Coordinator extends EventEmitter {
 							this.inclusionStatus = false;
 							this.emit('inclusion_stop');
 						}
-					}, timeInSec*1000);
+					}, command.duration*1000);
         },
         (err) => {
-          err = new Error("[Coordinator] start inclusion error: "+err)
-          this.emit('error', err);
-          return Promise.reject(err);
+          this.emit('error', "start inclusion error: "+err);
+          return Promise.reject(""+err);
         }
 			);
 		}
 		else {
-      var err = new Error("coordinator is not started yet");
-      this.log.info("[Coordinator] reset failed: ", err)
-      this.emit('error', err);
-      return Promise.reject(err);
+      this.log.warn("reset failed: not started yet.")
+      return Promise.reject("not started yet");
     }
 	}
 
@@ -179,7 +179,7 @@ class Coordinator extends EventEmitter {
 			device = new Device(this, address);
 			if (typeof(optionalIeee) !== 'undefined') { device.ieee = optionalIeee; }
 			this[Sym.DEVICES][address] = device;
-			this.log.info(""+device+" : device created");
+			this.log.debug(""+device+" : device created");
 			this.emit('device_add', device);
 		}
 		return device;
@@ -198,7 +198,7 @@ class Coordinator extends EventEmitter {
 		if (!device[Sym.ENDPOINTS][id]) {
 			let endpoint = new ZiEndpoint(id, device, verified);
 			device[Sym.ENDPOINTS][id] = endpoint;
-			this.log.info(""+device+""+endpoint+" : endpoint created");
+			this.log.debug(""+device+""+endpoint+" : endpoint created");
 			device[Sym.ON_ENDPOINT_ADD](endpoint);
 			this.emit('endpoint_add', endpoint);
 		}
@@ -209,7 +209,7 @@ class Coordinator extends EventEmitter {
 		if (!endpoint[Sym.CLUSTERS][id]) {
 			let cluster = new ZiCluster(id, endpoint, verified);
 			endpoint[Sym.CLUSTERS][id] = cluster;
-			this.log.info(""+endpoint.device+""+endpoint+""+cluster+" : cluster created");
+			this.log.debug(""+endpoint.device+""+endpoint+""+cluster+" : cluster created");
 			endpoint.device[Sym.ON_CLUSTER_ADD](cluster);
 			this.emit('cluster_add', cluster);
 		}
@@ -221,7 +221,7 @@ class Coordinator extends EventEmitter {
 			let device = cluster.device;
 			let endpoint = cluster.endpoint;
 			let attribute = new ZiAttribute(id, cluster, value, verified);
-			this.log.info(""+device+""+endpoint+""+cluster+""+attribute+": attribute created");
+			this.log.debug(""+device+""+endpoint+""+cluster+""+attribute+": attribute created");
 			cluster[Sym.ATTRIBUTES][id] = attribute;
 			cluster.device[Sym.ON_ATTRIBUTE_ADD](attribute);
 			this.emit('attribute_add', attribute);
@@ -242,10 +242,9 @@ class Coordinator extends EventEmitter {
 			attribute:attribute.id, value: val
 		})
 		.then((rep) => {
-			attribute[Sym.SET_DATA](rep.value);
+			attribute[Sym.SET_ATTR_DATA](rep.value);
+			this.log.debug(""+attribute.device+attribute.endpoint+attribute.cluster+attribute+": attribute written");
 			attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, value, oldval)
-			attribute.emit('attribute_change', attribute, value, oldval);
-			attribute.device.emit('attribute_change', attribute, value, oldval);
 			this.emit('attribute_change', attribute, value, oldval);
 			return rep.value;
 		});
@@ -259,9 +258,9 @@ class Coordinator extends EventEmitter {
 			cluster:attribute.cluster.id,
 			attributes:[attribute.id],
 		}).then((r) => {
-			attribute[Sym.SET_DATA](rep.value);
-			attribute.emit('attribute_change', attribute, rep.value, oldval);
-			attribute.device.emit('attribute_change', attribute, rep.value, oldval);
+			attribute[Sym.SET_ATTR_DATA](rep.value);
+			this.log.debug(""+attribute.device+attribute.endpoint+attribute.cluster+attribute+": attribute refresh requested");
+			attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, value, oldval)
 			this.emit('attribute_change', attribute, rep.value, oldval);
 			return rep.value;
 		});
@@ -271,7 +270,7 @@ class Coordinator extends EventEmitter {
 		if (!cluster[Sym.COMMANDS][id]) {
 			let command = new ZiCommand(id, cluster, verified);
 			cluster[Sym.COMMANDS][id] = command;
-			this.log.info(""+cluster.endpoint.device+""+cluster.endpoint+""+cluster+""+command+": command created");
+			this.log.debug(""+cluster.endpoint.device+""+cluster.endpoint+""+cluster+""+command+": command created");
 			cluster.device[Sym.ON_COMMAND_ADD](command);
 			this.emit('command_add', command);
 		}
@@ -281,6 +280,72 @@ class Coordinator extends EventEmitter {
 			throw new Error("not implemented yet");
 	}
 
+	addValue(device, id, definition) {
+		if (device.value(id)) throw new Error("cannot add value '"+id+"': value already exists.");
+		let value = new Value(id, device, definition);
+		device[Sym.VALUES][id] = value;
+		this.log.debug(""+device+""+value+": value created");
+		device[Sym.ON_VALUE_ADD](value);
+		return value;
+	}
+	removeValue(device, id) {
+		let value = device.value(id);
+		if (!value) throw new Error("cannot remove value '"+id+"': value doesn't exist.");
+		value[Sym.DESTROY]();
+		delete device[Sym.VALUES][id];
+		this.log.debug(""+device+""+value+": value removed");
+		device[Sym.ON_VALUE_REMOVE](value);
+		return value;
+	}
+
+	addAction(device, id, definition) {
+		if (device.action(id)) throw new Error("cannot add action '"+id+"': action already exists.");
+		let action = new Action(id, device, definition);
+		device[Sym.ACTIONS][id] = action;
+		this.log.debug(""+device+""+action+": action created");
+		device[Sym.ON_ACTION_ADD](action);
+		return action;
+	}
+	removeAction(device, id) {
+		let action = device.action(id);
+		if (!action) throw new Error("cannot remove action '"+id+"': action doesn't exist.");
+		action[Sym.DESTROY]();
+		delete device[Sym.ACTIONS][id];
+		this.log.debug(""+device+""+action+": action removed");
+		device[Sym.ON_ACTION_REMOVE](action);
+		return action;
+	}
+	execAction(action, args) {
+		this.log.debug(""+action.device+""+action+": action executed");
+		let ret = action[Sym.EXEC_ACTION](args);
+		action.device[Sym.ON_ACTION_EXEC](action, args, ret)
+		this.emit('action_exec', this, args, ret);
+		return ret;
+	}
+
+	addEvent(device, id, definition) {
+		if (device.event(id)) throw new Error("cannot add event '"+id+"': event already exists.");
+		let event = new Event(id, device, definition);
+		device[Sym.EVENTS][id] = event;
+		this.log.debug(""+device+""+event+": event created");
+		device[Sym.ON_EVENT_ADD](event);
+		return event;
+	}
+	removeEvent(device, id) {
+		let event = device.event(id);
+		if (!value) throw new Error("cannot remove event '"+id+"': event doesn't exist.");
+		event[Sym.DESTROY]();
+		delete device[Sym.EVENTS][id];
+		this.log.debug(""+device+""+event+": event removed");
+		device[Sym.ON_EVENT_REMOVE](event);
+		return event;
+	}
+	fireEvent(event, args) {
+		this.log.debug(""+event.device+""+event+": event fired");
+		event[Sym.EVENT_FIRE](args);
+		event.device[Sym.ON_EVENT_FIRE](event, args)
+		this.emit('event_fire', event, args);
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///                   QUERIES
@@ -407,16 +472,14 @@ class Coordinator extends EventEmitter {
 				}
 				else {
 					let oldval = attribute.value;
-					attribute[Sym.SET_DATA](rep.value);
-					attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, rep.value, oldval);
-					attribute.emit('attribute_change', attribute, rep.value, oldval);
-					attribute.device.emit('attribute_change', attribute, rep.value, oldval);
+					attribute[Sym.SET_ATTR_DATA](rep.value);
+					attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, rep.value, oldval)
 					this.emit('attribute_change', attribute, rep.value, oldval);
 
 					if (this.deviceTypes.identifiableAttributes.find((at) => at.cluster === cluster.id && at.attribute === rep.attribute)) {
 						let besttype = this.deviceTypes.getBestDeviceType(device);
 						if (besttype.id !== device.type) {
-							this.log.info("found better device type definition for '"+device+"' : "+besttype+". Upgrading...");
+							this.log.debug("found better device type definition for '"+device+"' : "+besttype+". Upgrading...");
 							this.deviceTypes.assignTypeToDevice(besttype, device);
 						}
 					}

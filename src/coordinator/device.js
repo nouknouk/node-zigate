@@ -12,6 +12,9 @@ class Device extends EventEmitter {
 			this[Sym.IEEE] = null;
 			this[Sym.READY] = false;
       this[Sym.ENDPOINTS] = {};
+      this[Sym.VALUES] = {};
+      this[Sym.ACTIONS] = {};
+      this[Sym.EVENTS] = {};
     }
 		get address() { return this[Sym.ADDRESS]; }
 		get ieee() { return this[Sym.IEEE]; }
@@ -49,6 +52,22 @@ class Device extends EventEmitter {
 			return null;
 		}
 
+    get values() { return Object.values(this[Sym.VALUES]); }
+    value(id) { return this[Sym.VALUES][id]; }
+    addValue(id, definition) { this[Sym.COORDINATOR].addValue(this, id, definition); }
+    removeValue(id) { this[Sym.COORDINATOR].removeValue(this, id); }
+
+    get actions() { return Object.values(this[Sym.ACTIONS]); }
+    action(id) { return this[Sym.ACTIONS][id]; }
+    addAction(id, definition) { this[Sym.COORDINATOR].addAction(this, id, definition); }
+    removeAction(id) { this[Sym.COORDINATOR].removeAction(this, id); }
+
+    get events() { return Object.values(this[Sym.EVENTS]); }
+    event(id) { return this[Sym.EVENTS][id]; }
+    addEvent(id, definition) { this[Sym.COORDINATOR].addEvent(this, id, definition); }
+    removeEvent(id) { this[Sym.COORDINATOR].removeEvent(this, id); }
+
+
 		[Sym.ON_ENDPOINT_ADD](endpoint) {
 			this.emit('endpoint_add', endpoint);
 		}
@@ -64,6 +83,30 @@ class Device extends EventEmitter {
 		[Sym.ON_COMMAND_ADD](command) {
 			this.emit('command_add', command);
 		}
+    [Sym.ON_VALUE_ADD](value) {
+      this.emit('value_add', value);
+		}
+    [Sym.ON_VALUE_REMOVE](value) {
+      this.emit('value_remove', value);
+		}
+    [Sym.ON_ACTION_ADD](action) {
+      this.emit('action_add', action);
+		}
+    [Sym.ON_ACTION_REMOVE](action) {
+      this.emit('action_remove', action);
+		}
+    [Sym.ON_ACTION_EXEC](action, args, ret) {
+      this.emit('action_exec', action, args, ret);
+    }
+    [Sym.ON_EVENT_ADD](event) {
+      this.emit('event_add', event);
+		}
+    [Sym.ON_EVENT_REMOVE](action) {
+      this.emit('event_remove', action);
+		}
+    [Sym.ON_EVENT_FIRE](event, args) {
+      this.emit(event.id, args);
+    }
 
 		[Sym.DESTROY]() {
 			this.emit('device_remove', this);
@@ -71,6 +114,22 @@ class Device extends EventEmitter {
 
 		get log() { return this[Sym.COORDINATOR].log; }
     toString() { return "[device_0x"+this[Sym.ADDRESS].toString(16)+"]"; }
+    inspect() {
+      let out = ''+this+' ('+this.type+')\n';
+      this.endpoints.forEach(e => {
+        out += '    '+e+'\n';
+        e.clusters.forEach((c) => {
+          out += '        '+c+'\n';
+          c.attributes.forEach((a) => { out += '            '+a.inspect()+'\n'});
+          c.commands.forEach((c) => { out += '            '+c+'\n'});
+        });
+      });
+      this.values.forEach((v) => { out += '    '+v.inspect()+'\n'});
+      this.actions.forEach((a) => { out += '    '+a.inspect()+'\n'});
+      this.events.forEach((e) => { out += '    '+e.inspect()+'\n'});
+
+      return out;
+    }
 }
 
 

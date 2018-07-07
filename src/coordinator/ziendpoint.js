@@ -14,6 +14,7 @@ class ZiEndpoint extends EventEmitter {
 	}
 
 	get id() { return this[Sym.ID]; }
+	get hex() { return "0x"+(("0000"+Number(this.id).toString(16)).substr(-4,4)); }
 	get device() { return this[Sym.DEVICE]; }
 	get verified() { return this[Sym.VERIFIED]; }
 	set verified(v) { return this[Sym.VERIFIED] = v; }
@@ -23,7 +24,7 @@ class ZiEndpoint extends EventEmitter {
 	queryClusters() { return this[Sym.COORDINATOR].queryClusters(this); }
 
   get log() { return this.device[Sym.COORDINATOR].log; }
-	toString() { return "[endpoint_0x"+this.id.toString(16)+"]"; }
+	toString() { return "[endpoint_"+this.hex+"]"; }
 }
 
 module.exports = ZiEndpoint;

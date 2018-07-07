@@ -12,6 +12,7 @@ class ZiAttribute extends EventEmitter {
   }
 
 	get id() { return this[Sym.ID]; }
+  get hex() { return "0x"+(("0000"+Number(this.id).toString(16)).substr(-4,4)); }
 	get type() { return this[Sym.TYPE]; }
 	get value() { return this[Sym.ATTR_DATA]; }
 	get cluster() { return this[Sym.CLUSTER]; }
@@ -27,13 +28,16 @@ class ZiAttribute extends EventEmitter {
 		return this.device[Sym.COORDINATOR].writeAttribute(this, value);
   }
 
-  [Sym.SET_DATA](newVal) {
+  [Sym.SET_ATTR_DATA](newVal) {
+    let oldval = this[Sym.ATTR_DATA];
     this[Sym.ATTR_DATA] = newVal;
-    this.log.debug(""+this.device+this.cluster+this.attribute+" value changed("+this.value+")");
+    this.log.debug(""+this.device+this.cluster+this+" data changed("+JSON.stringify(this[Sym.ATTR_DATA])+")");
+    this.emit('attribute_change', this, newVal, oldval);
   }
 
   get log() { return this.device[Sym.COORDINATOR].log; }
-	toString() { return "[attr_0x"+this.id.toString(16)+","+ ((this.type && this.type.name) || "notype")+"]"; }
+	toString() { return "[attr_"+((this.type && this.type.name) || '')+"("+this.hex+")]"; }
+  inspect() { return this.toString()+" = "+JSON.stringify(this[Sym.ATTR_DATA]); }
 }
 
 module.exports = ZiAttribute;

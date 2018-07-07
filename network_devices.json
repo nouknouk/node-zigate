@@ -1,0 +1,204 @@
+[
+  {
+    "address": 32617,
+    "hex": "0x7f69",
+    "ieee": "00158d0001b95482",
+    "type": "lumi.weather",
+    "endpoints": [
+      {
+        "id": 1,
+        "hex": "0x0001",
+        "verified": true,
+        "clusters": [
+          {
+            "id": 0,
+            "hex": "0x0000",
+            "name": "genBasic",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 5,
+                "hex": "0x0005",
+                "name": "genBasic",
+                "verified": true
+              },
+              {
+                "id": 65281,
+                "hex": "0xff01",
+                "name": "genBasic",
+                "verified": true
+              }
+            ],
+            "commands": []
+          },
+          {
+            "id": 1026,
+            "hex": "0x0402",
+            "name": "msTemperatureMeasurement",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 0,
+                "hex": "0x0000",
+                "name": "msTemperatureMeasurement",
+                "verified": true
+              }
+            ],
+            "commands": []
+          },
+          {
+            "id": 1027,
+            "hex": "0x0403",
+            "name": "msPressureMeasurement",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 0,
+                "hex": "0x0000",
+                "name": "msPressureMeasurement",
+                "verified": true
+              },
+              {
+                "id": 16,
+                "hex": "0x0010",
+                "name": null,
+                "verified": true
+              },
+              {
+                "id": 20,
+                "hex": "0x0014",
+                "name": null,
+                "verified": true
+              }
+            ],
+            "commands": []
+          },
+          {
+            "id": 1029,
+            "hex": "0x0405",
+            "name": "msRelativeHumidity",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 0,
+                "hex": "0x0000",
+                "name": "msRelativeHumidity",
+                "verified": true
+              }
+            ],
+            "commands": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "address": 61916,
+    "hex": "0xf1dc",
+    "ieee": "00158d00016c4711",
+    "type": "lumi.sensor_switch.aq2",
+    "endpoints": [
+      {
+        "id": 1,
+        "hex": "0x0001",
+        "verified": true,
+        "clusters": [
+          {
+            "id": 0,
+            "hex": "0x0000",
+            "name": "genBasic",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 5,
+                "hex": "0x0005",
+                "name": "genBasic",
+                "verified": true
+              },
+              {
+                "id": 65281,
+                "hex": "0xff01",
+                "name": "genBasic",
+                "verified": true
+              }
+            ],
+            "commands": []
+          },
+          {
+            "id": 6,
+            "hex": "0x0006",
+            "name": "genOnOff",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 0,
+                "hex": "0x0000",
+                "name": "genOnOff",
+                "verified": true
+              },
+              {
+                "id": 32768,
+                "hex": "0x8000",
+                "name": null,
+                "verified": true
+              }
+            ],
+            "commands": []
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "address": 62286,
+    "hex": "0xf34e",
+    "ieee": null,
+    "type": "default",
+    "endpoints": [
+      {
+        "id": 1,
+        "hex": "0x0001",
+        "verified": true,
+        "clusters": [
+          {
+            "id": 0,
+            "hex": "0x0000",
+            "name": "genBasic",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 65281,
+                "hex": "0xff01",
+                "name": "genBasic",
+                "verified": true
+              }
+            ],
+            "commands": []
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "hex": "0x0002",
+        "verified": true,
+        "clusters": [
+          {
+            "id": 18,
+            "hex": "0x0012",
+            "name": "genMultistateInput",
+            "verified": true,
+            "attributes": [
+              {
+                "id": 85,
+                "hex": "0x0055",
+                "name": "genMultistateInput",
+                "verified": true
+              }
+            ],
+            "commands": []
+          }
+        ]
+      }
+    ]
+  }
+]

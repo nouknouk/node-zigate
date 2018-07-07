@@ -11,3 +11,23 @@
 
 [IN] simple_descriptor_response(8043) {"type":{"id":32835,"name":"simple_descriptor_response","typeHex":"8043"},"srcSequence":163,"status":0,"srcAddress":30682,"length":26,"endpoint":1,"profileId":260,"deviceId":24321,"deviceVersion":1,"reserved":0,"inClusters":[0,3,65535,1026,1027,1029],"outClusters":[0,3,65535],"rssi":198}
 [device_0x77da][endpoint_1] clusters retrieved ; gathering attributes...
+
+
+-- xiaomi magic controller
+
+permit_join(0x49), address:0xfffc, duration:60, significance:0, timestamp:2018-7-7 10:33:52.851
+status(0x8000), status:{"id":0,"name":"success"}, sequence:116, relatedTo:permit_join(0x49), rssi:0
+
+
+device_announce(0x4d), address:0xf34e, ieee:00158d000101be09, alternatePanCoordinator:false, fullFunctionDevice:false, mainsPowerSource:false, receiverOnWhenIdle:false, securityCapability:false, allocateAddress:false, rssi:219
+
+device_announce(0x4d), address:0xf34e, ieee:00158d000101be09, alternatePanCoordinator:false, fullFunctionDevice:false, mainsPowerSource:false, receiverOnWhenIdle:false, securityCapability:false, allocateAddress:false, rssi:201
+===> [device_0xf34e]: device_announce received but skipped as this device is already registered.
+
+
+router_discovery(0x8701), status:0, networkStatus:0, rssi:201
+
+attribute_report(0x8102), sequence:0, address:0xf34e, endpoint:1, cluster:genBasic(0x0), attribute:5, definition:modelId, status:{"id":0,"name":"success","description":"Command was successful"}, valuetype:string(0x42), value:"lumi.sensor_cube", rssi:201
+attribute_report(0x8102), sequence:0, address:0xf34e, endpoint:1, cluster:genBasic(0x0), attribute:1, definition:appVersion, status:{"id":0,"name":"success","description":"Command was successful"}, valuetype:uint8(0x20), value:3, rssi:201
+attribute_report(0x8102), sequence:1, address:0xf34e, endpoint:1, cluster:genBasic(0x0), attribute:65281, definition:xiaomiCustom1, status:{"id":0,"name":"success","description":"Command was successful"}, valuetype:string(0x42), value:"\u0001!�\u000b\u0003(\u0019\u0004!�\u0001\u0005!�\u0000\u0006$\u0001\u0000\u0000\u0000\u0000\n!\u0000\u0000�!\u0000\u0000�!\u0000\u0000�!\u0000\u0000�!\u0003\u0000", rssi:201
+attribute_report(0x8102), sequence:2, address:0xf34e, endpoint:2, cluster:genMultistateInput(0x12), attribute:85, definition:presentValue, status:{"id":0,"name":"success","description":"Command was successful"}, valuetype:uint16(0x21), value:107, rssi:174

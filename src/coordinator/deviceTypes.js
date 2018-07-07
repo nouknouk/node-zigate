@@ -109,6 +109,13 @@ class DeviceTypes {
 		let typedef = device[Sym.TYPE];
 		if (typedef) {
 			if (typedef['type_remove']) typedef['type_remove'](device);
+
+      // remove all values
+      Object.keys(typedef.values || {}).forEach( (id) => { device.removeValue(id); } );
+
+      // remove all actions
+      Object.keys(typedef.actions || {}).forEach( (id) => { device.removeAction(id); } );
+
 			device[Sym.TYPE] = null;
 			this.log.trace("type "+typedef+"' removed from "+device);
 		}
@@ -125,6 +132,16 @@ class DeviceTypes {
   		if (newtype) {
   			this.log.debug("setting up type "+newtype+" to "+device);
         device[Sym.TYPE] = newtype;
+
+        // remove all values
+        Object.entries(newtype.values || {}).forEach( ([id, def]) => { device.addValue(id, def); } );
+
+        // remove all actions
+        Object.entries(newtype.actions || {}).forEach( ([id, def]) => { device.addAction(id, def); } );
+
+        // remove all events
+        Object.entries(newtype.events || {}).forEach( ([id, def]) => { device.addEvent(id, def); } );
+
   			if (newtype['type_add']) newtype['type_add'](device);
   		}
     }
