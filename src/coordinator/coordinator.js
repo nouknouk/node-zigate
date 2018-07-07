@@ -12,7 +12,7 @@ const DeviceTypes = require('./deviceTypes.js');
 
 const COORDINATOR_LOGGERS = {
 	nolog:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
-	console: { trace: console.trace, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	console: { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: console.error },
 };
@@ -219,11 +219,17 @@ class Coordinator extends EventEmitter {
 
 	addAttribute(cluster, id, value, verified) {
 		if (!cluster[Sym.ATTRIBUTES][id]) {
+			let device = cluster.device;
+			let endpoint = cluster.endpoint;
 			let attribute = new ZiAttribute(id, cluster, value, verified);
-			this.log.info(""+cluster.endpoint.device+""+cluster.endpoint+""+cluster+""+attribute+": attribute created");
+			this.log.info(""+device+""+endpoint+""+cluster+""+attribute+": attribute created");
 			cluster[Sym.ATTRIBUTES][id] = attribute;
 			cluster.device[Sym.ON_ATTRIBUTE_ADD](attribute);
 			this.emit('attribute_add', attribute);
+			if (this.deviceTypes.identifiableAttributes.find((at) => at.cluster === cluster.id && at.attribute === id)) {
+				let besttype = this.deviceTypes.getBestDeviceType(cluster.device);
+				if (besttype.id !== device.type) this.deviceTypes.assignTypeToDevice(besttype, cluster.device);
+			}
 		}
 		return cluster[Sym.ATTRIBUTES][id];
 	}
@@ -401,8 +407,20 @@ class Coordinator extends EventEmitter {
 					attribute = cluster.addAttribute(rep.attribute, rep.value, /*verified*/ true);
 				}
 				else {
-					attribute.verified = true;
-					attribute.setValue(rep.value);
+					let oldval = attribute.value;
+					attribute[Sym.SET_DATA](rep.value);
+					attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, rep.value, oldval);
+					attribute.emit('attribute_change', attribute, rep.value, oldval);
+					attribute.device.emit('attribute_change', attribute, rep.value, oldval);
+					this.emit('attribute_change', attribute, rep.value, oldval);
+
+					if (this.deviceTypes.identifiableAttributes.find((at) => at.cluster === cluster.id && at.attribute === rep.attribute)) {
+						let besttype = this.deviceTypes.getBestDeviceType(device);
+						if (besttype.id !== device.type) {
+							this.log.info("found better device type definition for '"+device+"' : "+besttype+". Upgrading...");
+							this.deviceTypes.assignTypeToDevice(besttype, device);
+						}
+					}
 				}
 				break;
 

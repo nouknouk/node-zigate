@@ -26,13 +26,13 @@ class ZiCluster extends EventEmitter {
 	attribute(id) { return this[Sym.ATTRIBUTES][id]; }
 	addAttribute(id, value, verified) { return this.device[Sym.COORDINATOR].addAttribute(this, id, value, verified); }
 	queryAttributes() { return this[Sym.COORDINATOR].queryAttributes(this); }
-	
+
 	get commands() { return Object.values(this[Sym.COMMANDS]); }
 	command(id) { return this[Sym.COMMANDS][id]; }
 	addCommand(id, verified) { return this.device[Sym.COORDINATOR].addCommand(this, id); }
 
   get log() { return this.device[Sym.COORDINATOR].log; }
-	toString() { return (""+this.type || "[cluster_0x"+this.id.toString(16)+","+((this.type && this.type.name) || 'notype')+"]"); }
+	toString() { return ("["+this.type+"]" || "[cluster_0x"+this.id.toString(16)+","+((this.type && this.type.name) || 'notype')+"]"); }
 }
 
 module.exports = ZiCluster;

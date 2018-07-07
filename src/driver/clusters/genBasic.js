@@ -117,7 +117,6 @@ const physicalEnvEnum = {
 	0x6f: 'Decontamination Room',
 	0xff: 'Unknown environment',
 };
-
 module.exports = {
 	"id": 0,
 	"name": "genBasic",
@@ -137,7 +136,9 @@ module.exports = {
 		"18": { "cluster": 0, "id": 18, "name": "deviceEnabled", "type": "boolean", "mandatory": false, "read": true, "write": true, "specific": false, "unit": null, default:0x1 },
 		"19": { "cluster": 0, "id": 19, "name": "alarmMask", "type": "bitmap8", "mandatory": false, "read": true, "write": true, "specific": false, "unit": null, default:0x0 },
 		"20": { "cluster": 0, "id": 20, "name": "disableLocalConfig", "type": "bitmap8", "mandatory": false, "read": true, "write": true, "specific": false, "unit": null, default:0x0 },
-		"16384": { "cluster": 0, "id": 16384, "name": "swBuildId", "type": "charStr", "mandatory": false, "read": true, "write": false, "specific": false, "unit": null, default:'' }
+		"16384": { "cluster": 0, "id": 16384, "name": "swBuildId", "type": "charStr", "mandatory": false, "read": true, "write": false, "specific": false, "unit": null, default:'' },
+
+		"65281": { "cluster": 0, "id": 0xff01, "name": "xiaomiCustom1", "type": "charStr", "mandatory": false, "read": true, "write": false, "specific": true, "unit": null, default:'' },
 	},
 	"commands": {
 		"0": { "id": 0, "name": "resetFactDefault" }

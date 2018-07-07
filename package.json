@@ -11,7 +11,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "node test"
+    "test": "node test/test-driver.js"
   },
   "repository": {
     "type": "git",

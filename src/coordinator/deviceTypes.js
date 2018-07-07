@@ -6,9 +6,18 @@ class DeviceTypes {
   constructor(coordinator, options) {
 		this[Sym.COORDINATOR] = coordinator;
     this[Sym.LOG] = (coordinator.log.getLogger && coordinator.log.getLogger('devicetypes') || coordinator.log);
-		this.devices = {};
+		this.devices = { 'default': DeviceTypes.Default};
 		this.typesPath = options.devicetypes || Path.join(__dirname, '../../devices');
 		this.types = this.loadTypesDefinitions(this.typesPath);
+    this.identifiableAttributes = [
+      {cluster:0x0000, attribute: 0x0001, name:'appVersion'},
+      {cluster:0x0000, attribute: 0x0002, name:'stackVersion'},
+      {cluster:0x0000, attribute: 0x0003, name:'hwVersion'},
+      {cluster:0x0000, attribute: 0x0004, name:'manufacturerName'},
+      {cluster:0x0000, attribute: 0x0005, name:'modelId'},
+      {cluster:0x0000, attribute: 0x0006, name:'dateCode'},
+      {cluster:0x0000, attribute: 0x4000, name:'swBuildId'},
+    ];
 
 		this.coordCallbacks = {
 			started: () => {},
@@ -24,28 +33,29 @@ class DeviceTypes {
 		}
 		Object.entries(this.coordCallbacks).forEach(([name, fn]) => this[Sym.COORDINATOR].on(name, fn));
   }
-	
+
+  type(id) { return this.types[id]; }
+
 	loadTypesDefinitions(path) {
 		let types = {};
     let filenames = Fs.readdirSync(path).sort();
     if (!filenames.length) throw new Error("error while loading profiles in '"+path+"'.");
-		
+
 		filenames.forEach((filename) => {
 			try {
 				let typedef = require(Path.resolve(path, filename));
 				typedef.id = typedef.id || Path.basename(filename, '.js');
 				typedef.name = typedef.name || filename;
-				typedef.toString = typedef.toString || function() { return '[type_'+this.id+']'; };
+				typedef.toString = function() { return '[type_'+this.id+']'; };
 				types[typedef.id] = typedef;
 			}
 			catch(e) {
 				this.log.error("error while loading device type '"+filename+"':",e);
 			}
 		});
-		this.log.debug("finished loading "+Object.keys(types).length+" types from '"+path+"': "+(Object.keys(types).join(',')));
+		this.log.debug("finished loading "+Object.keys(types).length+" types from '"+path+"': "+(Object.keys(types).join(', ')));
 		return types;
 	}
-	
 	onDeviceAdded(device) {
 		this.log.trace("catched device add "+device+"");
 		this.getBestDeviceType(device);
@@ -76,15 +86,14 @@ class DeviceTypes {
 		if (type && type['command_add']) type['command_add'](command);
 	}
 	onAttributeChanged(attribute, newval, oldval) {
-		let device = command.device;
+		let device = attribute.device;
 		let type = device[Sym.TYPE];
 		if (type && type['attribute_change']) type['attribute_change'](attribute, newval, oldval);
 	}
-
 	getBestDeviceType(device) {
 		let besttype = DeviceTypes.Default
 		let bestscore = besttype.match(device);
-		
+
 		Object.values(this.types).forEach((typedef) => {
 			let score = typedef.match(device);
 			if (score && score > bestscore) {
@@ -93,12 +102,9 @@ class DeviceTypes {
 			}
 		});
 		this.log.trace("getBestDeviceType("+device+") matched type '"+besttype+"'.");
-		if (!device[Sym.TYPE] || device[Sym.TYPE].id !== besttype.id) {
-			this.log.debug("upgrading "+device+" from type "+device[Sym.TYPE]+" to "+besttype+' (score='+bestscore+')...');
-			this.assignTypeToDevice(besttype, device);
-		}
+    return besttype;
 	}
-	
+
 	removeTypeFromDevice(device) {
 		let typedef = device[Sym.TYPE];
 		if (typedef) {
@@ -107,26 +113,35 @@ class DeviceTypes {
 			this.log.trace("type "+typedef+"' removed from "+device);
 		}
 	}
-	
+
 	assignTypeToDevice(newtype, device) {
 		let oldtype = device[Sym.TYPE];
-		if (oldtype && oldtype.id !== newtype.id) removeTypeFromDevice(device);
+    if ( (oldtype && oldtype.id) !== (newtype && newtype.id) ) {
 
-		if (newtype) {
-			this.log.debug("setting up type "+newtype+" to "+device);
-			if (newtype['type_add']) newtype['type_add'](device);
-		}
+      if (oldtype) {
+        this.removeTypeFromDevice(device);
+      }
+
+  		if (newtype) {
+  			this.log.debug("setting up type "+newtype+" to "+device);
+        device[Sym.TYPE] = newtype;
+  			if (newtype['type_add']) newtype['type_add'](device);
+  		}
+    }
+
 	}
-	
+
   get log() { return this[Sym.LOG]; }
 	toString() { return "[DeviceTypes-"+Object.keys(this.types).length+"]"; }
 }
 
 DeviceTypes.Default = {
+  id: "default",
 	match: function(device) {
-		return Number.MIN_SAFE_INTEGER;
-	}
-	
+		return -1;
+	},
+  toString: function() { return "[type_"+this.id+"]"; }
+
 }
 
 module.exports = DeviceTypes;

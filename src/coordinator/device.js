@@ -17,15 +17,12 @@ class Device extends EventEmitter {
 		get ieee() { return this[Sym.IEEE]; }
 		set ieee(ieee) { if (this[Sym.IEEE] !== null) throw new Error(""+this+" ieee already set."); else this[Sym.IEEE] = ieee; }
 		get type() { return this[Sym.TYPE].id; }
-		
+
 		get endpoints() { return Object.values(this[Sym.ENDPOINTS]); }
 		endpoint(id) { return this[Sym.ENDPOINTS][id]; }
-		addEndpoint(id, verified) { 
-			this[Sym.COORDINATOR].addEndpoint(this, id, verified);
-      this.log(''+this+' endpoint added '+this.endpoint(id)); 
-		}
+		addEndpoint(id, verified) { return this[Sym.COORDINATOR].addEndpoint(this, id, verified); }
 		queryEndpoints() { return this[Sym.COORDINATOR].queryEndpoints(this); }
-		
+
 		get attributes() {
 			var attrs = [];
 			Object.keys(this[Sym.ENDPOINTS]).forEach( (eid)=> {
@@ -40,7 +37,7 @@ class Device extends EventEmitter {
 			});
 			return attrs;
 		}
-		
+
 		attribute(endpoint, cluster, attribute) {
 			let edp = this.endpoint(endpoint);
 			if (edp) {
@@ -51,7 +48,7 @@ class Device extends EventEmitter {
 			}
 			return null;
 		}
-		
+
 		[Sym.ON_ENDPOINT_ADD](endpoint) {
 			this.emit('endpoint_add', endpoint);
 		}
@@ -67,7 +64,7 @@ class Device extends EventEmitter {
 		[Sym.ON_COMMAND_ADD](command) {
 			this.emit('command_add', command);
 		}
-		
+
 		[Sym.DESTROY]() {
 			this.emit('device_remove', this);
 		}

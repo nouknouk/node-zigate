@@ -12,7 +12,7 @@ const FRAME_ESCAPE= 0x02;
 
 const DRIVER_LOGGERS = {
 	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
-	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
+	console: { trace: console.debug, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
 };
@@ -86,7 +86,7 @@ class Driver extends EventEmitter {
 
 	open(port, callback) {
 		if (port === 'auto') port = null;
-		
+
 		callback = callback || (()=>{});
 
 		if (!this.isOpen && port) {
@@ -313,7 +313,7 @@ class Driver extends EventEmitter {
 				checksum ^= b;
 			}
 			raw_out.writeUInt8(checksum, 4);
-			this.logger.trace("[Driver] sending frame: 01 "+raw_out.toString('hex').replace(/../g, "$& ")+ "03");
+			this.logger.debug("[Driver] sending frame: 01 "+raw_out.toString('hex').replace(/../g, "$& ")+ "03");
 			this.logger.debug("[Driver] sending command: ", util.inspect(command, {breakLength: 10000}));
 
 			raw_out = this.escapeData(raw_out);

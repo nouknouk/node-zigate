@@ -78,10 +78,10 @@ class CommandBuilder {
 
 
 CommandBuilder.LOGS = {
-	console: { trace: console.trace, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
-	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
-	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
+	console: { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 };
 
 module.exports = CommandBuilder;
