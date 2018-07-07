@@ -27,7 +27,6 @@ class Coordinator extends EventEmitter {
 			devicespath: null,      // './devices'
 			commandspath: null,			// './driver/commands'
 			responsespath: null,	  // './driver/responses'
-			port: null,             // 'auto'
 		};
 
 		this[Sym.LOG] = (typeof(options.log) === 'object' && options.log)

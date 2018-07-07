@@ -11,10 +11,10 @@ const FRAME_ESCAPE_XOR = 0x10;
 const FRAME_ESCAPE= 0x02;
 
 const DRIVER_LOGGERS = {
-	nolog:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: ()=>{},       },
-	console: { trace: console.debug, debug: console.debug, log: console.log, warn: console.warn, error: console.error },
-	warn:    { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: console.warn, error: console.error },
-	error:   { trace: ()=>{},        debug: ()=>{},        log: ()=>{},      warn: ()=>{},       error: console.error },
+	nolog:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
+	console: { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	warn:    { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: console.warn, error: console.error },
+	error:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: console.error },
 };
 
 /* =========================== Driver events ===================================
@@ -106,7 +106,7 @@ class Driver extends EventEmitter {
 						this.emitError(ziError);
 						reject(ziError)
 					} else {
-						this.logger.log("[Driver] successfully connected to device '"+this.port+"'.");
+						this.logger.info("[Driver] successfully connected to device '"+this.port+"'.");
 						this.emit('open');
 						resolve(this);
 					}
@@ -317,7 +317,7 @@ class Driver extends EventEmitter {
 			this.logger.debug("[Driver] sending command: ", util.inspect(command, {breakLength: 10000}));
 
 			raw_out = this.escapeData(raw_out);
-			// this.logger.log("[Driver] sending escaped frame: 01 "+escapeData(raw_out).toString('hex').replace(/../g, "$& ")+"03");
+			// this.logger.info("[Driver] sending escaped frame: 01 "+escapeData(raw_out).toString('hex').replace(/../g, "$& ")+"03");
 
 			this.serial.write([FRAME_START]);
 			this.serial.write(raw_out);
@@ -392,7 +392,7 @@ class Driver extends EventEmitter {
 	}
 	onSerialClosed(port) {
 		if (this.serial) {
-			this.logger.log("[Driver] port '"+port+"' closed.");
+			this.logger.info("[Driver] port '"+port+"' closed.");
 			this.emit('close', port);
 			this.serial = null;
 			this.parser = null;
