@@ -57,3 +57,7 @@ typings/
 # dotenv environment variables file
 .env
 
+
+# zigate personal network file
+network_devices.json
+

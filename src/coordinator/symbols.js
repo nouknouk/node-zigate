@@ -30,6 +30,7 @@ module.exports = {
 	VERIFIED:		         Symbol("VERIFIED"),
 
 	// functions & data in mappings
+	SETUP:               Symbol("SETUP"),
 	DESTROY:             Symbol("DESTROY"),
 	SET_ATTR_DATA:       Symbol("SET_ATTR_DATA"),
 	SET_VALUE:           Symbol("SET_VALUE"),

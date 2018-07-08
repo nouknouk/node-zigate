@@ -9,9 +9,7 @@ class DeviceTypes {
 		this.devices = { 'default': DeviceTypes.Default};
 		this.typesPath = options.devicetypes || Path.join(__dirname, '../../devices');
 		this.types = this.loadTypesDefinitions(this.typesPath);
-    this.identifiableAttributes = [
-      {cluster:0x0000, attribute: 0x0001, name:'appVersion'},
-      {cluster:0x0000, attribute: 0x0002, name:'stackVersion'},
+    this.attributesForDeviceIdentification = [
       {cluster:0x0000, attribute: 0x0003, name:'hwVersion'},
       {cluster:0x0000, attribute: 0x0004, name:'manufacturerName'},
       {cluster:0x0000, attribute: 0x0005, name:'modelId'},
@@ -35,7 +33,8 @@ class DeviceTypes {
   }
 
   type(id) { return this.types[id]; }
-
+  get log() { return this[Sym.LOG]; }
+  isAttributeForDeviceIdentification(clusterId, attributeId) { return this.attributesForDeviceIdentification.find(e => e.cluster === clusterId && e.attribute === attributeId); }
 	loadTypesDefinitions(path) {
 		let types = {};
     let filenames = Fs.readdirSync(path).sort();
@@ -134,13 +133,19 @@ class DeviceTypes {
         device[Sym.TYPE] = newtype;
 
         // remove all values
-        Object.entries(newtype.values || {}).forEach( ([id, def]) => { device.addValue(id, def); } );
+        Object.entries(newtype.values || {}).forEach( ([id, def]) => {
+          device.addValue(id, def);
+        });
 
         // remove all actions
-        Object.entries(newtype.actions || {}).forEach( ([id, def]) => { device.addAction(id, def); } );
+        Object.entries(newtype.actions || {}).forEach( ([id, def]) => {
+          device.addAction(id, def);
+        });
 
         // remove all events
-        Object.entries(newtype.events || {}).forEach( ([id, def]) => { device.addEvent(id, def); } );
+        Object.entries(newtype.events || {}).forEach( ([id, def]) => {
+          device.addEvent(id, def);
+        });
 
   			if (newtype['type_add']) newtype['type_add'](device);
   		}
@@ -148,7 +153,6 @@ class DeviceTypes {
 
 	}
 
-  get log() { return this[Sym.LOG]; }
 	toString() { return "[DeviceTypes-"+Object.keys(this.types).length+"]"; }
 }
 

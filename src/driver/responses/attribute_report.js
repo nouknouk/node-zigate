@@ -23,30 +23,30 @@ module.exports = {
 
 
 		var attributeSize = reader.nextUInt16BE();
-		var valueData = reader.nextBuffer(attributeSize);
+		rep.valueData = reader.nextBuffer(attributeSize);
 		switch (rep.valuetype.id) {
 			case 0x00: // null
 				rep.value = null;
 				break;
 			case 0x10: // boolean
-				rep.value = valueData.readUIntBE(valueData.length) ? true : false;
+				rep.value = rep.valueData.readUIntBE(rep.valueData.length) ? true : false;
 				break;
 			case 0x18: // bitmap8
-				rep.value = valueData.readUIntBE(valueData.length);
+				rep.value = rep.valueData.readUIntBE(rep.valueData.length);
 				break;
 			case 0x20: // uint8
 			case 0x21: // uint16
 			case 0x22: // uint32
 			case 0x25: // uint48
-				rep.value = valueData.readUIntBE(valueData.length);
+				rep.value = rep.valueData.readUIntBE(rep.valueData.length);
 				break;
 			case 0x28: // int8
 			case 0x29: // int16
 			case 0x2a: // int32
-				rep.value = valueData.readIntBE(valueData.length);
+				rep.value = rep.valueData.readIntBE(rep.valueData.length);
 				break;
 			case 0x30: // enum
-			var value = valueData.readUIntBE(valueData.length);
+			var value = rep.valueData.readUIntBE(rep.valueData.length);
 				if (rep.definition && rep.definition.enum && rep.definition.enum[value]) {
 					rep.value = rep.definition.enum[rep.value];
 				}
@@ -56,24 +56,23 @@ module.exports = {
 			case 0x38: // semi precision (float)
 
 				// TODO: test this.
-				rep.Value = float16_to_float( valueData.readUInt16BE() );
+				rep.Value = float16_to_float( rep.valueData.readUInt16BE() );
 			case 0x39: // single precision
-				rep.Value = valueData.readFloatBE();
+				rep.Value = rep.valueData.readFloatBE();
 				break;
 			case 0x3a: // double plecision
-			rep.Value = valueData.readDoubleBE();
+			rep.Value = rep.valueData.readDoubleBE();
 			break;
 			case 0x42: // string
-				rep.value = valueData.toString();
+				rep.value = rep.valueData.toString();
 				break;
 			case 0xff: // unknown
-				rep.value = valueData;
+				rep.value = rep.valueData;
 				break;
 
 			default:
 		  throw new Error("attribute_report: un-implemented read value type "+rep.valuetype+" (size="+attributeSize+")");
 		 }
-
 
 	},
 };

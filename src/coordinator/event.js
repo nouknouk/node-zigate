@@ -13,8 +13,6 @@ class Event extends EventEmitter {
     this[Sym.DEVICE] = device;
     this[Sym.EVENT_DEF] = eventdef;
     this[Sym.EVENT_CB] = [];
-
-    this.setup(eventdef);
   }
 
 	get id() { return this[Sym.ID]; }
@@ -22,7 +20,10 @@ class Event extends EventEmitter {
   get device() { return this[Sym.DEVICE]; }
 	fire() { return this[Sym.DEVICE][Sym.COORDINATOR].fireEvent(this, arguments); }
 
-  setup(def) {
+  [Sym.SETUP]() {
+    let def = this[Sym.EVENT_DEF];
+    this.log.debug('setup of event '+this+' with ('+JSON.stringify(def)+')...');
+
     // setup command binding
     if (def.attribute) {
       let attributeaddr = /^\W*((?:0x)?[0-9a-fA-F]+)\W+((?:0x)?[0-9a-fA-F]+)\W+((?:0x)?[0-9a-fA-F]+)\W*$/gi.exec(def.attribute.id || ""+def.attribute)
@@ -50,7 +51,9 @@ class Event extends EventEmitter {
   }
 
   [Sym.EVENT_FIRE](args) {
+    this.log.info(''+this.device+''+this+' event fired.');
     this.emit(this.id, args);
+
   }
 
   [Sym.DESTROY]() {

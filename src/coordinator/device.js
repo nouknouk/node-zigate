@@ -17,6 +17,7 @@ class Device extends EventEmitter {
       this[Sym.EVENTS] = {};
     }
 		get address() { return this[Sym.ADDRESS]; }
+    get hex() { return "0x"+(("0000"+Number(this.id).toString(16)).substr(-4,4)); }
 		get ieee() { return this[Sym.IEEE]; }
 		set ieee(ieee) { if (this[Sym.IEEE] !== null) throw new Error(""+this+" ieee already set."); else this[Sym.IEEE] = ieee; }
 		get type() { return this[Sym.TYPE].id; }

@@ -116,6 +116,8 @@ class DeviceLoadSave {
 				MkDirP.sync(Path.dirname(this.path));
 			}
 
+			let deviceTypes = this[Sym.COORDINATOR].deviceTypes;
+
 			// devices
 			let devicesData = this[Sym.COORDINATOR].devices.map(device => ({
 				address: device.address,
@@ -139,6 +141,7 @@ class DeviceLoadSave {
 							id: attribute.id,
               hex: "0x"+(("0000"+Number(attribute.id).toString(16)).substr(-4,4)),
 							name: (attribute.type && cluster.type.name),
+							value: deviceTypes.isAttributeForDeviceIdentification(cluster.id, attribute.id) ? attribute.value : undefined,
 							verified: attribute.verified,
 						})),
 
@@ -157,7 +160,7 @@ class DeviceLoadSave {
 			})); // devices
 
 			Fs.writeFileSync(this.path, JSON.stringify(devicesData, /*pretty print*/ null, 2 /*pretty print*/));
-			this.log.debug("zigate data file saved in '"+this.path+"'.");
+			this.log.info("zigate data file saved in '"+this.path+"'.");
 		}
 		catch (e) {
 			this.log.warn("zigate data file save error ("+this.path+"):",e);

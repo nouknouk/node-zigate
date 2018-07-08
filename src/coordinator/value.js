@@ -15,8 +15,6 @@ class Value extends EventEmitter {
     this[Sym.VALUE_DEF] = valuedef;
     this[Sym.VALUE_DATA] = undefined;
     this[Sym.VALUE_CB] = {};
-
-    this.setup(valuedef);
   }
 
 	get id() { return this[Sym.ID]; }
@@ -25,8 +23,12 @@ class Value extends EventEmitter {
 	get value() { return this[Sym.VALUE_DATA]; }
   set value(val) { return this.setValue(val); }
 	get device() { return this[Sym.DEVICE]; }
+  get log() { return this.device.log; }
 
-  setup(def) {
+  [Sym.SETUP]() {
+    let def = this[Sym.VALUE_DEF];
+    this.log.debug('setup of value '+this+' with ('+JSON.stringify(def)+')...');
+
     if (def.type) this[Sym.TYPE] = def.type;
 
     // setup attribute binding
@@ -39,16 +41,18 @@ class Value extends EventEmitter {
 
       this[Sym.VALUE_CB]['attribute_change'] = (attribute, newval, oldval) => {
         if (attribute.id === attributeId && attribute.cluster.id === clusterId && attribute.endpoint.id === endpointId) {
-          let res = (def.attribute.toValue) ? def.attribute.toValue(newval) : newval;
+          let res = (def.attribute.toValue) ? def.attribute.toValue(newval, this) : newval;
+          //this.log.debug(''+this+' value catched relevant attribute '+attribute+' data changed ('+JSON.stringify(res)+')');
           this[Sym.SET_VALUE_DATA](res);
         }
       };
-
-      Object.entries(this[Sym.VALUE_CB]).forEach( ([key,fn]) => this.device.on(key, fn) );
-      this.device.on()
-
-
+      //this.log.debug('setup of value '+this+' registered attribute watch ('+endpointId+','+clusterId+','+attributeId+').');
     }
+
+    Object.entries(this[Sym.VALUE_CB]).forEach( ([key,fn]) => {
+      //this.log.debug(''+this+' is now listening for events "'+key+'" of '+this.device);
+      this.device.on(key, fn)
+    });
   }
   setValue(newval) {
     if (definition.attribute) {
@@ -59,7 +63,10 @@ class Value extends EventEmitter {
     }
   }
   [Sym.DESTROY]() {
-    Object.entries(this[Sym.VALUE_CB]).forEach( ([key,fn]) => this.device.removeListener(key, fn) );
+    Object.entries(this[Sym.VALUE_CB]).forEach( ([key,fn]) => {
+      //this.log.debug(''+this+' stops listening for events "'+key+'" of '+this.device);
+      this.device.removeListener(key, fn)
+    });
     this[Sym.VALUE_CB] = {};
     this[Sym.VALUE_DATA] = undefined;
   }
@@ -67,16 +74,13 @@ class Value extends EventEmitter {
   [Sym.SET_VALUE_DATA](newval) {
     let oldval = this[Sym.VALUE_DATA];
     this[Sym.VALUE_DATA] = newval;
+    this.log.info(''+this.device+''+this+' value changed ('+JSON.stringify(oldval)+') => ('+JSON.stringify(newval)+')');
     this.emit('value_changed', this, newval, oldval);
     this.device.emit('value_changed', this, newval, oldval);
   }
 
-  get log() { return this.device.log; }
 	toString() { return "[value_"+this.id+"]"; }
-
-  inspect() {
-    return ""+this+"="+this[Sym.VALUE_DATA]+" ("+JSON.stringify(this.definition)+")";
-  }
+  inspect() { return ""+this+"="+this[Sym.VALUE_DATA]+" ("+JSON.stringify(this.definition)+")"; }
 }
 
 module.exports = Value;

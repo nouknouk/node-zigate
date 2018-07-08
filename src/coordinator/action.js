@@ -12,16 +12,18 @@ class Action extends EventEmitter {
     this[Sym.ID] = id;
     this[Sym.DEVICE] = device;
     this[Sym.ACTION_DEF] = actiondef;
-
-    this.setup(actiondef);
   }
 
 	get id() { return this[Sym.ID]; }
 	get definition() { return this[Sym.ACTION_DEF]; }
   get device() { return this[Sym.DEVICE]; }
+  get log() { return this.device.log; }
 	exec() { return this[Sym.DEVICE][Sym.COORDINATOR].execAction(this, arguments); }
 
-  setup(def) {
+  [Sym.SETUP]() {
+    let def = this[Sym.ACTION_DEF];
+    this.log.debug('setup of action '+this+' with ('+JSON.stringify(def)+')...');
+
     // setup command binding
     if (def.command) {
       let commanddef = /^\W*((?:0x)?[0-9a-fA-F]+)\W+((?:0x)?[0-9a-fA-F]+)\W+((?:0x)?[0-9a-fA-F]+)\W*$/gi.exec(def.command.id || ""+def.command)
@@ -37,7 +39,7 @@ class Action extends EventEmitter {
   }
 
   [Sym.EXEC_ACTION](args) {
-    let ret = PRomise.reject('no action defined');
+    let ret = Promise.reject('no action defined');
     if (action[Sym.ACTION_DEF].command) {
       let command = this.device.command(command.endpointId, command.endpointId, command.endpointId);
       if (command) {
@@ -51,12 +53,11 @@ class Action extends EventEmitter {
       ret = Promise.resolve(() => { return def.exec.apply(this, args); });
     }
     this.emit('action_exec', this, args, ret);
+    this.log.info(''+this.device+''+this+' action executed.');
     return ret;
   }
 
-  get log() { return this.device.log; }
 	toString() { return "[action_"+this.id+"]"; }
-
   inspect() { return ""+this+" ("+JSON.stringify(this.definition)+")"; }
 }
 

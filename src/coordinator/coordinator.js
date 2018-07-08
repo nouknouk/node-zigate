@@ -21,6 +21,7 @@ const COORDINATOR_LOGGERS = {
 	console: { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
 	trace:   { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
 	debug:   { trace: ()=>{},        debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	info:    { trace: ()=>{},        debug: ()=>{},        info: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: console.error },
 };
@@ -64,7 +65,6 @@ class Coordinator extends EventEmitter {
 	get log() { return this[Sym.LOG]; }
   get status() { return this[Sym.STATUS]; }
   get started() { return this.driver.isOpen }
-
 	get devices() { return Object.values(this[Sym.DEVICES]); }
 	device(address) { return this[Sym.DEVICES][address] || null; }
 
@@ -147,7 +147,7 @@ class Coordinator extends EventEmitter {
 		if (this.started) {
 			return this.driver.send('permit_join', {duration: timeInSec}).then(
         (command)=> {
-          this.log.info("inclusion mode started for "+command.duration+" seconds.");
+          this.log.info("inclusion mode started for "+timeInSec+" seconds.");
 					this.inclusionStatus = true;
           this.emit('inclusion_start');
 					setTimeout(()=> {
@@ -225,9 +225,11 @@ class Coordinator extends EventEmitter {
 			cluster[Sym.ATTRIBUTES][id] = attribute;
 			cluster.device[Sym.ON_ATTRIBUTE_ADD](attribute);
 			this.emit('attribute_add', attribute);
-			if (this.deviceTypes.identifiableAttributes.find((at) => at.cluster === cluster.id && at.attribute === id)) {
+			if (this.deviceTypes.attributesForDeviceIdentification.find((at) => at.cluster === cluster.id && at.attribute === id)) {
 				let besttype = this.deviceTypes.getBestDeviceType(cluster.device);
-				if (besttype.id !== device.type) this.deviceTypes.assignTypeToDevice(besttype, cluster.device);
+				if (besttype.id !== device.type) {
+					this.deviceTypes.assignTypeToDevice(besttype, cluster.device);
+				}
 			}
 		}
 		return cluster[Sym.ATTRIBUTES][id];
@@ -284,6 +286,7 @@ class Coordinator extends EventEmitter {
 		if (device.value(id)) throw new Error("cannot add value '"+id+"': value already exists.");
 		let value = new Value(id, device, definition);
 		device[Sym.VALUES][id] = value;
+		value[Sym.SETUP](value.definition);
 		this.log.debug(""+device+""+value+": value created");
 		device[Sym.ON_VALUE_ADD](value);
 		return value;
@@ -302,6 +305,7 @@ class Coordinator extends EventEmitter {
 		if (device.action(id)) throw new Error("cannot add action '"+id+"': action already exists.");
 		let action = new Action(id, device, definition);
 		device[Sym.ACTIONS][id] = action;
+		action[Sym.SETUP](action.definition);
 		this.log.debug(""+device+""+action+": action created");
 		device[Sym.ON_ACTION_ADD](action);
 		return action;
@@ -327,6 +331,7 @@ class Coordinator extends EventEmitter {
 		if (device.event(id)) throw new Error("cannot add event '"+id+"': event already exists.");
 		let event = new Event(id, device, definition);
 		device[Sym.EVENTS][id] = event;
+		event[Sym.SETUP](event.definition);
 		this.log.debug(""+device+""+event+": event created");
 		device[Sym.ON_EVENT_ADD](event);
 		return event;
@@ -476,7 +481,7 @@ class Coordinator extends EventEmitter {
 					attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, rep.value, oldval)
 					this.emit('attribute_change', attribute, rep.value, oldval);
 
-					if (this.deviceTypes.identifiableAttributes.find((at) => at.cluster === cluster.id && at.attribute === rep.attribute)) {
+					if (this.deviceTypes.attributesForDeviceIdentification.find((at) => at.cluster === cluster.id && at.attribute === rep.attribute)) {
 						let besttype = this.deviceTypes.getBestDeviceType(device);
 						if (besttype.id !== device.type) {
 							this.log.debug("found better device type definition for '"+device+"' : "+besttype+". Upgrading...");
