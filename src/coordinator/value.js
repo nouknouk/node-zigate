@@ -39,6 +39,12 @@ class Value extends EventEmitter {
       let clusterId = parseInt(attrdef[2]);
       let attributeId = parseInt(attrdef[3]);
 
+      this[Sym.VALUE_CB]['attribute_add'] = (attribute) => {
+        if (attribute.id === attributeId && attribute.cluster.id === clusterId && attribute.endpoint.id === endpointId) {
+          let res = (def.attribute.toValue) ? def.attribute.toValue(attribute.value, this) : attribute.value;
+          this[Sym.SET_VALUE_DATA](res);
+        }
+      };
       this[Sym.VALUE_CB]['attribute_change'] = (attribute, newval, oldval) => {
         if (attribute.id === attributeId && attribute.cluster.id === clusterId && attribute.endpoint.id === endpointId) {
           let res = (def.attribute.toValue) ? def.attribute.toValue(newval, this) : newval;
@@ -46,6 +52,16 @@ class Value extends EventEmitter {
           this[Sym.SET_VALUE_DATA](res);
         }
       };
+			
+			// initial setup of value data
+			let initialValue = def.attribute.default;
+			let attributeObject = this.device.attribute(endpointId, clusterId, attributeId);
+			if (attributeObject) {
+				initialValue = (def.attribute.toValue) ? def.attribute.toValue(attributeObject.value, this) : attributeObject.value;
+			}
+			this[Sym.VALUE_DATA] = initialValue;
+			
+			
       //this.log.debug('setup of value '+this+' registered attribute watch ('+endpointId+','+clusterId+','+attributeId+').');
     }
 

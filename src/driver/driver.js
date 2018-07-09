@@ -13,6 +13,9 @@ const FRAME_ESCAPE= 0x02;
 const DRIVER_LOGGERS = {
 	nolog:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
 	console: { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	trace:   { trace: console.debug, debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	debug:   { trace: ()=>{},        debug: console.debug, info: console.log, warn: console.warn, error: console.error },
+	info:    { trace: ()=>{},        debug: ()=>{},        info: console.log, warn: console.warn, error: console.error },
 	warn:    { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: console.warn, error: console.error },
 	error:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: console.error },
 };
@@ -57,8 +60,9 @@ class Driver extends EventEmitter {
 		this.port = null;
 	  this.parser = null;
 	  this.serial = null;
-		this.logger = (typeof(options.log) === 'object' && options.log)
-									|| DRIVER_LOGGERS[options.log]
+		this.logger = DRIVER_LOGGERS[options.log]
+									|| (options.log && options.log.getLogger && options.log.getLogger('driver'))
+									|| (options.log && options.log.trace && options.log.debug && options.log.info && options.log.warn && options.log.error && options.log)
 									|| DRIVER_LOGGERS['nolog'];
 
 		CommandBuilder.LOGS = this.logger;

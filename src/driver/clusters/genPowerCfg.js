@@ -32,7 +32,7 @@ module.exports = {
 		"19": { "cluster": 1, "id": 19, "name": "mainsVoltageDwellTripPoint", "type": "uint16", "mandatory": false, "read": true, "write": false, "specific": false, "unit": 'second' },
 		"32": { "cluster": 1, "id": 32, "name": "batteryVoltage", "type": "uint8", "mandatory": false, "read": true, "write": false, "specific": false, "unit": '100mV' },
 		"33": { "cluster": 1, "id": 33, "name": "batteryPercentageRemaining", "type": "uint8", "mandatory": false, "read": true, "write": false, "specific": false, "unit": '0.5%', default:0 },
-		"48": { "cluster": 1, "id": 48, "name": "batteryManufacturer", "type": "charStr", "mandatory": null, "read": true, "write": true, "specific": false, "unit": null, default:'' },
+		"48": { "cluster": 1, "id": 48, "name": "batteryManufacturer", "type": "string", "mandatory": null, "read": true, "write": true, "specific": false, "unit": null, default:'' },
 		"49": { "cluster": 1, "id": 49, "name": "batterySize", "type": "enum8", "mandatory": null, "read": true, "write": true, "specific": false, "unit": null, default:0xff, enum: batterySizeEnum },
 		"50": { "cluster": 1, "id": 50, "name": "batteryAHrRating", "type": "uint16", "mandatory": null, "read": true, "write": true, "specific": false, "unit": '10mAh' },
 		"51": { "cluster": 1, "id": 51, "name": "batteryQuantity", "type": "uint8", "mandatory": null, "read": true, "write": true, "specific": false, "unit": null },

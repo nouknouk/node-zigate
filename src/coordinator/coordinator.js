@@ -144,10 +144,11 @@ class Coordinator extends EventEmitter {
     }
   }
 	startInclusion(timeInSec) {
+		let duration = timeInSec;
 		if (this.started) {
-			return this.driver.send('permit_join', {duration: timeInSec}).then(
-        (command)=> {
-          this.log.info("inclusion mode started for "+timeInSec+" seconds.");
+			return this.driver.send('permit_join', {duration: duration}).then(
+        (commandOrStatus)=> {
+          this.log.info("inclusion mode started for "+duration+" seconds.");
 					this.inclusionStatus = true;
           this.emit('inclusion_start');
 					setTimeout(()=> {
@@ -155,7 +156,7 @@ class Coordinator extends EventEmitter {
 							this.inclusionStatus = false;
 							this.emit('inclusion_stop');
 						}
-					}, command.duration*1000);
+					}, duration*1000);
         },
         (err) => {
           this.emit('error', "start inclusion error: "+err);
@@ -289,6 +290,7 @@ class Coordinator extends EventEmitter {
 		value[Sym.SETUP](value.definition);
 		this.log.debug(""+device+""+value+": value created");
 		device[Sym.ON_VALUE_ADD](value);
+		this.emit('value_add', value);
 		return value;
 	}
 	removeValue(device, id) {
@@ -298,6 +300,7 @@ class Coordinator extends EventEmitter {
 		delete device[Sym.VALUES][id];
 		this.log.debug(""+device+""+value+": value removed");
 		device[Sym.ON_VALUE_REMOVE](value);
+		this.emit('value_remove', value);
 		return value;
 	}
 
@@ -308,6 +311,7 @@ class Coordinator extends EventEmitter {
 		action[Sym.SETUP](action.definition);
 		this.log.debug(""+device+""+action+": action created");
 		device[Sym.ON_ACTION_ADD](action);
+		this.emit('action_add', action);
 		return action;
 	}
 	removeAction(device, id) {
@@ -317,13 +321,14 @@ class Coordinator extends EventEmitter {
 		delete device[Sym.ACTIONS][id];
 		this.log.debug(""+device+""+action+": action removed");
 		device[Sym.ON_ACTION_REMOVE](action);
+		this.emit('action_remove', action);
 		return action;
 	}
 	execAction(action, args) {
 		this.log.debug(""+action.device+""+action+": action executed");
 		let ret = action[Sym.EXEC_ACTION](args);
 		action.device[Sym.ON_ACTION_EXEC](action, args, ret)
-		this.emit('action_exec', this, args, ret);
+		this.emit('action_exec', action, args, ret);
 		return ret;
 	}
 
@@ -334,6 +339,7 @@ class Coordinator extends EventEmitter {
 		event[Sym.SETUP](event.definition);
 		this.log.debug(""+device+""+event+": event created");
 		device[Sym.ON_EVENT_ADD](event);
+		this.emit('event_add', event);
 		return event;
 	}
 	removeEvent(device, id) {
@@ -343,6 +349,7 @@ class Coordinator extends EventEmitter {
 		delete device[Sym.EVENTS][id];
 		this.log.debug(""+device+""+event+": event removed");
 		device[Sym.ON_EVENT_REMOVE](event);
+		this.emit('event_remove', event);
 		return event;
 	}
 	fireEvent(event, args) {
@@ -361,12 +368,17 @@ class Coordinator extends EventEmitter {
 		.then((rep) => { return this.onResponseDevicesList(rep); });
 	}
 	onResponseDevicesList(rep) {
-		// devices [ { id, address, ieee, battery, linkQuality}, ...]
-		rep.devices.forEach((dev) => {
-			if (!this[Sym.DEVICES][dev.address]) {
-				this.addDevice(dev.address, dev.ieee);
-			}
-		});
+		// rep.devices = [ { id, address, ieee, battery, linkQuality}, ...]
+		
+		// 1a) find all devices instances no longer listed by the zigate's response
+		this.devices.filter( dev => !(rep.devices.find(zidev => zidev.address === dev.address)) )
+			// 1b) remove them from the coordinator
+			.forEach(olddevice => { this.removeDevice(olddev); });
+		
+		// 2a) find devices listed in zigate's response not yet present in coordinator
+		rep.devices.filter( zidev => !(this.device(zidev.address)))
+			// 2b) remove them from the coordinator
+			.forEach(zidev => { this.addDevice(zidev.address, dev.ieee); });
 
 		return rep;
 	}

@@ -132,17 +132,17 @@ class DeviceTypes {
   			this.log.debug("setting up type "+newtype+" to "+device);
         device[Sym.TYPE] = newtype;
 
-        // remove all values
+        // add all values
         Object.entries(newtype.values || {}).forEach( ([id, def]) => {
           device.addValue(id, def);
         });
 
-        // remove all actions
+        // add all actions
         Object.entries(newtype.actions || {}).forEach( ([id, def]) => {
           device.addAction(id, def);
         });
 
-        // remove all events
+        // add all events
         Object.entries(newtype.events || {}).forEach( ([id, def]) => {
           device.addEvent(id, def);
         });

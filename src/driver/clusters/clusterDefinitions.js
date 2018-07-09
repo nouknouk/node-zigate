@@ -174,7 +174,7 @@ module.exports = {
     "name": "genAnalogInput",
     "specific": null,
     "attributes": {
-      "28": { "cluster": 12, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 12, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "65": { "cluster": 12, "id": 65, "name": "maxPresentValue", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "69": { "cluster": 12, "id": 69, "name": "minPresentValue", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 12, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -193,7 +193,7 @@ module.exports = {
     "name": "genAnalogOutput",
     "specific": null,
     "attributes": {
-      "28": { "cluster": 13, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 13, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "65": { "cluster": 13, "id": 65, "name": "maxPresentValue", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "69": { "cluster": 13, "id": 69, "name": "minPresentValue", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 13, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -214,7 +214,7 @@ module.exports = {
     "name": "genAnalogValue",
     "specific": null,
     "attributes": {
-      "28": { "cluster": 14, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 14, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 14, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "85": { "cluster": 14, "id": 85, "name": "presentValue", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "87": { "cluster": 14, "id": 87, "name": "priorityArray", "type": "array", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -232,9 +232,9 @@ module.exports = {
     "name": "genBinaryInput",
     "specific": null,
     "attributes": {
-      "4": { "cluster": 15, "id": 4, "name": "activeText", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "28": { "cluster": 15, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "46": { "cluster": 15, "id": 46, "name": "inactiveText", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "4": { "cluster": 15, "id": 4, "name": "activeText", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 15, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "46": { "cluster": 15, "id": 46, "name": "inactiveText", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 15, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "84": { "cluster": 15, "id": 84, "name": "polarity", "type": "enum8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "85": { "cluster": 15, "id": 85, "name": "presentValue", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -250,9 +250,9 @@ module.exports = {
     "name": "genBinaryOutput",
     "specific": null,
     "attributes": {
-      "4": { "cluster": 16, "id": 4, "name": "activeText", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "28": { "cluster": 16, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "46": { "cluster": 16, "id": 46, "name": "inactiveText", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "4": { "cluster": 16, "id": 4, "name": "activeText", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 16, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "46": { "cluster": 16, "id": 46, "name": "inactiveText", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "66": { "cluster": 16, "id": 66, "name": "minimumOffTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "67": { "cluster": 16, "id": 67, "name": "minimumOnTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 16, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -272,9 +272,9 @@ module.exports = {
     "name": "genBinaryValue",
     "specific": null,
     "attributes": {
-      "4": { "cluster": 17, "id": 4, "name": "activeText", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "28": { "cluster": 17, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "46": { "cluster": 17, "id": 46, "name": "inactiveText", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "4": { "cluster": 17, "id": 4, "name": "activeText", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 17, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "46": { "cluster": 17, "id": 46, "name": "inactiveText", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "66": { "cluster": 17, "id": 66, "name": "minimumOffTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "67": { "cluster": 17, "id": 67, "name": "minimumOnTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 17, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -294,7 +294,7 @@ module.exports = {
     "specific": null,
     "attributes": {
       "14": { "cluster": 18, "id": 14, "name": "stateText", "type": "array", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "28": { "cluster": 18, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 18, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "74": { "cluster": 18, "id": 74, "name": "numberOfStates", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 18, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "85": { "cluster": 18, "id": 85, "name": "presentValue", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -311,7 +311,7 @@ module.exports = {
     "specific": null,
     "attributes": {
       "14": { "cluster": 19, "id": 14, "name": "stateText", "type": "array", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "28": { "cluster": 19, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 19, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "74": { "cluster": 19, "id": 74, "name": "numberOfStates", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 19, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "85": { "cluster": 19, "id": 85, "name": "presentValue", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -330,7 +330,7 @@ module.exports = {
     "specific": null,
     "attributes": {
       "14": { "cluster": 20, "id": 14, "name": "stateText", "type": "array", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "28": { "cluster": 20, "id": 28, "name": "description", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "28": { "cluster": 20, "id": 28, "name": "description", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "74": { "cluster": 20, "id": 74, "name": "numberOfStates", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "81": { "cluster": 20, "id": 81, "name": "outOfService", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "85": { "cluster": 20, "id": 85, "name": "presentValue", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -510,7 +510,7 @@ module.exports = {
       "25": { "cluster": 257, "id": 25, "name": "maxRfidLen", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "26": { "cluster": 257, "id": 26, "name": "minRfidLen", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "32": { "cluster": 257, "id": 32, "name": "enable_Logging", "type": "boolean", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "33": { "cluster": 257, "id": 33, "name": "language", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "33": { "cluster": 257, "id": 33, "name": "language", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "34": { "cluster": 257, "id": 34, "name": "ledSettings", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "35": { "cluster": 257, "id": 35, "name": "autoRelockTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "36": { "cluster": 257, "id": 36, "name": "soundVolume", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -773,7 +773,7 @@ module.exports = {
       "3": { "cluster": 768, "id": 3, "name": "currentX", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "4": { "cluster": 768, "id": 4, "name": "currentY", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "5": { "cluster": 768, "id": 5, "name": "driftCompensation", "type": "enum8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "6": { "cluster": 768, "id": 6, "name": "compensationText", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "6": { "cluster": 768, "id": 6, "name": "compensationText", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "7": { "cluster": 768, "id": 7, "name": "colorTemperature", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "8": { "cluster": 768, "id": 8, "name": "colorMode", "type": "enum8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "16": { "cluster": 768, "id": 16, "name": "numPrimaries", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -853,8 +853,8 @@ module.exports = {
       "20": { "cluster": 769, "id": 20, "name": "intrinsicBallastFactor", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "21": { "cluster": 769, "id": 21, "name": "ballastFactorAdjustment", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "32": { "cluster": 769, "id": 32, "name": "lampQuantity", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "48": { "cluster": 769, "id": 48, "name": "lampType", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "49": { "cluster": 769, "id": 49, "name": "lampManufacturer", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "48": { "cluster": 769, "id": 48, "name": "lampType", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "49": { "cluster": 769, "id": 49, "name": "lampManufacturer", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "50": { "cluster": 769, "id": 50, "name": "lampRatedHours", "type": "uint24", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "51": { "cluster": 769, "id": 51, "name": "lampBurnHours", "type": "uint24", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "52": { "cluster": 769, "id": 52, "name": "lampAlarmMode", "type": "bitmap8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -1058,12 +1058,12 @@ module.exports = {
     "specific": null,
     "attributes": {
       "22": { "cluster": 1538, "id": 22, "name": "covIncrement", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "31": { "cluster": 1538, "id": 31, "name": "deviceType", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "31": { "cluster": 1538, "id": 31, "name": "deviceType", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1538, "id": 75, "name": "objectId", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1538, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1538, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1538, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "118": { "cluster": 1538, "id": 118, "name": "updateInterval", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1538, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1538, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1099,12 +1099,12 @@ module.exports = {
     "specific": null,
     "attributes": {
       "22": { "cluster": 1540, "id": 22, "name": "covIncrement", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "31": { "cluster": 1540, "id": 31, "name": "deviceType", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "31": { "cluster": 1540, "id": 31, "name": "deviceType", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1540, "id": 75, "name": "objectId", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1540, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1540, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1540, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "118": { "cluster": 1540, "id": 118, "name": "updateInterval", "type": "uint8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1540, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1540, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1136,9 +1136,9 @@ module.exports = {
     "attributes": {
       "22": { "cluster": 1542, "id": 22, "name": "covIncrement", "type": "singlePrec", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1542, "id": 75, "name": "objectId", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1542, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1542, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1542, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1542, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1542, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1170,14 +1170,14 @@ module.exports = {
     "attributes": {
       "15": { "cluster": 1544, "id": 15, "name": "changeOfStateCount", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "16": { "cluster": 1544, "id": 16, "name": "changeOfStateTime", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "31": { "cluster": 1544, "id": 31, "name": "deviceType", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "31": { "cluster": 1544, "id": 31, "name": "deviceType", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "33": { "cluster": 1544, "id": 33, "name": "elapsedActiveTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1544, "id": 75, "name": "objectIdentifier", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1544, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1544, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1544, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "114": { "cluster": 1544, "id": 114, "name": "timeOfATReset", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "115": { "cluster": 1544, "id": 115, "name": "timeOfSCReset", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1544, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1544, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1206,15 +1206,15 @@ module.exports = {
     "attributes": {
       "15": { "cluster": 1546, "id": 15, "name": "changeOfStateCount", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "16": { "cluster": 1546, "id": 16, "name": "changeOfStateTime", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "31": { "cluster": 1546, "id": 31, "name": "deviceType", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "31": { "cluster": 1546, "id": 31, "name": "deviceType", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "33": { "cluster": 1546, "id": 33, "name": "elapsedActiveTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "40": { "cluster": 1546, "id": 40, "name": "feedBackValue", "type": "enum8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1546, "id": 75, "name": "objectIdentifier", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1546, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1546, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1546, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "114": { "cluster": 1546, "id": 114, "name": "timeOfATReset", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "115": { "cluster": 1546, "id": 115, "name": "timeOfSCReset", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1546, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1546, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1244,11 +1244,11 @@ module.exports = {
       "16": { "cluster": 1548, "id": 16, "name": "changeOfStateTime", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "33": { "cluster": 1548, "id": 33, "name": "elapsedActiveTime", "type": "uint32", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1548, "id": 75, "name": "objectIdentifier", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1548, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1548, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1548, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "114": { "cluster": 1548, "id": 114, "name": "timeOfATReset", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "115": { "cluster": 1548, "id": 115, "name": "timeOfSCReset", "type": "struct", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1548, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1548, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1275,11 +1275,11 @@ module.exports = {
     "name": "piMultistateInputReg",
     "specific": null,
     "attributes": {
-      "31": { "cluster": 1550, "id": 31, "name": "deviceType", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "31": { "cluster": 1550, "id": 31, "name": "deviceType", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1550, "id": 75, "name": "objectId", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1550, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1550, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1550, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1550, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1550, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1307,12 +1307,12 @@ module.exports = {
     "name": "piMultistateOutputReg",
     "specific": null,
     "attributes": {
-      "31": { "cluster": 1552, "id": 31, "name": "deviceType", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "31": { "cluster": 1552, "id": 31, "name": "deviceType", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "40": { "cluster": 1552, "id": 40, "name": "feedBackValue", "type": "enum8", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "75": { "cluster": 1552, "id": 75, "name": "objectId", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1552, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1552, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1552, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1552, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1552, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1339,9 +1339,9 @@ module.exports = {
     "specific": null,
     "attributes": {
       "75": { "cluster": 1554, "id": 75, "name": "objectId", "type": "bacOid", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "77": { "cluster": 1554, "id": 77, "name": "objectName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "77": { "cluster": 1554, "id": 77, "name": "objectName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "79": { "cluster": 1554, "id": 79, "name": "objectType", "type": "enum16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "168": { "cluster": 1554, "id": 168, "name": "profileName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
+      "168": { "cluster": 1554, "id": 168, "name": "profileName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },
     "commands": {},
     "responses": {}
@@ -1623,9 +1623,9 @@ module.exports = {
     "specific": null,
     "attributes": {
       "0": { "cluster": 2816, "id": 0, "name": "basicIdentification", "type": "uint56", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "16": { "cluster": 2816, "id": 16, "name": "companyName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "16": { "cluster": 2816, "id": 16, "name": "companyName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "17": { "cluster": 2816, "id": 17, "name": "companyId", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "18": { "cluster": 2816, "id": 18, "name": "brandName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "18": { "cluster": 2816, "id": 18, "name": "brandName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "19": { "cluster": 2816, "id": 19, "name": "brandId", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "20": { "cluster": 2816, "id": 20, "name": "model", "type": "octetStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "21": { "cluster": 2816, "id": 21, "name": "partNumber", "type": "octetStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
@@ -1643,16 +1643,16 @@ module.exports = {
     "name": "haMeterIdentification",
     "specific": null,
     "attributes": {
-      "0": { "cluster": 2817, "id": 0, "name": "companyName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "0": { "cluster": 2817, "id": 0, "name": "companyName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "1": { "cluster": 2817, "id": 1, "name": "meterTypeId", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "4": { "cluster": 2817, "id": 4, "name": "dataQualityId", "type": "uint16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "5": { "cluster": 2817, "id": 5, "name": "customerName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "6": { "cluster": 2817, "id": 6, "name": "model", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "7": { "cluster": 2817, "id": 7, "name": "partNumber", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "8": { "cluster": 2817, "id": 8, "name": "productRevision", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "10": { "cluster": 2817, "id": 10, "name": "softwareRevision", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "11": { "cluster": 2817, "id": 11, "name": "utilityName", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
-      "12": { "cluster": 2817, "id": 12, "name": "pod", "type": "charStr", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "5": { "cluster": 2817, "id": 5, "name": "customerName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "6": { "cluster": 2817, "id": 6, "name": "model", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "7": { "cluster": 2817, "id": 7, "name": "partNumber", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "8": { "cluster": 2817, "id": 8, "name": "productRevision", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "10": { "cluster": 2817, "id": 10, "name": "softwareRevision", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "11": { "cluster": 2817, "id": 11, "name": "utilityName", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+      "12": { "cluster": 2817, "id": 12, "name": "pod", "type": "string", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "13": { "cluster": 2817, "id": 13, "name": "availablePower", "type": "int24", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
       "14": { "cluster": 2817, "id": 14, "name": "powerThreshold", "type": "int24", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null }
     },

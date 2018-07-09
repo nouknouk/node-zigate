@@ -14,7 +14,9 @@ const ZiCluster = require('./zicluster.js');
 const ZiAttribute = require('./ziattribute.js');
 const ZiCommand = require('./zicommand.js');
 
-const LOAD_IN_PROGRESS = Symbol('load_in_progress');
+const LOAD_IN_PROGRESS = Symbol('LOAD_IN_PROGRESS');
+const FILE_DATA = Symbol('FILE_DATA');
+const COORDINATOR_CALLBACKS = Symbol('COORDINATOR_CALLBACKS');
 
 const LOAD_SAVE_LOGGERS = {
 	nolog:   { trace: ()=>{},        debug: ()=>{},        info: ()=>{},      warn: ()=>{},       error: ()=>{},       },
@@ -38,7 +40,8 @@ class DeviceLoadSave {
 										|| coordinator.log
 										|| LOAD_SAVE_LOGGERS['nolog'];
 		this[LOAD_IN_PROGRESS] = false;
-		this.COORDINATORCallbacks = {
+		this[FILE_DATA] = {};
+		this[COORDINATOR_CALLBACKS] = {
 			error: (err) => { },
 			started: () => { this.onStart(); },
 			stopped: () => { },
@@ -49,14 +52,15 @@ class DeviceLoadSave {
 			endpoint_add: (endpoint) => { this.onEndpointAdded(endpoint); } ,
 			cluster_add: (cluster) => { this.onClusterAdded(cluster); },
 			attribute_add: (attribute) => { this.onAttributeAdded(attribute); },
+			attribute_change: (attribute, value, oldval) => { this.onAttributeChanged(attribute, value, oldval); },
 		};
-		Object.entries(this.COORDINATORCallbacks).forEach( ([name, fn]) => this[Sym.COORDINATOR].on(name, fn) );
+		Object.entries(this[COORDINATOR_CALLBACKS]).forEach( ([name, fn]) => this[Sym.COORDINATOR].on(name, fn) );
   }
 
 	static get LOGGERS() { return LOAD_SAVE_LOGGERS; };
 
 	shutdown() {
-		Object.entries(this.COORDINATORCallbacks).forEach( ([name, fn]) => this[Sym.COORDINATOR].removeListener(name, fn) );
+		Object.entries(this[COORDINATOR_CALLBACKS]).forEach( ([name, fn]) => this[Sym.COORDINATOR].removeListener(name, fn) );
 	}
 
 	loadFile() {
@@ -67,10 +71,10 @@ class DeviceLoadSave {
 				this.log.info("initial zigate persistence file '"+this.path+"' doesn't exist ; creating a new one.");
         this.saveFile();
       }
-			let devicesData = JSON.parse( Fs.readFileSync(this.path) );
+			this[FILE_DATA] = JSON.parse( Fs.readFileSync(this.path) );
 
 			// devices
-			devicesData.forEach(devicedata => {
+			this[FILE_DATA].forEach(devicedata => {
 				let device = this[Sym.COORDINATOR].addDevice(devicedata.address, devicedata.ieee);
 				// endpoints
 				devicedata.endpoints.filter(o => o.verified).forEach(endpointdata => {
@@ -119,7 +123,7 @@ class DeviceLoadSave {
 			let deviceTypes = this[Sym.COORDINATOR].deviceTypes;
 
 			// devices
-			let devicesData = this[Sym.COORDINATOR].devices.map(device => ({
+			this[FILE_DATA] = this[Sym.COORDINATOR].devices.map(device => ({
 				address: device.address,
         hex: "0x"+(("0000"+Number(device.address).toString(16)).substr(-4,4)),
 				ieee: device.ieee,
@@ -144,7 +148,6 @@ class DeviceLoadSave {
 							value: deviceTypes.isAttributeForDeviceIdentification(cluster.id, attribute.id) ? attribute.value : undefined,
 							verified: attribute.verified,
 						})),
-
 						// commands
 						commands: cluster.commands.map(command => ({
 							id: command.id,
@@ -159,7 +162,7 @@ class DeviceLoadSave {
 
 			})); // devices
 
-			Fs.writeFileSync(this.path, JSON.stringify(devicesData, /*pretty print*/ null, 2 /*pretty print*/));
+			Fs.writeFileSync(this.path, JSON.stringify(this[FILE_DATA], /*pretty print*/ null, 2 /*pretty print*/));
 			this.log.info("zigate data file saved in '"+this.path+"'.");
 		}
 		catch (e) {
@@ -177,25 +180,64 @@ class DeviceLoadSave {
 
 	onDeviceAdded(device) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
+		
+		let devicedata = this[FILE_DATA].find(d => d.address === device.address);
+		if (devicedata) return; // device already present ; skip.
+		
 		this.saveFile();
 	}
 	onDeviceRemoved(device) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
+
+		let devicedata = this[FILE_DATA].find(d => d.address === device.address);
+		if (!devicedata) return; // device already removed ; skip.
+		
 		this.saveFile();
 	}
 	onEndpointAdded(endpoint) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
+		
+		let devicedata = this[FILE_DATA].find(d => d.address === endpoint.device.address);
+		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === endpoint.id);
+		if (endpointdata) return; // endpoint already present ; skip.
+		
 		this.saveFile();
 	}
 	onClusterAdded(cluster) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
+
+		let devicedata = this[FILE_DATA].find(d => d.address === cluster.device.address);
+		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === cluster.endpoint.id);
+		let clusterdata = endpointdata && endpointdata.clusters.find(c => c.id === cluster.id);
+		if (clusterdata) return; // cluster already present ; skip.
+
 		this.saveFile();
 	}
 	onAttributeAdded(attribute) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
+		
+		let devicedata = this[FILE_DATA].find(d => d.address === cluster.device.address);
+		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === cluster.endpoint.id);
+		let clusterdata = endpointdata && endpointdata.clusters.find(c => c.id === cluster.id);
+		let attributedata = clusterdata && clusterdata.attributes.find(a => a.id === attribute.id);
+		if (attributedata) return; // attributedata already present ; skip.
+
 		this.saveFile();
 	}
 
+	onAttributeChanged(attribute, value, oldval) {
+		if (this[LOAD_IN_PROGRESS]) return; // skip
+		if (! (this[Sym.COORDINATOR].deviceTypes.isAttributeForDeviceIdentification(attribute.cluster.id, attribute.id))) return;
+		
+		let devicedata = this[FILE_DATA].find(d => d.address === cluster.device.address);
+		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === cluster.endpoint.id);
+		let clusterdata = endpointdata && endpointdata.clusters.find(c => c.id === cluster.id);
+		let attributedata = clusterdata && clusterdata.attributes.find(a => a.id === attribute.id);
+		if (attributedata.value === value) return;
+		
+		this.saveFile();
+	}
+	
   get log() { return this[Sym.LOG]; }
 	toString() { return "[DeviceLoadSave]"; }
 }
