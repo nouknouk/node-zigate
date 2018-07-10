@@ -12,7 +12,7 @@ module.exports = {
 	values: {
 		modelId:     { type:'string', attribute: {id: '0x0001 0x0000 0x0005' }  },
 		rot_v:       { type:'int',    attribute: {id: '0x0003 0x000c 0xff05' } },
-		battery:     { type:'float',  attribute: {id: '0x0001 0x0000 0xff01', toValue: ((data) => (data && data.length > 5) ? ((data[5]*256 + data[4])/1000) : undefined), unit: 'V', min:0.00, max: 3.00 } },
+		battery:     { type:'float',  attribute: {id: '0x0001 0x0000 0xff01', toValue: ((data, valueObj) => { return (data && data.length > 3) ? (data[3].charCodeAt(0)*256 + data[2].charCodeAt(0))/1000 : undefined; }), unit: 'V', min:0.00, max: 3.00 } },
 	},
 
 	events: {

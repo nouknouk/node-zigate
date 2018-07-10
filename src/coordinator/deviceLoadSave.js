@@ -98,7 +98,7 @@ class DeviceLoadSave {
 
 				let deviceTypes = this[Sym.COORDINATOR].deviceTypes;
 				let type = deviceTypes.type(devicedata.type) || deviceTypes.getBestDeviceType(device);
-				this[Sym.COORDINATOR].deviceTypes.assignTypeToDevice(type, device);
+				this[Sym.COORDINATOR].setDeviceType(device, type);
 			}); // endOf-devices
 
 			this.log.info("successfully loaded persisted devices data from '"+this.path+"'.");
@@ -180,10 +180,10 @@ class DeviceLoadSave {
 
 	onDeviceAdded(device) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
-		
+
 		let devicedata = this[FILE_DATA].find(d => d.address === device.address);
 		if (devicedata) return; // device already present ; skip.
-		
+
 		this.saveFile();
 	}
 	onDeviceRemoved(device) {
@@ -191,16 +191,16 @@ class DeviceLoadSave {
 
 		let devicedata = this[FILE_DATA].find(d => d.address === device.address);
 		if (!devicedata) return; // device already removed ; skip.
-		
+
 		this.saveFile();
 	}
 	onEndpointAdded(endpoint) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
-		
+
 		let devicedata = this[FILE_DATA].find(d => d.address === endpoint.device.address);
 		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === endpoint.id);
 		if (endpointdata) return; // endpoint already present ; skip.
-		
+
 		this.saveFile();
 	}
 	onClusterAdded(cluster) {
@@ -215,10 +215,10 @@ class DeviceLoadSave {
 	}
 	onAttributeAdded(attribute) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
-		
-		let devicedata = this[FILE_DATA].find(d => d.address === cluster.device.address);
-		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === cluster.endpoint.id);
-		let clusterdata = endpointdata && endpointdata.clusters.find(c => c.id === cluster.id);
+
+		let devicedata = this[FILE_DATA].find(d => d.address === attribute.device.address);
+		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === attribute.endpoint.id);
+		let clusterdata = endpointdata && endpointdata.clusters.find(c => c.id === attribute.cluster.id);
 		let attributedata = clusterdata && clusterdata.attributes.find(a => a.id === attribute.id);
 		if (attributedata) return; // attributedata already present ; skip.
 
@@ -228,16 +228,16 @@ class DeviceLoadSave {
 	onAttributeChanged(attribute, value, oldval) {
 		if (this[LOAD_IN_PROGRESS]) return; // skip
 		if (! (this[Sym.COORDINATOR].deviceTypes.isAttributeForDeviceIdentification(attribute.cluster.id, attribute.id))) return;
-		
-		let devicedata = this[FILE_DATA].find(d => d.address === cluster.device.address);
-		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === cluster.endpoint.id);
-		let clusterdata = endpointdata && endpointdata.clusters.find(c => c.id === cluster.id);
+
+		let devicedata = this[FILE_DATA].find(d => d.address === attribute.device.address);
+		let endpointdata = devicedata && devicedata.endpoints.find(e => e.id === attribute.endpoint.id);
+		let clusterdata = endpointdata && endpointdata.clusters.find(c => c.id === attribute.cluster.id);
 		let attributedata = clusterdata && clusterdata.attributes.find(a => a.id === attribute.id);
 		if (attributedata.value === value) return;
-		
+
 		this.saveFile();
 	}
-	
+
   get log() { return this[Sym.LOG]; }
 	toString() { return "[DeviceLoadSave]"; }
 }

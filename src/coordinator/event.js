@@ -51,7 +51,7 @@ class Event extends EventEmitter {
   }
 
   [Sym.EVENT_FIRE](args) {
-    this.log.info(''+this.device+''+this+' event fired.');
+    this.log.debug(''+this.device+''+this+' event fired.');
     this.emit(this.id, args);
 
   }

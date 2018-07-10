@@ -17,7 +17,7 @@ class Device extends EventEmitter {
       this[Sym.EVENTS] = {};
     }
 		get address() { return this[Sym.ADDRESS]; }
-    get hex() { return "0x"+(("0000"+Number(this.id).toString(16)).substr(-4,4)); }
+    get hex() { return "0x"+(("0000"+Number(this.address).toString(16)).substr(-4,4)); }
 		get ieee() { return this[Sym.IEEE]; }
 		set ieee(ieee) { if (this[Sym.IEEE] !== null) throw new Error(""+this+" ieee already set."); else this[Sym.IEEE] = ieee; }
 		get type() { return this[Sym.TYPE].id; }
@@ -90,6 +90,9 @@ class Device extends EventEmitter {
     [Sym.ON_VALUE_REMOVE](value) {
       this.emit('value_remove', value);
 		}
+    [Sym.ON_VALUE_CHANGE](value, newval, oldval) {
+      this.emit('value_change', value, newval, oldval);
+		}
     [Sym.ON_ACTION_ADD](action) {
       this.emit('action_add', action);
 		}
@@ -108,7 +111,9 @@ class Device extends EventEmitter {
     [Sym.ON_EVENT_FIRE](event, args) {
       this.emit(event.id, args);
     }
-
+    [Sym.ON_TYPE_CHANGE](newtypename, oldtypename) {
+      this.emit('type_change', newtypename, oldtypename);
+    }
 		[Sym.DESTROY]() {
 			this.emit('device_remove', this);
 		}

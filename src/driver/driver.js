@@ -195,6 +195,7 @@ class Driver extends EventEmitter {
 			if (response) {
 				if (typeof(rssi) !== 'undefined') response.rssi = rssi;
 				this.logger.debug("[Driver] response received: ", util.inspect(response, {breakLength: 10000}));
+				//this.logger.debug("[Driver] response raw data: ", data.str);
 				this.emit('response_'+response.type.name, response);
 				this.emit('response', response);
 

@@ -22,10 +22,11 @@ module.exports = {
 	ACTIONS:             Symbol("ACTIONS"),
 	VALUE:               Symbol("VALUE"),
 	VALUES:              Symbol("VALUES"),
-	VALUE_DEF:           Symbol("VALUE_DEF"),
+	DEFINITION:           Symbol("DEFINITION"),
 	VALUE_DATA:          Symbol("VALUE_DATA"),
 	SET_VALUE_DATA:      Symbol("SET_VALUE_DATA"),
 	VALUE_CB:            Symbol("VALUE_CB"),
+	VALUE_BOUND_ATTR:    Symbol("VALUE_BOUND_ATTR"),
 	EVENTS:              Symbol("EVENTS"),
 	VERIFIED:		         Symbol("VERIFIED"),
 
@@ -44,6 +45,7 @@ module.exports = {
 
 
 	// device callbacks calld by coordinator.
+	ON_TYPE_CHANGE:      Symbol("ON_TYPE_CHANGE"),
 	ON_ENDPOINT_ADD:     Symbol("ON_ENDPOINT_ADD"),
 	ON_CLUSTER_ADD:      Symbol("ON_CLUSTER_ADD"),
 	ON_ATTRIBUTE_ADD:    Symbol("ON_ATTRIBUTE_ADD"),
@@ -51,6 +53,7 @@ module.exports = {
 	ON_COMMAND_ADD:      Symbol("ON_COMMAND_ADD"),
 	ON_VALUE_ADD:        Symbol("ON_VALUE_ADD"),
 	ON_VALUE_REMOVE:     Symbol("ON_VALUE_REMOVE"),
+	ON_VALUE_CHANGE:     Symbol("ON_VALUE_CHANGE"),
 	ON_ACTION_ADD:       Symbol("ON_ACTION_ADD"),
 	ON_ACTION_REMOVE:    Symbol("ON_ACTION_REMOVE"),
 	ON_ACTION_EXEC:      Symbol("ON_ACTION_EXEC"),

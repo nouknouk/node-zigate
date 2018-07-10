@@ -116,7 +116,7 @@ class Coordinator extends EventEmitter {
           this.emit('stop');
         },
         (err) => {
-					this.log.info("attempt to stop zigate coordinator, while it is already stopped. no-op.");
+					this.log.warn("attempt to stop zigate coordinator, while it is already stopped. no-op.");
           return Promise.resolve("already stopped");
         }
       );
@@ -229,7 +229,7 @@ class Coordinator extends EventEmitter {
 			if (this.deviceTypes.attributesForDeviceIdentification.find((at) => at.cluster === cluster.id && at.attribute === id)) {
 				let besttype = this.deviceTypes.getBestDeviceType(cluster.device);
 				if (besttype.id !== device.type) {
-					this.deviceTypes.assignTypeToDevice(besttype, cluster.device);
+					this.setDeviceType(device, besttype);
 				}
 			}
 		}
@@ -303,6 +303,23 @@ class Coordinator extends EventEmitter {
 		this.emit('value_remove', value);
 		return value;
 	}
+	setValue(value, newval, updateBoundAttribute) {
+		let oldval = value[Sym.VALUE_DATA];
+    let promise = Promise.resolve(newval);
+    if (updateBoundAttribute && value[Sym.VALUE_BOUND_ATTR]) {
+      let attrval = value[Sym.VALUE_BOUND_ATTR].value;
+			if (value.definition && value.definition.attribute && value.definition.attribute.fromValue) {
+				attrval = value.definition.attribute.fromValue(attrval);
+			}
+      promise = promise.then( () => { updateBoundAttribute.write(attrval) })
+    }
+    promise = promise.then( () => {
+      value[Sym.SET_VALUE_DATA](newval);
+      value.device[Sym.ON_VALUE_CHANGE](value, newval, oldval);
+      this.emit('value_change', value, newval, oldval);
+    });
+    return promise;
+  }
 
 	addAction(device, id, definition) {
 		if (device.action(id)) throw new Error("cannot add action '"+id+"': action already exists.");
@@ -358,6 +375,15 @@ class Coordinator extends EventEmitter {
 		event.device[Sym.ON_EVENT_FIRE](event, args)
 		this.emit('event_fire', event, args);
 	}
+	setDeviceType(device, typedefinition) {
+		let oldtypename = device.type;
+		this.deviceTypes.assignTypeToDevice(typedefinition, device);
+		let newtypename = device.type;
+		if (newtypename !== oldtypename) {
+			device[Sym.ON_TYPE_CHANGE](newtypename, oldtypename);
+			this.emit('type_change', newtypename, oldtypename);
+		}
+	}
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///                   QUERIES
@@ -369,12 +395,12 @@ class Coordinator extends EventEmitter {
 	}
 	onResponseDevicesList(rep) {
 		// rep.devices = [ { id, address, ieee, battery, linkQuality}, ...]
-		
+
 		// 1a) find all devices instances no longer listed by the zigate's response
 		this.devices.filter( dev => !(rep.devices.find(zidev => zidev.address === dev.address)) )
 			// 1b) remove them from the coordinator
 			.forEach(olddevice => { this.removeDevice(olddev); });
-		
+
 		// 2a) find devices listed in zigate's response not yet present in coordinator
 		rep.devices.filter( zidev => !(this.device(zidev.address)))
 			// 2b) remove them from the coordinator
@@ -497,7 +523,7 @@ class Coordinator extends EventEmitter {
 						let besttype = this.deviceTypes.getBestDeviceType(device);
 						if (besttype.id !== device.type) {
 							this.log.debug("found better device type definition for '"+device+"' : "+besttype+". Upgrading...");
-							this.deviceTypes.assignTypeToDevice(besttype, device);
+							this.setDeviceType(device, besttype);
 						}
 					}
 				}
