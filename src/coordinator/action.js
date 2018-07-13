@@ -39,21 +39,27 @@ class Action extends EventEmitter {
   }
 
   [Sym.EXEC_ACTION](args) {
-    let ret = Promise.reject('no action defined');
-    if (action[Sym.ACTION_DEF].command) {
-      let command = this.device.command(command.endpointId, command.endpointId, command.endpointId);
+    let ret; 
+    let action_cmd = this[Sym.ACTION_DEF].command;
+    let action_exec = this[Sym.ACTION_DEF].exec;
+
+    if (action_cmd) {
+      let command = this.device.command(action_cmd.endpointId, action_cmd.endpointId, action_cmd.endpointId);
       if (command) {
-        let ret = commad.exec.apply(command, args);
+        let ret = command.exec.apply(command, args);
       }
       else {
         ret = Promise.reject("bound command not found.");
       }
     }
-    else if (def.exec) {
-      ret = Promise.resolve(() => { return def.exec.apply(this, args); });
+    else if (action_exec) {
+      ret = Promise.resolve().then(() => { return action_exec.apply(this, args); });
+    }
+    else {
+      ret = Promise.reject('no action defined');
     }
     this.emit('action_exec', this, args, ret);
-    this.log.info(''+this.device+''+this+' action executed.');
+    this.log.debug(''+this.device+''+this+' action executed.');
     return ret;
   }
 

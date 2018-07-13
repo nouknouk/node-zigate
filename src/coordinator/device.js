@@ -17,6 +17,7 @@ class Device extends EventEmitter {
       this[Sym.EVENTS] = {};
       this[Sym.BATTERY] = undefined;
     }
+    send(cmdname, options) { return this[Sym.COORDINATOR].send(cmdname, options); }
 		get address() { return this[Sym.ADDRESS]; }
     get hex() { return "0x"+(("0000"+Number(this.address).toString(16)).substr(-4,4)); }
 		get ieee() { return this[Sym.IEEE]; }
@@ -123,6 +124,7 @@ class Device extends EventEmitter {
     [Sym.ON_BATTERY_CHANGE](newval, oldval) {
       this.emit('battery_change', newval, oldval);
     }
+
 
 		get log() { return this[Sym.COORDINATOR].log; }
     toString() { return "[device_0x"+this[Sym.ADDRESS].toString(16)+"]"; }

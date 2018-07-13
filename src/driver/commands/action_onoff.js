@@ -22,7 +22,7 @@ module.exports = {
 
     if (cmd.on) cmd.payload.writeUInt8(1, 5);
     else if (cmd.off) cmd.payload.writeUInt8(0, 5);
-    else if (cmd.on) cmd.payload.writeUInt8(2, 5);
+    else if (cmd.toggle) cmd.payload.writeUInt8(2, 5);
 
 		return cmd;
 	},

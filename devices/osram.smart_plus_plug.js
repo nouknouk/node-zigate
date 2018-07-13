@@ -15,8 +15,9 @@ module.exports = {
   },
 
   actions: {
-    on: {},
-    off: {},
+    on: { exec: function() { return this.device.send('action_onoff', { address:this.device.address, endpoint: 0x03, on:true }); } },
+    off: { exec: function() { return this.device.send('action_onoff', { address:this.device.address, endpoint: 0x03, off:true }); } },
+    toggle: { exec: function() { return this.device.send('action_onoff', { address:this.device.address, endpoint: 0x03, toggle:true }); } },
   },
 
   events: {
