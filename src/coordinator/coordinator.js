@@ -384,7 +384,14 @@ class Coordinator extends EventEmitter {
 			this.emit('type_change', newtypename, oldtypename);
 		}
 	}
-
+  setDeviceBattery(device, isBattery) {
+    if (device[Sym.BATTERY] !== isBattery) {
+      let oldBattery = device[Sym.BATTERY];
+      device[Sym.BATTERY] = isBattery;
+      device[Sym.ON_BATTERY_CHANGE](isBattery, oldBattery);
+      this.emit('device_battery_change', isBattery, oldBattery);
+    }
+  }
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
 	///                   QUERIES
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -405,6 +412,9 @@ class Coordinator extends EventEmitter {
 		rep.devices.filter( zidev => !(this.device(zidev.address)))
 			// 2b) remove them from the coordinator
 			.forEach(zidev => { this.addDevice(zidev.address, dev.ieee); });
+
+    // 3) for each device, update battery info
+    rep.devices.forEach(zidev => { this.setDeviceBattery(this.device(zidev.address), zidev.battery); });
 
 		return rep;
 	}
@@ -548,7 +558,12 @@ class Coordinator extends EventEmitter {
 				else {
 						this.log.debug(""+device+": device_announce received but skipped as this device is already registered.");
 				}
+        device.battery = !rep.mainsPowerSource
 				break;
+      case 'descriptor_node':
+        let dev = this.device(rep.address);
+        dev.battery = !rep.ACpowerCource;
+        break;
 
 			case 'devices_list':
 				// {"devices_list",0x4d, id, address, ieee, battery, linkQuality}

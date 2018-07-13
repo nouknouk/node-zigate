@@ -15,12 +15,15 @@ class Device extends EventEmitter {
       this[Sym.VALUES] = {};
       this[Sym.ACTIONS] = {};
       this[Sym.EVENTS] = {};
+      this[Sym.BATTERY] = undefined;
     }
 		get address() { return this[Sym.ADDRESS]; }
     get hex() { return "0x"+(("0000"+Number(this.address).toString(16)).substr(-4,4)); }
 		get ieee() { return this[Sym.IEEE]; }
 		set ieee(ieee) { if (this[Sym.IEEE] !== null) throw new Error(""+this+" ieee already set."); else this[Sym.IEEE] = ieee; }
 		get type() { return this[Sym.TYPE].id; }
+    get battery() { return this[Sym.BATTERY]; }
+    set battery(isbattery) { return this[Sym.COORDINATOR].setDeviceBattery(this, isbattery); }
 
 		get endpoints() { return Object.values(this[Sym.ENDPOINTS]); }
 		endpoint(id) { return this[Sym.ENDPOINTS][id]; }
@@ -117,6 +120,9 @@ class Device extends EventEmitter {
 		[Sym.DESTROY]() {
 			this.emit('device_remove', this);
 		}
+    [Sym.ON_BATTERY_CHANGE](newval, oldval) {
+      this.emit('battery_change', newval, oldval);
+    }
 
 		get log() { return this[Sym.COORDINATOR].log; }
     toString() { return "[device_0x"+this[Sym.ADDRESS].toString(16)+"]"; }

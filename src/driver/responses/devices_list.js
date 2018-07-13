@@ -10,7 +10,7 @@ module.exports = {
 			device.id = reader.nextUInt8();
 			device.address = reader.nextUInt16BE();
 			device.ieee = reader.nextBuffer(8).toString('hex');
-			device.battery = reader.nextUInt8();
+			device.battery = reader.nextUInt8() === 0;
 			device.linkQuality = reader.nextUInt8();
 
 			rep.devices.push(device);

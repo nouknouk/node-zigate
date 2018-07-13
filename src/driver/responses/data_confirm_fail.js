@@ -4,7 +4,7 @@ module.exports = {
 	id: 0x8702,
 	name: "data_confirm_fail",
 	parse: function(reader, rep) {
-		rep.status = Enum.COMMAND_STATUS(reader.nextUInt8(), new Error("data_confirm_fail: unknown status"));
+		rep.failstatus = reader.nextUInt8();
 		rep.endpointSource = reader.nextUInt8();
 		rep.endpoint = reader.nextUInt8();
 		rep.addressMode = Enum.ADDRESS_MODE(reader.nextUInt8());

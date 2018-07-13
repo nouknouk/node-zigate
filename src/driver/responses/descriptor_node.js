@@ -39,12 +39,12 @@ module.exports = {
 		var descriptorCapability = reader.nextUInt8();
 
 		var macFlags = reader.nextUInt8();
-		rep.alternatePanCoordinator = !!((macFlags >> 7) & 0x1);
-		rep.deviceType =              !!((macFlags >> 6) & 0x1);
-		rep.powerSource =             !!((macFlags >> 5) & 0x1);
-		rep.receiverOnWhenIdle =      !!((macFlags >> 4) & 0x1);
-		rep.securityCapability =      !!((macFlags >> 1) & 0x1);
-		rep.allocateAddress =         !!( macFlags       & 0x1);
+		rep.alternatePanCoordinator = !!((macFlags >> 7) & 0x1);   // is node able to act as co-ordinator 
+		rep.fullFunctionDevice =      !!((macFlags >> 6) & 0x1);   // true = full function device ; false = reduced
+		rep.ACpowerCource =           !!((macFlags >> 5) & 0x1);   // true = AC powered ; false = battery
+		rep.receiverOnWhenIdle =      !!((macFlags >> 4) & 0x1);   
+		rep.highsecurityCapability =  !!((macFlags >> 1) & 0x1);   // true = high security
+		rep.allocateAddress =         !!( macFlags       & 0x1);   // should address be allocated to node
 
 		rep.maxBufferSize = reader.nextUInt8();
 

@@ -29,6 +29,8 @@ module.exports = {
 	VALUE_BOUND_ATTR:    Symbol("VALUE_BOUND_ATTR"),
 	EVENTS:              Symbol("EVENTS"),
 	VERIFIED:		         Symbol("VERIFIED"),
+  BATTERY:             Symbol("BATTERY"),
+  ON_BATTERY_CHANGE:   Symbol("ON_BATTERY_CHANGE"),
 
 	// functions & data in mappings
 	SETUP:               Symbol("SETUP"),
