@@ -496,6 +496,12 @@ class Coordinator extends EventEmitter {
 
   onDriverResponse(rep) {
 
+		let deviceFromAddress = rep.address && this.device(rep.address);
+		if (deviceFromAddress) {
+			if (rep.type.name) this.emit('device_message_'+rep.type.name, deviceFromAddress, rep);
+			this.emit('device_message', deviceFromAddress, rep);
+		}
+
     switch (rep.type.name) {
       case 'object_cluster_list':
 				// {"type":{"id":0x8003,"name":"object_cluster_list"},"srcEndpoint":1,"profileId":260,"clusters":[0,1,3,4,5,6,8,25,257,4096,768,513,516]}
