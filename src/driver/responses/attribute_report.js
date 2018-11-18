@@ -93,8 +93,12 @@ module.exports = {
 
 			case 0x20: // uint8
 			case 0x21: // uint16
-			case 0x22: // uint32
+			case 0x22: // uint24
+			case 0x23: // uint32
+			case 0x24: // uint40
 			case 0x25: // uint48
+			case 0x26: // uint56
+			case 0x27: // uint64
 				rep.value = rep.valueData.readUIntBE(0, rep.valueData.length);
 				break;
 
