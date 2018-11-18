@@ -381,9 +381,10 @@ class Coordinator extends EventEmitter {
 		let oldtypename = device.type;
 		this.deviceTypes.assignTypeToDevice(typedefinition, device);
 		let newtypename = device.type;
+    this.log.debug("setDeviceType("+device+"): from '"+oldtypename+"' to '"+newtypename+"'...");
 		if (newtypename !== oldtypename) {
 			device[Sym.ON_TYPE_CHANGE](newtypename, oldtypename);
-			this.emit('type_change', newtypename, oldtypename);
+			this.emit('type_change', device, newtypename, oldtypename);
 		}
 	}
   setDeviceBattery(device, isBattery) {
@@ -391,7 +392,7 @@ class Coordinator extends EventEmitter {
       let oldBattery = device[Sym.BATTERY];
       device[Sym.BATTERY] = isBattery;
       device[Sym.ON_BATTERY_CHANGE](isBattery, oldBattery);
-      this.emit('device_battery_change', isBattery, oldBattery);
+      this.emit('device_battery_change', device, isBattery, oldBattery);
     }
   }
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////
