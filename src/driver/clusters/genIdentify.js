@@ -6,7 +6,7 @@ triggerEffectEnum= {
 	0x0b: 'channel change',
 	0xfe: 'finish effect',
 	0xff: 'stop effect',
-	
+
 };
 
 module.exports = {
@@ -28,4 +28,3 @@ module.exports = {
 		0x00: { "id": 0, "name": "identifyQueryRsp", "mandatory": true, "specific": false, params: [{name: "timeout", "type": "uint16", unit:'second'}],  }
 	},
 };
-

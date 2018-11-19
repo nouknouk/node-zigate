@@ -7,7 +7,7 @@ class ZiAttribute extends EventEmitter {
     this[Sym.ID] = id;
     this[Sym.CLUSTER] = cluster;
     this[Sym.TYPE] = (cluster && cluster.type && cluster.type.attributes && cluster.type.attributes[id]) || null;
-		this[Sym.ATTR_DATA] = (typeof(value) !== 'undefined') ? value : ((this.type && typeof(this.type['default']) !== "undefined" && this.type['default']) || null);
+		this[Sym.ATTR_DATA] = (typeof(value) !== 'undefined') ? value : ((this.type && typeof(this.type['default']) !== "undefined" && this.type['default']) || undefined);
 		this[Sym.VERIFIED] = !!verified;
   }
 
