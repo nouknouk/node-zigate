@@ -45,36 +45,36 @@ response received:  descriptor_node(0x8042), sequence:109, address:0x6e, manufac
 
 inClusters:4096,0,3,4,5,6,2820,64527, outClusters:25
 
-      
+
 
 // 01 81 40   complete  00    type  05    id    af 00     20 00 00 4b
 
 zigate.zigate.driver.send('attribute_discovery', {address:0x6e25, endpoint:3, cluster:0, firstId:18})
 
 cluster 0:    genBasic
-  type = 0x20   id = 0x00   
-  type = 0x20   id = 0x01   
-  type = 0x20   id = 0x02   
-  type = 0x20   id = 0x03   
-  type = 0x42   id = 0x04   
-  type = 0x42   id = 0x05   
-  type = 0x42   id = 0x06   
-  type = 0x30   id = 0x07   
-  type = 0x10   id = 0x12   
+  type = 0x20   id = 0x00
+  type = 0x20   id = 0x01
+  type = 0x20   id = 0x02
+  type = 0x20   id = 0x03
+  type = 0x42   id = 0x04
+  type = 0x42   id = 0x05
+  type = 0x42   id = 0x06
+  type = 0x30   id = 0x07
+  type = 0x10   id = 0x12
   type = 0x42   id = 0x4000
 
 cluster 3:    genDeviceTempCfg
-  type = 0x21   id = 0x00   
+  type = 0x21   id = 0x00
 
 cluster 4:    genGroups
-  type = 0x18   id = 0x00   
+  type = 0x18   id = 0x00
 
 cluster 5:    genScenes
-  type = 0x20   id = 0x00   
-  type = 0x20   id = 0x01   
-  type = 0x21   id = 0x02   
-  type = 0x02   id = 0x03   
-  type = 0x18   id = 0x04   
+  type = 0x20   id = 0x00
+  type = 0x20   id = 0x01
+  type = 0x21   id = 0x02
+  type = 0x02   id = 0x03
+  type = 0x18   id = 0x04
 
 cluster 6:    genOnOff
   type = 0x10   id = 0x00       RO  Mandatory bool   OnOff
@@ -87,18 +87,18 @@ cluster 2820: 0xb04   genElectricalMeasurement
 
 cluster 64527:  0xfc0f
   ????
-  
+
 out cluster 25: 0x 19 (with directon =1 ; cli_to_srv)   OTA Upgrade
-  type = 0xfo   id = 0x00   
-  type = 0x23   id = 0x01   
-  type = 0x23   id = 0x02   
-  type = 0x21   id = 0x03   
-  type = 0x23   id = 0x04   
-  type = 0x21   id = 0x05 
-  type = 0x30   id = 0x06 
-  type = 0x21   id = 0x07 
-  type = 0x21   id = 0x08 
-  type = 0x21   id = 0x09 
+  type = 0xfo   id = 0x00
+  type = 0x23   id = 0x01
+  type = 0x23   id = 0x02
+  type = 0x21   id = 0x03
+  type = 0x23   id = 0x04
+  type = 0x21   id = 0x05
+  type = 0x30   id = 0x06
+  type = 0x21   id = 0x07
+  type = 0x21   id = 0x08
+  type = 0x21   id = 0x09
 
 
 
@@ -108,9 +108,9 @@ out cluster 25: 0x 19 (with directon =1 ; cli_to_srv)   OTA Upgrade
 
 
 
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 From zigate.fr
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   Clusters disponibles
 
