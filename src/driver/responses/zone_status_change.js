@@ -35,7 +35,6 @@ module.exports = {
     while (reader.isMore()) {
       rep.delay.push(reader.nextUInt16BE())
     }
-    console.log("zone_status_change: delay.length=", rep.delay.length, "; delay=",JSON.stringify(rep.delay));
   },
 };
 
