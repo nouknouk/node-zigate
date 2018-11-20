@@ -88,6 +88,13 @@ module.exports = {
 				break;
 
 			case 0x18: // bitmap8
+			case 0x19: // bitmap16
+			case 0x1A: // bitmap24
+			case 0x1B: // bitmap32
+			case 0x1C: // bitmap40
+			case 0x1D: // bitmap48
+			case 0x1E: // bitmap56
+			case 0x1F: // bitmap64
 				rep.value = rep.valueData.readUIntBE(0, rep.valueData.length);
 				break;
 

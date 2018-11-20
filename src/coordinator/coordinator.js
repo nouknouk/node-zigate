@@ -548,6 +548,36 @@ class Coordinator extends EventEmitter {
 				}
 				break;
 
+      case 'zone_status_change':
+      // zone_status_change(0x8401), sequence:12, endpoint:1, cluster:ssIasZone(0x500), addressmode:short(0x2), address:0x7c97, zonestatus:1, extendedstatus:0, zoneid:255, delay:0, rssi:84
+      // { "cluster": 1280, "id": 2, "name": "zoneStatus", "type": "bitmap16", "mandatory": null, "read": null, "write": null, "specific": null, "unit": null },
+
+      var device = this.device(rep.address) || this.addDevice(rep.address);
+      var endpoint = device.endpoint(rep.endpoint) || device.addEndpoint(rep.endpoint, /*verified*/ true);
+      endpoint.verified = true;
+      var cluster = endpoint.cluster(rep.cluster.id) || endpoint.addCluster(rep.cluster.id, /*verified*/ true);
+      cluster.verified = true;
+
+      var attribute = cluster.attribute(/*zoneStatus*/ 2);
+      if (!attribute) {
+        attribute = cluster.addAttribute(/*zoneStatus*/ 2, rep.zonestatus, /*verified*/ true);
+      }
+      else {
+        let oldval = attribute.value;
+        attribute[Sym.SET_ATTR_DATA](rep.zonestatus);
+        attribute.device[Sym.ON_ATTRIBUTE_CHANGE](attribute, rep.zonestatus, oldval)
+        this.emit('attribute_change', attribute, rep.zonestatus, oldval);
+
+        if (this.deviceTypes.attributesForDeviceIdentification.find((at) => at.cluster === cluster.id && at.attribute === rep.zonestatus)) {
+          let besttype = this.deviceTypes.getBestDeviceType(device);
+          if (besttype.id !== device.type) {
+            this.log.debug("found better device type definition for '"+device+"' : "+besttype+". Upgrading...");
+            this.setDeviceType(device, besttype);
+          }
+        }
+      }
+      break;
+
 			case 'device_remove':
 				// {"device_remove", 0x8048, ieee, rejoin, rssi}
 				var device = this.devices.find(d => d.ieee === rep.ieee);
