@@ -187,14 +187,23 @@ class Coordinator extends EventEmitter {
 		}
 		return device;
 	}
-	removeDevice(address) {
-		let device = this[Sym.DEVICES][address];
+	removeDevice(deviceOrAddress) {
+		let address = (deviceOrAddress && deviceOrAddress.address) ? deviceOrAddress.address : deviceOrAddress;
+		let device = this.device(address);
 		if (device) {
-			delete this[Sym.DEVICES][address];
-			device[Sym.DESTROY]();
-			this.emit('device_remove', device);
+			this.log.debug(""+device+" : device remove request sent");
+			this.emit('device_remove_pending', device);
+
+			return driver.send({
+				type: 'device_remove',
+				address: device.hex,
+				extended: device.ieee,
+			});
 		}
-		return device;
+		else {
+			console.error("unknown device or address ",deviceOrAddress);
+			return Promise.reject("UNKNOWN_DEVICE");
+		}
 	}
 
 	addEndpoint(device, id, verified) {
@@ -581,9 +590,14 @@ class Coordinator extends EventEmitter {
 			case 'device_remove':
 				// {"device_remove", 0x8048, ieee, rejoin, rssi}
 				var device = this.devices.find(d => d.ieee === rep.ieee);
-				let ok = this.removeDevice(device.address);
-				if (!ok) {
-					this.log.warn("device_remove received from '"+rep.ieee+"' but device not registered.");
+				if (device) {
+					delete this[Sym.DEVICES][address];
+					device[Sym.DESTROY]();
+					this.log.info(""+device+""+event+" removed from network (rejoin="+rep.rejoin+")");
+					this.emit('device_remove', device, rep.rejoin);
+				}
+				else {
+					this.log.error("device_remove received from '"+rep.ieee+"' but device is not registered.");
 				}
 				break;
 
