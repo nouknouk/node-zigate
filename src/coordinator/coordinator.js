@@ -172,22 +172,7 @@ class Coordinator extends EventEmitter {
     }
 	}
 
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-	///                   MANAGE DEVICES' DATA
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-	addDevice(address, optionalIeee) {
-    let device = this.device(address);
-		if (!device) {
-			device = new Device(this, address);
-			if (typeof(optionalIeee) !== 'undefined') { device.ieee = optionalIeee; }
-			this[Sym.DEVICES][address] = device;
-			this.log.debug(""+device+" : device created");
-			this.emit('device_add', device);
-		}
-		return device;
-	}
-	removeDevice(deviceOrAddress) {
+	exclude(deviceOrAddress) {
 		let address = (deviceOrAddress && deviceOrAddress.address) ? deviceOrAddress.address : deviceOrAddress;
 		let device = this.device(address);
 		if (device) {
@@ -203,6 +188,39 @@ class Coordinator extends EventEmitter {
 		else {
 			console.error("unknown device or address ",deviceOrAddress);
 			return Promise.reject("UNKNOWN_DEVICE");
+		}
+	}
+
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+	///                   MANAGE DEVICES' DATA
+	///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	addDevice(address, optionalIeee) {
+    let device = this.device(address);
+		if (!device) {
+			device = new Device(this, address);
+			if (typeof(optionalIeee) !== 'undefined') { device.ieee = optionalIeee; }
+			this[Sym.DEVICES][address] = device;
+			this.log.debug(""+device+" : device created");
+			this.emit('device_add', device);
+		}
+		return device;
+	}
+
+	removeDevice(device, rejoin) {
+		rejoin = !!rejoin;
+		// {"device_remove", 0x8048, ieee, rejoin, rssi}
+		var device = this.devices.find(d => d.address === device.address);
+		if (device) {
+			delete this[Sym.DEVICES][address];
+			device[Sym.DESTROY]();
+			this.log.info(""+device+" removed from network (rejoin="+rejoin+")");
+			this.emit('device_remove', device, rejoin);
+			return true;
+		}
+		else {
+			this.log.error("removeDevice("+device+"): device is not registered in coordinator.");
+			return false;
 		}
 	}
 
@@ -591,13 +609,10 @@ class Coordinator extends EventEmitter {
 				// {"device_remove", 0x8048, ieee, rejoin, rssi}
 				var device = this.devices.find(d => d.ieee === rep.ieee);
 				if (device) {
-					delete this[Sym.DEVICES][address];
-					device[Sym.DESTROY]();
-					this.log.info(""+device+""+event+" removed from network (rejoin="+rep.rejoin+")");
-					this.emit('device_remove', device, rep.rejoin);
+					this.removeDevice(device, rejoin);
 				}
 				else {
-					this.log.error("device_remove received from '"+rep.ieee+"' but device is not registered.");
+					this.log.error("device_remove received from '"+rep.ieee+"' but device is not registered in coordinator.");
 				}
 				break;
 
