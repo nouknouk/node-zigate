@@ -179,7 +179,7 @@ class Coordinator extends EventEmitter {
 			this.log.debug(""+device+" : device remove request sent");
 			this.emit('device_remove_pending', device);
 
-			return driver.send({
+			return this.driver.send({
 				type: 'device_remove',
 				address: device.hex,
 				extended: device.ieee,
@@ -212,7 +212,7 @@ class Coordinator extends EventEmitter {
 		// {"device_remove", 0x8048, ieee, rejoin, rssi}
 		var device = this.devices.find(d => d.address === device.address);
 		if (device) {
-			delete this[Sym.DEVICES][address];
+			delete this[Sym.DEVICES][device.address];
 			device[Sym.DESTROY]();
 			this.log.info(""+device+" removed from network (rejoin="+rejoin+")");
 			this.emit('device_remove', device, rejoin);
@@ -609,7 +609,7 @@ class Coordinator extends EventEmitter {
 				// {"device_remove", 0x8048, ieee, rejoin, rssi}
 				var device = this.devices.find(d => d.ieee === rep.ieee);
 				if (device) {
-					this.removeDevice(device, rejoin);
+					this.removeDevice(device, rep.rejoin);
 				}
 				else {
 					this.log.error("device_remove received from '"+rep.ieee+"' but device is not registered in coordinator.");
