@@ -266,7 +266,7 @@ class Coordinator extends EventEmitter {
 	}
 	writeAttribute(attribute, value) {
 		let oldval = attribute.value;
-		return driver.send({
+		return this.driver.send({
 			type: 'attribute_write',
 			address: attribute.device[Sym.ADDRESS],
 			endpoint:attribute.endpoint.id,
