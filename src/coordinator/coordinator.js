@@ -92,7 +92,7 @@ class Coordinator extends EventEmitter {
       .then(()=> {
         this[Sym.STATUS] = 'started';
         this.log.info("zigbee network is up ; starting devices discovery...");
-				this.driver.send('devices_list');
+				this.driver.send('network_state');
       },
       (err)=> {
         this[Sym.STATUS] = 'stopped';
@@ -633,6 +633,27 @@ class Coordinator extends EventEmitter {
         dev.battery = !rep.ACpowerCource;
         break;
 
+			case 'network_state':
+				// boot sequence: check if first start of the zigate, or after a 'erase_persistent_data'
+				// if no network setup yet (ie. ieeepanid == '0000000000000000'), we need first to start a new network
+				if (!rep.networkUp) {
+					this.log.error("network_state returned networkUp = false. Panic mode.");
+				}
+				else if (rep.ieeepanid === '0000000000000000') {
+					this.log.warn("no network defined yet ; starting a new one ( = one shot zigate initialization)");
+					this.driver.send('start_network');
+				}
+				else {
+						this.log.debug("(existing) network is ready ; gathering devices' list.");
+						this.driver.send('devices_list');
+				}
+				break;
+			case 'network_joined':
+				// response to initial new network start (cf. above)
+				// rep.status.name = [ 0: 'joined_existing_network' or 1: 'formed_new_network']
+				this.log.warn("new network created ; gathering devices' list.");
+				this.driver.send('devices_list');
+				break;
 			case 'devices_list':
 				// {"devices_list",0x4d, id, address, ieee, battery, linkQuality}
 				this.onResponseDevicesList(rep);
