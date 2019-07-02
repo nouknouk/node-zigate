@@ -109,6 +109,11 @@ Enum.create = function(enumsetname, definitions) {
 };
 
 
+Enum.create('CERTIFICATION', [
+	[1, "CE", ],
+	[2, "FCC", ],
+]);
+
 Enum.create('STATUS', [
 	[0, "success", ],
 	[1, "invalid_params", ],
@@ -224,7 +229,7 @@ Enum.create('ATTRIBUTE_TYPE', [
 	{id: 0x50, name: 'set',        length:null, },
 	{id: 0x51, name: 'bag',        length:null, },
 	{id: 0xE0, name: 'time',       length:4,    }, // 1 byte: hour(00...23)     ; 1 byte: minutes(00...59) ; 1 byte: seconds(00...59) ; 1 byte: 100th(00...99)
-	{id: 0xE1, name: 'date',       length:4,    }, // 1 byte: year(1900...2155) ; 1 byte: month(01...12)   ; 1 byte: day(01...31)     ; 1 byte: weekday(01(monday)...07(sunday) ) ; 
+	{id: 0xE1, name: 'date',       length:4,    }, // 1 byte: year(1900...2155) ; 1 byte: month(01...12)   ; 1 byte: day(01...31)     ; 1 byte: weekday(01(monday)...07(sunday) ) ;
 	{id: 0xE2, name: 'utc',        length:4,    }, // unsigned 32bit number of seconds  since 1st of January, 2000 00:00:00 UTC
 	{id: 0xE8, name: 'cluster',    length:2,    },
 	{id: 0xE9, name: 'attribute',  length:2,    },
