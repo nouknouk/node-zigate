@@ -1,5 +1,5 @@
 module.exports = {
-	id: 0x0016,
+	id: 0x0018,
 	name: "led_set",
 	statusExpected: true,
 
