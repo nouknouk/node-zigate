@@ -4,7 +4,7 @@
 var assert = require('assert');
 
 function BufferReader(buffer) {
-    buffer = buffer || new Buffer(0);
+    buffer = buffer || Buffer.alloc(0);
     assert(Buffer.isBuffer(buffer), 'A Buffer must be provided');
     this.buf = buffer;
     this.offset = 0;
@@ -41,7 +41,7 @@ BufferReader.prototype.nextAll =
 BufferReader.prototype.restAll = function() {
     var remain = this.buf.length - this.offset;
     assert(remain >= 0, 'Buffer is not in normal state: offset > totalLength');
-    var buf = new Buffer(remain);
+    var buf = Buffer.alloc(remain);
     this.buf.copy(buf, 0, this.offset);
     this.offset = this.buf.length;
     return buf;
@@ -51,7 +51,7 @@ BufferReader.prototype.restAll = function() {
 BufferReader.prototype.nextBuffer = function(length) {
     assert(length >= 0, 'Length must be no negative');
     assert(this.offset + length <= this.buf.length, "Out of Original Buffer's Boundary");
-    var buf = new Buffer(length);
+    var buf = Buffer.alloc(length);
     this.buf.copy(buf, 0, this.offset, this.offset + length);
     this.offset += length;
     return buf;
@@ -68,7 +68,7 @@ BufferReader.prototype.nextString = function(length, encoding) {
 BufferReader.prototype.nextStringZero = function(encoding) {
     // Find null by end of buffer
     for(var length = 0; length + this.offset < this.buf.length && this.buf[this.offset + length] !== 0x00; length++) ;
-    
+
     assert(length <= this.buf.length && this.buf[this.offset + length] === 0x00, "Out of Original Buffer's Boundary");
 
     this.offset += length + 1;
