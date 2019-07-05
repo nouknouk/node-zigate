@@ -213,7 +213,8 @@ class Driver extends EventEmitter {
 				return false;
 			}
 		} catch (e) {
-					this.logger.error("[Driver] exception while parsing frame: ", e);
+					this.logger.error("[Driver] exception while parsing frame: "+ e);
+					this.logger.error(e.stack);
 					this.logger.error("[Driver] raw data: "+raw_in.toString('hex').replace(/../g, "$& "));
 		}
 	}

@@ -70,9 +70,9 @@ class Coordinator extends EventEmitter {
 		if (!this[Sym.VERSION_MAJOR] || !this[Sym.VERSION_INSTALLER]) return null;
 
 		let major = Math.floor(this[Sym.VERSION_INSTALLER] /16 /16);
-		let minot = this[Sym.VERSION_INSTALLER] - Math.floor(this[Sym.VERSION_INSTALLER] /16 /16)
+		let minor = this[Sym.VERSION_INSTALLER] - major * 16 * 16;
 
-		firm +=  + major.toString(16)+"."+minor.toString(16);
+		firm +=  + major.toString(16)+"."+(minor < 16 ? '0' : '') + minor.toString(16);
 		return firm;
 	}
   get status() { return this[Sym.STATUS]; }
@@ -548,6 +548,7 @@ class Coordinator extends EventEmitter {
 				this[Sym.VERSION_MAJOR] = rep.major;
 				this[Sym.VERSION_INSTALLER] = rep.installer;
 				this.log.debug("version info received. major="+rep.major+" ; installer="+rep.installer+" ; firmware=", this.firmware);
+        break;
       case 'object_cluster_list':
 				// {"type":{"id":0x8003,"name":"object_cluster_list"},"srcEndpoint":1,"profileId":260,"clusters":[0,1,3,4,5,6,8,25,257,4096,768,513,516]}
 				this.log.error("'object_cluster_list' received but I don't know to which device the clusters are bound.");
