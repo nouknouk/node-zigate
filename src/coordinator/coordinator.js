@@ -454,7 +454,7 @@ class Coordinator extends EventEmitter {
 		// 2a) find devices listed in zigate's response not yet present in coordinator
 		rep.devices.filter( zidev => !(this.device(zidev.address)))
 			// 2b) remove them from the coordinator
-			.forEach(zidev => { this.addDevice(zidev.address, dev.ieee); });
+			.forEach(zidev => { this.addDevice(zidev.address, zidev.ieee); });
 
     // 3) for each device, update battery info
     rep.devices.forEach(zidev => { this.setDeviceBattery(this.device(zidev.address), zidev.battery); });
