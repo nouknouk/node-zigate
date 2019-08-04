@@ -7,7 +7,7 @@ module.exports = {
 		if (typeof(options.led) === 'undefined') throw new Error('missing led parameter');
 		cmd.led = !!options.led;
 		cmd.payload = Buffer.alloc(1);
-		cmd.payload.writeUInt8BE(cmd.led ? 1 : 0);
+		cmd.payload.writeUInt8(cmd.led ? 1 : 0);
 		return cmd;
 	},
 };
