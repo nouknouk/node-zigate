@@ -168,7 +168,6 @@ class Driver extends EventEmitter {
 
 	parseFrame(raw_in) {
 		try {
-			this.logger.debug("[Driver] received raw frame: "+raw_in.toString('hex').replace(/../g, "$& "));
 			var data = this.unescapeData(raw_in);
 			data.str = data.toString('hex').replace(/../g, "$& ");
 			this.logger.debug("[Driver] unescaped frame: "+data.str);
@@ -388,13 +387,14 @@ class Driver extends EventEmitter {
 	}
 
 	emitError(err, autoclose) {
-		this.logger.error("[Driver] ERROR: ", err);
+		this.logger.error("[Driver] ERROR: ", ""+err);
 	  process.nextTick(this.emit.bind(this, 'error', err));
 	  if (autoclose && this.isOpen) {
 	    this.serial.close();
 	  }
 	}
 	onSerialData(raw_in) {
+		this.logger.debug("[Driver] received raw frame: "+raw_in.toString('hex').replace(/../g, "$& "));
 		this.emit('raw_in', raw_in.slice(1));
 		this.parseFrame(raw_in);
 	}
@@ -419,7 +419,6 @@ class Driver extends EventEmitter {
 			if (data[i] === FRAME_START && i>0) {
 				this.logger.warn("[Driver] FRAME_START(0x01) byte found in the middle of the data (pos "+i+"): 1st message after a ZiGate reset ?");
 				this.logger.warn("[Driver]   => raw data = "+data.toString('hex').replace(/../g, "$& "));
-				// this.parseFrame(data.slice(0, i));
 				return this.unescapeData(data.slice(i));
 			}
 			else if (data[i] === FRAME_ESCAPE) {

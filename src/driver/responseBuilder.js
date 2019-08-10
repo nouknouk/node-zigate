@@ -82,7 +82,14 @@ class ResponseBuilder {
 			}},
 		});
 
-		responseType.parse(reader, rep);
+    try {
+		  responseType.parse(reader, rep);
+    }
+    catch (e) {
+      ResponseBuilder.LOGS.error("[ResponseBuilder_"+responseType+"] EXCEPTION while parsing response: "+e);
+      ResponseBuilder.LOGS.error("[ResponseBuilder_"+responseType+"] payload = "+payload.toString('hex').replace(/../g, "$& "));
+      throw e; 
+    }
 
 		if (reader.isMore()) {
 			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] the "+(payload.length - reader.tell())+" last bytes of data have not been parsed:");
