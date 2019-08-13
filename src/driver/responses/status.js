@@ -10,7 +10,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8000,
 	name: "status",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.status = Enum.STATUS(reader.nextUInt8(), (id)=>{ return {id:'0x'+id.toString(16), name:"unknown"}; });
 		rep.sequence = reader.nextUInt8();
 		rep.relatedTo = Enum.COMMANDS(reader.nextUInt16BE(), {id:0, name:'null'});

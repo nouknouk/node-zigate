@@ -3,7 +3,7 @@ module.exports = {
 	name: "device_announce",
 	
 	
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.address = reader.nextUInt16BE();
 		rep.ieee = reader.nextBuffer(8).toString('hex');
 

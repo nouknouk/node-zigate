@@ -66,6 +66,7 @@ class Coordinator extends EventEmitter {
   get status() { return this[Sym.STATUS]; }
   get started() { return this.driver.isOpen }
 	get devices() { return Object.values(this[Sym.DEVICES]); }
+	get firmware() { return this.driver.firmware; }
 	device(address) { return this[Sym.DEVICES][address] || null; }
 
   send(cmdname, options) { return this.driver.send(cmdname, options); }

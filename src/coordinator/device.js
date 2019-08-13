@@ -1,3 +1,4 @@
+const util = require('util');
 const EventEmitter = require('events').EventEmitter;
 const Sym = require('./symbols.js');
 const ZiEndpoint = require('./ziendpoint.js');
@@ -128,19 +129,19 @@ class Device extends EventEmitter {
 
 		get log() { return this[Sym.COORDINATOR].log; }
     toString() { return "[device_0x"+this[Sym.ADDRESS].toString(16)+"]"; }
-    inspect() {
+    [util.inspect.custom](depth, opts) {
       let out = ''+this+' ('+this.type+')\n';
       this.endpoints.forEach(e => {
         out += '    '+e+'\n';
         e.clusters.forEach((c) => {
           out += '        '+c+'\n';
-          c.attributes.forEach((a) => { out += '            '+a.inspect()+'\n'});
+          c.attributes.forEach((a) => { out += '            '+a[util.inspect.custom]()+'\n'});
           c.commands.forEach((c) => { out += '            '+c+'\n'});
         });
       });
-      this.values.forEach((v) => { out += '    '+v.inspect()+'\n'});
-      this.actions.forEach((a) => { out += '    '+a.inspect()+'\n'});
-      this.events.forEach((e) => { out += '    '+e.inspect()+'\n'});
+      this.values.forEach((v) => { out += '    '+util.inspect(v)+'\n'});
+      this.actions.forEach((a) => { out += '    '+util.inspect(a)+'\n'});
+      this.events.forEach((e) => { out += '    '+util.inspect(e)+'\n'});
 
       return out;
     }

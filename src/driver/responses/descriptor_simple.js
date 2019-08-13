@@ -6,7 +6,7 @@
 module.exports = {
 	id: 0x8043,
 	name: "descriptor_simple",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.sequence = reader.nextUInt8();
 		rep.status = reader.nextUInt8();
 		rep.address = reader.nextUInt16BE();

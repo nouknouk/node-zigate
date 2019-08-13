@@ -3,7 +3,7 @@ module.exports = {
 	name: "descriptor_power",
 	
 	
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.sequence = reader.nextUInt8();
 		rep.status = reader.nextUInt8();
 		var flags = reader.nextUInt16BE();

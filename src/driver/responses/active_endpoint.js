@@ -3,7 +3,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8045,
 	name: "active_endpoint",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.sequence = reader.nextUInt8();
 		rep.status = Enum.COMMAND_STATUS(reader.nextUInt8(), new Error("active_endpoint: unknown status"));
 		rep.address = reader.nextUInt16BE();

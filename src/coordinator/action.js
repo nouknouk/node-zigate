@@ -1,3 +1,4 @@
+const util = require('util');
 const EventEmitter = require('events').EventEmitter;
 const Sym = require('./symbols.js');
 
@@ -39,7 +40,7 @@ class Action extends EventEmitter {
   }
 
   [Sym.EXEC_ACTION](args) {
-    let ret; 
+    let ret;
     let action_cmd = this[Sym.ACTION_DEF].command;
     let action_exec = this[Sym.ACTION_DEF].exec;
 
@@ -64,7 +65,7 @@ class Action extends EventEmitter {
   }
 
 	toString() { return "[action_"+this.id+"]"; }
-  inspect() { return ""+this+" ("+JSON.stringify(this.definition)+")"; }
+  [util.inspect.custom](depth, opts) { return ""+this+" ("+JSON.stringify(this.definition)+")"; }
 }
 
 module.exports = Action;

@@ -5,7 +5,7 @@ module.exports = {
 	name: "ieee_address",
 	
 	
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.sequence = reader.nextUInt8();
 		rep.status = Enum.COMMAND_STATUS(reader.nextUInt8(), new Error("ieee_address: unknown status"));
 		rep.ieee = reader.nextBuffer(8).toString('hex');

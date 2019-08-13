@@ -21,7 +21,7 @@ for device 0x7c97 raw data:
 module.exports = {
   id: 0x8401,
   name: "zone_status_change",
-  parse: function(reader, rep) {
+  parse: function(reader, rep, version) {
     rep.sequence = reader.nextUInt8();
     rep.endpoint = reader.nextUInt8();
     rep.cluster = Enum.CLUSTERS(reader.nextUInt16BE());
@@ -37,4 +37,3 @@ module.exports = {
     }
   },
 };
-

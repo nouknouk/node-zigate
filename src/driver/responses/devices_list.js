@@ -3,7 +3,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8015,
 	name: "devices_list",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.devices = [];
 		while(reader.isMore()) {
 			let device = {};

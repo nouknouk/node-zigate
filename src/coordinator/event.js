@@ -1,3 +1,4 @@
+const util = require('util');
 const EventEmitter = require('events').EventEmitter;
 const Sym = require('./symbols.js');
 
@@ -63,7 +64,7 @@ class Event extends EventEmitter {
   get log() { return this.device.log; }
 	toString() { return "[event_"+this.id+"]"; }
 
-  inspect() { return ""+this+" ("+JSON.stringify(this.definition)+")"; }
+  [util.inspect.custom](depth, opts) { return ""+this+" ("+JSON.stringify(this.definition)+")"; }
 }
 
 module.exports = Event;

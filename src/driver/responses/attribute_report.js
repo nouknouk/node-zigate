@@ -62,7 +62,7 @@ Zi - [device_0x7f69][cluster_msPressureMeasurement(0x403)][attr_(0x0010)] data c
 module.exports = {
 	id: 0x8102,
 	name: "attribute_report",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.sequence = reader.nextUInt8();
 		rep.address = reader.nextUInt16BE();
 		rep.endpoint = reader.nextUInt8();

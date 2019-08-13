@@ -1,7 +1,7 @@
 module.exports = {
 	id: 0x8002,
 	name: "data_indication",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.status = Enum.COMMAND_STATUS(reader.nextUInt8(), new Error("data_indication: unknown status"));
 
 		rep.profile = Enum.PROFILES(reader.nextUInt16BE(), new Error("data_indication: unknown profile"));

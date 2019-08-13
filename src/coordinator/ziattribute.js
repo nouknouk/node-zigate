@@ -1,3 +1,4 @@
+const util = require('util');
 const EventEmitter = require('events').EventEmitter;
 const Sym = require('./symbols.js');
 
@@ -37,7 +38,7 @@ class ZiAttribute extends EventEmitter {
 
   get log() { return this.device[Sym.COORDINATOR].log; }
 	toString() { return "[attr_"+((this.type && this.type.name) || '')+"("+this.hex+")]"; }
-  inspect() { return this.toString()+" = "+JSON.stringify(this[Sym.ATTR_DATA]); }
+  [util.inspect.custom](depth, opts) { return this.toString()+" = "+JSON.stringify(this[Sym.ATTR_DATA]); }
 }
 
 module.exports = ZiAttribute;

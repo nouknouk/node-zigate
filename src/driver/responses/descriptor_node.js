@@ -18,7 +18,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8042,
 	name: "descriptor_node",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.sequence = reader.nextUInt8();
 		rep.address = reader.nextUInt16BE();
 		rep.manufacturer = reader.nextUInt16BE();

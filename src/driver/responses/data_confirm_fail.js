@@ -3,7 +3,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8702,
 	name: "data_confirm_fail",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.failstatus = reader.nextUInt8();
 		rep.endpointSource = reader.nextUInt8();
 		rep.endpoint = reader.nextUInt8();

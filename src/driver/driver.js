@@ -80,13 +80,21 @@ class Driver extends EventEmitter {
 	static get LOGGERS() {
 		return DRIVER_LOGGERS;
 	};
-
 	get isOpen() {
 		return this.serial ? true : false;
 	}
 	get pending() {
 		return this.pendingCommands.slice();
 	};
+	get version() {
+		return this.commands.version;
+	}
+	get firmware() {
+		let major = ""+ ((this.commands.version / 256) | 0);
+		let minor = ""+(this.commands.version%256).toString(16);
+		if (minor.length === 1) minor = '0'+minor;
+		return major+'.'+minor;
+	}
 
 	open(port, callback) {
 		if (port === 'auto') port = null;
@@ -103,16 +111,27 @@ class Driver extends EventEmitter {
 						this.parser = null;
 						this.port = null;
 						this.logger.error("[Driver] Error while opening ZiGate port '"+port+"': "+err);
-						var ziError = new Error("Error while opening ZiGate port '"+port+"': "+err);
+						let ziError = new Error("Error while opening ZiGate port '"+port+"': "+err);
 						if (process.platform.indexOf("win") === 0 && (""+err).indexOf('File not found') >=0) {
 							ziError = new Error("Error while opening ZiGate port '"+port+"': "+err+" ; aren't windows drivers missing ?" );
 						}
 						this.emitError(ziError);
 						reject(ziError)
 					} else {
-						this.logger.info("[Driver] successfully connected to device '"+this.port+"'.");
-						this.emit('open');
-						resolve(this);
+						this.logger.debug("[Driver] successfully connected ZiGate port '"+this.port+"' ; retriveing version.");
+						this.send('version').then((rep) => {
+							this.commands.version = rep.installer;
+							this.responses.version = rep.installer;
+							this.logger.info("[Driver] well connnected to Zigate stick (firmware "+this.firmware+").");
+							resolve(this);
+							this.emit('open');
+						})
+						.catch(err => {
+							let ziError = new Error("Error while getting firmware version: "+err );
+							this.logger.error("[Driver] "+ziError);
+							this.emitError(ziError);
+							reject(ziError);
+						});
 					}
 				});
 				this.parser = this.serial.pipe(new SerialPort.parsers.Delimiter({ delimiter: [FRAME_STOP] }));
@@ -147,6 +166,8 @@ class Driver extends EventEmitter {
 				this.serial = null;
 				this.parser = null;
 				this.port = null;
+				this.commands.version = null;
+				this.responses.version = null;
 				if (serial.isOpen) {
 					serial.close((err) => {
 						if (!err) {
@@ -358,7 +379,15 @@ class Driver extends EventEmitter {
 		    if (!err) {
 					//console.debug("[Driver] "+ports.length+" serial devices found.");
 		      // discard logical tty, like /dev/ttyS1
+
+					// 1st attempt: guess port for (old) zigate TTL module pl2303
 		      var ziports = ports.filter((p) => { return p.vendorId && p.vendorId.toLowerCase() === '067b' && p.productId === '2303'; });
+
+					// 2nd attempt: guess port for (new) zigate TTL module cp2102
+					if (!ziports.length) {
+						ziports = ports.filter((p) => { return p.vendorId && p.vendorId.toLowerCase() === '10c4' && p.productId === 'ea60'; });
+					}
+
 					if (ziports.length) {
 						resolve(ziports);
 					}

@@ -4,7 +4,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8005,
 	name: "object_command_list",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.endpoint = reader.nextUInt8();
 		rep.profile = Enum.PROFILES(reader.nextUInt16BE(), (id) => { return {id: id, name: 'unknown profile '+id}; });
 		rep.cluster = Enum.CLUSTERS(reader.nextUInt16BE());

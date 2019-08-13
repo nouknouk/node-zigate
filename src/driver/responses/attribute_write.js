@@ -6,7 +6,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8110,
 	name: "attribute_write",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.sequence = reader.nextUInt8();
 		rep.address = reader.nextUInt16BE();
 		rep.endpoint = reader.nextUInt8();

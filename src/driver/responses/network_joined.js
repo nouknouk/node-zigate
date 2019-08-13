@@ -5,7 +5,7 @@ const Enum = require('../enum.js');
 module.exports = {
 	id: 0x8024,
 	name: "network_joined",
-	parse: function(reader, rep) {
+	parse: function(reader, rep, version) {
 		rep.status = Enum.NETWORK_JOIN_STATUS(reader.nextUInt8());
 		rep.address = reader.nextUInt16BE();
 		rep.ieee = reader.nextBuffer(8).toString('hex');

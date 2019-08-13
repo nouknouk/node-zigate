@@ -1,7 +1,9 @@
 const path = require('path');
 const fs = require('fs');
+const util = require('util');
 const Enum = require('./enum.js');
 const colors = require('colors');
+const VERSION = Symbol('VERSION');
 
 Enum.create('COMMANDS');
 
@@ -13,7 +15,12 @@ const INSPECT_PRETTYFORMAT_FIELDS = {
 
 class CommandBuilder {
 	constructor() {
+		this.version = this[VERSION];
 	}
+
+	set version(version) { this[VERSION] = version; }
+	get version() { return this[VERSION]; }
+	get versionHex() { return this[VERSION] && (this[VERSION]).toString(16); }
 
 	loadCommands(cmdDir) {
 		Enum.COMMANDS.clear();
@@ -37,6 +44,9 @@ class CommandBuilder {
 			var options = ((typeof(typeOrOptions) === 'object') ? typeOrOptions : options) || {};
 
 			var commandType = Enum.COMMANDS(type, new Error("invalid command type name '"+type+"'."));
+			if (commandType.minVersion && commandType.minVersion > this.version) {
+				throw new Error(`command ${type} incompatible with firmware version ${this.versionHex}`);
+			}
 
 			var cmdPromiseResolve = null;
 			var cmdPromiseReject = null;
@@ -55,7 +65,7 @@ class CommandBuilder {
 				status:  {value: null, writable:true},
 				response: {value: null, writable:true},
 				timer: {value: null, writable: true},
-				inspect: {value: function(depth, options) {
+				[util.inspect.custom]: {value: function(depth, options) {
 					var str = (""+this.type+"").red;
 					for (var k in this) {
 						if (k!=='type' && typeof(this[k]) !== 'function') {
@@ -70,8 +80,8 @@ class CommandBuilder {
 					return str;
 				}},
 			});
-			commandType.build(options, cmd);
 
+			commandType.build(options, cmd, this.version);
 			return cmd;
 	}
 }

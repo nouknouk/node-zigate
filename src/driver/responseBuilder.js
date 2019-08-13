@@ -1,9 +1,10 @@
+const util = require('util');
 const path = require('path');
 const fs = require('fs');
 const BufferReader = require('./buffer-reader.js');
 const Enum = require('./enum.js');
-const util = require('util');
 const colors = require('colors');
+const VERSION = Symbol('VERSION');
 
 Enum.create('RESPONSES');
 
@@ -57,15 +58,19 @@ class ResponseBuilder {
 		});
 	}
 
+	set version(version) { this[VERSION] = version; }
+	get version() { return this[VERSION]; }
+	get versionHex() { return this[VERSION] && (this[VERSION]).toString(16); }
 
 	parse(typeid,payload) {
 		var responseType = Enum.RESPONSES(typeid, new Error("invalid response typeid '"+typeid+"'."));
+
 		var reader = new BufferReader(payload);
 		var rep = Object.defineProperties({}, {
 			type:    {value: responseType, enumerable: true},
 			payload: {value: payload},
 			reader:  {value: reader},
-			inspect: {value: function(depth, options) {
+			[util.inspect.custom]: {value: function(depth, options) {
 				var str = (""+this.type+"").green;
 				for (var k in this) {
 					if (k!=='type' && typeof(this[k]) !== 'function') {
@@ -82,7 +87,7 @@ class ResponseBuilder {
 			}},
 		});
 
-		responseType.parse(reader, rep);
+		responseType.parse(reader, rep, this.version);
 
 		if (reader.isMore()) {
 			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] the "+(payload.length - reader.tell())+" last bytes of data have not been parsed:");

@@ -63,7 +63,7 @@ Enum.create = function(enumsetname, definitions) {
 		}
 
 		enumObj.toString = /*enumObj.toString ||*/ (() => { return enumObj.name+ ('(0x'+enumObj.id.toString(16)+')').grey; });
-		enumObj.inspect = /*enumObj.inspect ||*/ (() => { return enumObj.toString(); });
+		enumObj[util.inspect.custom] = /*enumObj.inspect ||*/ ((depth, opts) => { return enumObj.toString(); });
 		byKeys.set(enumObj.id, enumObj);
 		byNames.set(enumObj.name, enumObj);
 	};
@@ -224,7 +224,7 @@ Enum.create('ATTRIBUTE_TYPE', [
 	{id: 0x50, name: 'set',        length:null, },
 	{id: 0x51, name: 'bag',        length:null, },
 	{id: 0xE0, name: 'time',       length:4,    }, // 1 byte: hour(00...23)     ; 1 byte: minutes(00...59) ; 1 byte: seconds(00...59) ; 1 byte: 100th(00...99)
-	{id: 0xE1, name: 'date',       length:4,    }, // 1 byte: year(1900...2155) ; 1 byte: month(01...12)   ; 1 byte: day(01...31)     ; 1 byte: weekday(01(monday)...07(sunday) ) ; 
+	{id: 0xE1, name: 'date',       length:4,    }, // 1 byte: year(1900...2155) ; 1 byte: month(01...12)   ; 1 byte: day(01...31)     ; 1 byte: weekday(01(monday)...07(sunday) ) ;
 	{id: 0xE2, name: 'utc',        length:4,    }, // unsigned 32bit number of seconds  since 1st of January, 2000 00:00:00 UTC
 	{id: 0xE8, name: 'cluster',    length:2,    },
 	{id: 0xE9, name: 'attribute',  length:2,    },
@@ -309,6 +309,11 @@ Enum.create('LOG_LEVEL', [
 Enum.create('DIRECTION', [
 	[0, "srv_to_cli", 'server to client <=> read a value'],
 	[1, "cli_to_srv", 'client to server <=> write a value'],
+]);
+
+Enum.create('CERTIFICATION', [
+	[1, "CE", 'CE certification'],
+	[2, "FCC", ' FCC certification'],
 ]);
 
 Enum.create('NETWORK_JOIN_STATUS', [
