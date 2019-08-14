@@ -109,6 +109,11 @@ Enum.create = function(enumsetname, definitions) {
 };
 
 
+Enum.create('CERTIFICATION', [
+	[1, "CE", ],
+	[2, "FCC", ],
+]);
+
 Enum.create('STATUS', [
 	[0, "success", ],
 	[1, "invalid_params", ],

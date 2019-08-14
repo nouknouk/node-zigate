@@ -49,6 +49,8 @@ class Coordinator extends EventEmitter {
     this.driver.on('command', this.onDriverCommand.bind(this));
     this.driver.on('response', this.onDriverResponse.bind(this));
 
+		this[Sym.VERSION_MAJOR] = null;
+		this[Sym.VERSION_INSTALLER] = null;
     this[Sym.STATUS] = 'stopped';
 		this.inclusionStatus = false;
     this[Sym.DEVICES] = {};
@@ -63,6 +65,16 @@ class Coordinator extends EventEmitter {
   static get LOGGERS() { return COORDINATOR_LOGGERS; };
 
 	get log() { return this[Sym.LOG]; }
+	get firmware() {
+		let firm = "";
+		if (!this[Sym.VERSION_MAJOR] || !this[Sym.VERSION_INSTALLER]) return null;
+
+		let major = Math.floor(this[Sym.VERSION_INSTALLER] /16 /16);
+		let minor = this[Sym.VERSION_INSTALLER] - major * 16 * 16;
+
+		firm +=  + major.toString(16)+"."+(minor < 16 ? '0' : '') + minor.toString(16);
+		return firm;
+	}
   get status() { return this[Sym.STATUS]; }
   get started() { return this.driver.isOpen }
 	get devices() { return Object.values(this[Sym.DEVICES]); }
@@ -94,6 +106,7 @@ class Coordinator extends EventEmitter {
         this[Sym.STATUS] = 'started';
         this.log.info("zigbee network is up ; starting devices discovery...");
 				this.driver.send('network_state');
+				this.driver.send('version');
       },
       (err)=> {
         this[Sym.STATUS] = 'stopped';
@@ -442,7 +455,7 @@ class Coordinator extends EventEmitter {
 		// 2a) find devices listed in zigate's response not yet present in coordinator
 		rep.devices.filter( zidev => !(this.device(zidev.address)))
 			// 2b) remove them from the coordinator
-			.forEach(zidev => { this.addDevice(zidev.address, dev.ieee); });
+			.forEach(zidev => { this.addDevice(zidev.address, zidev.ieee); });
 
     // 3) for each device, update battery info
     rep.devices.forEach(zidev => { this.setDeviceBattery(this.device(zidev.address), zidev.battery); });
@@ -532,6 +545,11 @@ class Coordinator extends EventEmitter {
 		}
 
     switch (rep.type.name) {
+			case 'version':
+				this[Sym.VERSION_MAJOR] = rep.major;
+				this[Sym.VERSION_INSTALLER] = rep.installer;
+				this.log.debug("version info received. major="+rep.major+" ; installer="+rep.installer+" ; firmware=", this.firmware);
+        break;
       case 'object_cluster_list':
 				// {"type":{"id":0x8003,"name":"object_cluster_list"},"srcEndpoint":1,"profileId":260,"clusters":[0,1,3,4,5,6,8,25,257,4096,768,513,516]}
 				this.log.error("'object_cluster_list' received but I don't know to which device the clusters are bound.");

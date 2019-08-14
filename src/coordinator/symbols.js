@@ -1,6 +1,8 @@
 module.exports = {
 	LOG:                 Symbol("LOG"),
 	STATUS:              Symbol("STATUS"),
+	VERSION_MAJOR:       Symbol("VERSION_MAJOR"),
+	VERSION_INSTALLER:   Symbol("VERSION_INSTALLER"),
 	ADDRESS:             Symbol("ADDRESS"),
 	IEEE:                Symbol("IEEE"),
 	ID:                  Symbol("ID"),

@@ -87,16 +87,25 @@ class ResponseBuilder {
 			}},
 		});
 
-		responseType.parse(reader, rep, this.version);
+    try {
+		  responseType.parse(reader, rep, this.version);
 
-		if (reader.isMore()) {
-			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] the "+(payload.length - reader.tell())+" last bytes of data have not been parsed:");
-			ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] response payload: "
-				+ (payload.toString('hex').slice(0, reader.tell()).replace(/../g, "$& ")).green
-				+ (payload.toString('hex').slice(reader.tell()).replace(/../g, "$& ")).red
-			);
-		}
-		return rep;
+			if (reader.isMore()) {
+				ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] the "+(payload.length - reader.tell())+" last bytes of data have not been parsed:");
+				ResponseBuilder.LOGS.warn("[ResponseBuilder_"+responseType+"] response payload: "
+					+ (payload.toString('hex').slice(0, reader.tell()).replace(/../g, "$& ")).green
+					+ (payload.toString('hex').slice(reader.tell()).replace(/../g, "$& ")).red
+				);
+			}
+			return rep;
+    }
+    catch (e) {
+			ResponseBuilder.LOGS.error("[ResponseBuilder_"+responseType+"] payload = "+payload.toString('hex').replace(/../g, "$& "));
+      ResponseBuilder.LOGS.error("[ResponseBuilder_"+responseType+"] EXCEPTION while parsing response:");
+      ResponseBuilder.LOGS.error("[ResponseBuilder_"+responseType+"] EXCEPTION while parsing response: "+e.stack);
+      throw e;
+    }
+
 	}
 
 }
