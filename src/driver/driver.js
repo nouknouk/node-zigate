@@ -1,5 +1,6 @@
 const EventEmitter = require('events').EventEmitter;
 const SerialPort = require('serialport');
+const Delimiter = require('@serialport/parser-delimiter')
 const CommandBuilder = require('./commandBuilder.js');
 const ResponseBuilder = require('./responseBuilder.js');
 const Enum = require('./enum.js');
@@ -134,7 +135,7 @@ class Driver extends EventEmitter {
 						});
 					}
 				});
-				this.parser = this.serial.pipe(new SerialPort.parsers.Delimiter({ delimiter: [FRAME_STOP] }));
+				this.parser = this.serial.pipe(new Delimiter({ delimiter: [FRAME_STOP] }));
 				this.parser.on('data', (raw_in) => { this.onSerialData(raw_in); });
 				this.serial.on('error', (err) => { this.onSerialError(err) });
 				this.serial.on('close', () => { this.onSerialClosed(this.port); });
@@ -376,13 +377,7 @@ class Driver extends EventEmitter {
 		callback = callback || (()=>{});
 
 	  //console.debug("[Driver] retrieving list of available serial devices");
-		var p = new Promise((resolve, reject) => {
-			SerialPort.list((err, ports) => {
-		    if (!err) {
-					//console.debug("[Driver] "+ports.length+" serial devices found.");
-		      // discard logical tty, like /dev/ttyS1
-
-					// 1st attempt: guess port for (old) zigate TTL module pl2303
+		return SerialPort.list().then(ports => {
 		      var ziports = ports.filter((p) => { return p.vendorId && p.vendorId.toLowerCase() === '067b' && p.productId === '2303'; });
 
 					// 2nd attempt: guess port for (new) zigate TTL module cp2102
@@ -392,18 +387,17 @@ class Driver extends EventEmitter {
 
 					if (ziports.length) {
 						resolve(ziports);
+						if (callback) callback(undefined, ziports);
 					}
 					else {
 						reject(new Error(""+ports.length+" ports detected and no ZiGate port found."));
+						if (callback) callback(new Error(""+ports.length+" ports detected and no ZiGate port found."));
 					}
-		    }
-				else {
-					reject(err);
-				}
+		    })
+			.catch(err => {
+				reject(err);
+				if (callback) callback(err);
 		  });
-		});
-		if (callback) p.then((ports) => { callback(undefined, ports); }, (err) => { callback(err); });
-		return p;
 
 		/* ZiGate port example: { manufacturer: 'Prolific Technology Inc.',
 			comName: '/dev/ttyUSB0'
